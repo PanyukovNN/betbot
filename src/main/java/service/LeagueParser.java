@@ -1,3 +1,5 @@
+package service;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.commons.io.FileUtils;
 import org.jsoup.Jsoup;
@@ -15,7 +17,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-public class leagueParser {
+public class LeagueParser {
 
     public WebDriver driver;
 
@@ -51,7 +53,7 @@ public class leagueParser {
             List<String> links = new ArrayList<>();
             for (Element element : elements) {
                 String str = element.attr("href");
-                if (str.contains("Football")) {
+                if (str.contains("Football") && !str.contains("Special") && !str.contains("Statistics")) {
                     links.add(str);
                 }
             }
