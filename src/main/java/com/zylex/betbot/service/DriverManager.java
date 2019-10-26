@@ -1,7 +1,7 @@
-package service;
+package com.zylex.betbot.service;
 
-import controller.ConsoleLogger;
-import controller.LogType;
+import com.zylex.betbot.controller.ConsoleLogger;
+import com.zylex.betbot.controller.LogType;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -11,13 +11,13 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
-public class DriverFactory {
+public class DriverManager {
 
     private int threads;
 
     private Queue<WebDriver> drivers = new ConcurrentLinkedQueue<>();
 
-    public DriverFactory(int threads) {
+    public DriverManager(int threads) {
         this.threads = threads;
         initiateDrivers();
     }

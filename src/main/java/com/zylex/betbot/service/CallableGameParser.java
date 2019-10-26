@@ -1,7 +1,7 @@
-package service;
+package com.zylex.betbot.service;
 
-import com.google.gson.internal.$Gson$Preconditions;
-import model.Game;
+import com.zylex.betbot.controller.ConsoleLogger;
+import com.zylex.betbot.model.Game;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,53 +21,49 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-    private WebDriverWait wait;
-
-    private DriverFactory driverFactory;
-
-    private String league;
+    private DriverManager driverManager;
 
     private WebDriver driver;
 
-    public CallableGameParser(DriverFactory driverFactory, String league) {
-        this.driverFactory = driverFactory;
+    private WebDriverWait wait;
+
+    private String league;
+
+    CallableGameParser(DriverManager driverManager, String league) {
+        this.driverManager = driverManager;
         this.league = league;
     }
 
     @Override
     public List<Game> call() throws InterruptedException {
         try {
-            driver = driverFactory.getDriver();
+            driver = driverManager.getDriver();
             wait = new WebDriverWait(driver, 2);
             return processGameParsing(driver);
         } finally {
-            driverFactory.addDriverToQueue(driver);
+            driverManager.addDriverToQueue(driver);
         }
     }
 
-    private List<Game> processGameParsing(WebDriver driver) throws InterruptedException {
+    private List<Game> processGameParsing(WebDriver driver) {
         driver.navigate().to(String.format("https://1xstavka.ru/%s", league));
         wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-//        Thread.sleep(2000);
         Document document = Jsoup.parse(driver.getPageSource());
-
         List<Game> games = new ArrayList<>();
         String leagueName = document.select("div.c-events__name > a.c-events__liga").get(0).text();
         Elements gameElements = document.select("div.c-events__item_game");
         int nextDay = Calendar.getInstance().get(Calendar.DATE) + 1;
-        int i = 0;
         for (Element gameElement : gameElements) {
             LocalDateTime dateTime = processDate(gameElement);
-            if (nextDay != dateTime.getDayOfMonth()) {
-                if (dateTime.getDayOfMonth() > nextDay) {
-                    break;
-                }
+            if (nextDay > dateTime.getDayOfMonth()) {
                 continue;
+            } else if (nextDay < dateTime.getDayOfMonth()) {
+                break;
             }
             Elements teams = gameElement.select("span.c-events__team");
             String firstTeam = teams.get(0).text();
             String secondTeam = teams.get(1).text();
-            if (firstTeam.contains("Хозяева (голы)") || secondTeam.contains("Хозяева (голы)")) {
+            if (firstTeam.contains("Хозяева (голы)")) {
                 continue;
             }
             Elements coefficients = gameElement.select("div.c-bets > a.c-bets__bet");
@@ -76,10 +72,10 @@ public class CallableGameParser implements Callable<List<Game>> {
             String secondWin = coefficients.get(2).text();
             String firstWinOrTie = coefficients.get(3).text();
             String secondWinOrTie = coefficients.get(5).text();
-            Game game = new Game(leagueName, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie);
+            Game game = new Game(leagueName, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, league);
             games.add(game);
-            System.out.println(++i + ") " + game);
         }
+        ConsoleLogger.logLeagueGame();
         return games;
     }
 

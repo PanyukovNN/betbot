@@ -1,4 +1,4 @@
-package controller;
+package com.zylex.betbot.controller;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -8,11 +8,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class ConsoleLogger {
 
+    public static int totalLeagues = 0;
+
     private static AtomicLong programStartTime = new AtomicLong(System.currentTimeMillis());
 
-    private static AtomicInteger totalGames = new AtomicInteger(0);
+    public static AtomicInteger totalGames = new AtomicInteger(0);
 
-    private static AtomicInteger processedGames = new AtomicInteger(0);
+    private static AtomicInteger processedLeagues = new AtomicInteger(0);
 
     private static int threads;
 
@@ -22,6 +24,11 @@ public class ConsoleLogger {
         if (type == LogType.DRIVERS) {
             threads = arg;
             writeInLine("Starting chrome drivers: 0/" + arg);
+        } else if (type == LogType.LEAGUES) {
+            writeInLine("\nProcessing leagues: ...");
+        } else if (type == LogType.GAMES) {
+            writeInLine(String.format("\nProcessing games: 0/%d (0.0%%)",
+                    totalLeagues));
         }
     }
 
@@ -35,16 +42,25 @@ public class ConsoleLogger {
         }
     }
 
-    public static synchronized void logGame() {
-        String output = String.format("Processing games: %d/%d (%s%%)",
-                processedGames.incrementAndGet(),
-                totalGames.get(),
-                new DecimalFormat("#0.0").format(((double) processedGames.get() / (double) totalGames.get()) * 100).replace(",", "."));
+    public static void logLeague() {
+        String output = "Processing leagues: Complete";
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
     }
 
+    public static synchronized void logLeagueGame() {
+        String output = String.format("Processing games: %d/%d (%s%%)",
+                processedLeagues.incrementAndGet(),
+                totalLeagues,
+                new DecimalFormat("#0.0").format(((double) processedLeagues.get() / (double) totalLeagues) * 100).replace(",", "."));
+        writeInLine(StringUtils.repeat("\b", output.length()) + output);
+        if (processedLeagues.get() == totalLeagues) {
+            writeLineSeparator();
+        }
+    }
+
     public static void totalSummarizing() {
-        writeInLine(String.format("Parsing completed in %s", computeTime(programStartTime.get())));
+        writeInLine(String.format("\nTotal games: %d", totalGames.get()));
+        writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
     }
 
     private static String computeTime(long startTime) {

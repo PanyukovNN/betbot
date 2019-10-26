@@ -1,4 +1,4 @@
-package model;
+package com.zylex.betbot.model;
 
 import java.time.LocalDateTime;
 
@@ -22,7 +22,9 @@ public class Game {
 
     private String secondWinOrTie;
 
-    public Game(String league, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie) {
+    private String leagueLink;
+
+    public Game(String league, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie, String leagueLink) {
         this.league = league;
         this.dateTime = dateTime;
         this.firstTeam = firstTeam;
@@ -32,6 +34,7 @@ public class Game {
         this.secondWin = secondWin;
         this.firstWinOrTie = firstWinOrTie;
         this.secondWinOrTie = secondWinOrTie;
+        this.leagueLink = leagueLink;
     }
 
     public String getLeague() {
@@ -68,6 +71,10 @@ public class Game {
 
     public String getSecondWinOrTie() {
         return secondWinOrTie;
+    }
+
+    public String getLeagueLink() {
+        return leagueLink;
     }
 
     @Override

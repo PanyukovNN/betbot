@@ -1,6 +1,6 @@
-package controller;
+package com.zylex.betbot.controller;
 
-import model.Game;
+import com.zylex.betbot.model.Game;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
