@@ -10,19 +10,21 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class DriverManager {
-
-    private int threads;
+@SuppressWarnings("WeakerAccess")
+class DriverManager {
 
     private Queue<WebDriver> drivers = new ConcurrentLinkedQueue<>();
 
-    public DriverManager(int threads) {
-        this.threads = threads;
-        initiateDrivers();
-    }
-
-    private void initiateDrivers() {
+    /**
+     * Initiates chrome drivers in the amount of threads number, and puts them into threadsafe queue.
+     * @param threads - number of threads.
+     */
+    public void initiateDrivers(int threads) {
+        System.setProperty("webdriver.chrome.silentOutput", "true");
+        Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
         WebDriverManager.chromedriver().version("77.0.3865.40").setup();
         ConsoleLogger.startLogMessage(LogType.DRIVERS, threads);
         for (int i = 0; i < threads; i++) {
@@ -36,11 +38,12 @@ public class DriverManager {
         }
     }
 
-    int getThreads() {
-        return threads;
-    }
-
-    synchronized WebDriver getDriver() throws InterruptedException {
+    /**
+     * Getting instance of WebDriver from queue.
+     * @return - instance of WebDriver.
+     * @throws InterruptedException - appears because of Thread.sleep.
+     */
+    public synchronized WebDriver getDriver() throws InterruptedException {
         WebDriver driver = null;
         while (driver == null) {
             driver = drivers.poll();
@@ -49,13 +52,18 @@ public class DriverManager {
         return driver;
     }
 
-    synchronized void addDriverToQueue(WebDriver driver) {
+    /**
+     * Return driver to queue after usage.
+     * @param driver - instance of a WebDriver.
+     */
+    public synchronized void addDriverToQueue(WebDriver driver) {
         drivers.add(driver);
     }
 
+    /**
+     * Quit all drivers.
+     */
     public void quitDrivers() {
-        for (WebDriver driver : drivers) {
-            driver.quit();
-        }
+        drivers.forEach(WebDriver::quit);
     }
 }

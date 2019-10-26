@@ -2,6 +2,9 @@ package com.zylex.betbot.model;
 
 import java.time.LocalDateTime;
 
+/**
+ * Instance of a football game.
+ */
 public class Game {
 
     private String league;

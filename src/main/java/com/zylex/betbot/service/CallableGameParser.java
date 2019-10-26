@@ -1,6 +1,7 @@
 package com.zylex.betbot.service;
 
 import com.zylex.betbot.controller.ConsoleLogger;
+import com.zylex.betbot.exception.GameParserException;
 import com.zylex.betbot.model.Game;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,6 +18,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+@SuppressWarnings("WeakerAccess")
 public class CallableGameParser implements Callable<List<Game>> {
 
     private final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
@@ -29,18 +31,24 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private String league;
 
-    CallableGameParser(DriverManager driverManager, String league) {
+    public CallableGameParser(DriverManager driverManager, String league) {
         this.driverManager = driverManager;
         this.league = league;
     }
 
+    /**
+     * Processes parsing of one league and returns its games in list.
+     * @return - list of games.
+     */
     @Override
-    public List<Game> call() throws InterruptedException {
+    public List<Game> call() {
         try {
             driver = driverManager.getDriver();
             wait = new WebDriverWait(driver, 2);
             return processGameParsing(driver);
-        } finally {
+        } catch (InterruptedException e) {
+            throw new GameParserException(e.getMessage(), e);
+        }finally {
             driverManager.addDriverToQueue(driver);
         }
     }

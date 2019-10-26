@@ -1,5 +1,6 @@
 package com.zylex.betbot.controller;
 
+import com.zylex.betbot.exception.SaverException;
 import com.zylex.betbot.model.Game;
 
 import java.io.*;
@@ -8,19 +9,30 @@ import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * Process saving games into file.
+ */
 public class Saver {
 
     private final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
+    /**
+     * Saves all games in "results" file.
+     * @param games - list of games.
+     */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void processSaving(List<Game> games) throws IOException {
-        File file = new File("results/results.csv");
-        if (!file.exists()) {
-            file.createNewFile();
+    public void processSaving(List<Game> games) {
+        try {
+            File file = new File("results/results.csv");
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+                writeToFile(games, writer);
+            }
+        } catch (IOException e) {
+            throw new SaverException(e.getMessage(), e);
         }
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
-        writeToFile(games, writer);
-        writer.close();
     }
 
     private void writeToFile(List<Game> games, BufferedWriter writer) throws IOException {

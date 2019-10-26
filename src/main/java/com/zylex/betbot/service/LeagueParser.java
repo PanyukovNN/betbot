@@ -1,6 +1,7 @@
 package com.zylex.betbot.service;
 
 import com.zylex.betbot.controller.ConsoleLogger;
+import com.zylex.betbot.exception.LeagueParserException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,7 +12,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.util.ArrayList;
 import java.util.List;
 
-class LeagueParser {
+/**
+ * Parsing football leagues links, which includes game for a next day on 1xStavka.ru
+ */
+@SuppressWarnings("WeakerAccess")
+public class LeagueParser {
 
     private DriverManager driverManager;
 
@@ -19,17 +24,24 @@ class LeagueParser {
 
     private WebDriver driver;
 
-    LeagueParser(DriverManager driverManager) {
+    public LeagueParser(DriverManager driverManager) {
         this.driverManager = driverManager;
     }
 
-    List<String> processLeagueParsing() throws InterruptedException {
-        driver = driverManager.getDriver();
-        wait = new WebDriverWait(driver, 60);
+    /**
+     * Get links on leagues which include football matches for a next day from 1xStavka.ru,
+     * put into list and return.
+     * @return - list of links.
+     */
+    public List<String> processLeagueParsing() {
         try {
+            driver = driverManager.getDriver();
+            wait = new WebDriverWait(driver, 60);
             driver.navigate().to("https://1xstavka.ru/line/Football/");
             filterClicks();
             return parseLeagueLinks();
+        } catch (InterruptedException e) {
+            throw new LeagueParserException(e.getMessage(), e);
         } finally {
             driverManager.addDriverToQueue(driver);
         }
@@ -50,7 +62,6 @@ class LeagueParser {
                 leagueLinks.add(link);
             }
         }
-        ConsoleLogger.totalLeagues = leagueLinks.size();
         ConsoleLogger.logLeague();
         return leagueLinks;
     }

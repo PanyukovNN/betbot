@@ -5,20 +5,26 @@ import org.apache.commons.lang3.StringUtils;
 import java.text.DecimalFormat;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ConsoleLogger {
 
-    public static int totalLeagues = 0;
+    private static int totalLeagues = 0;
+
+    private static AtomicInteger totalGames = new AtomicInteger(0);
 
     private static AtomicLong programStartTime = new AtomicLong(System.currentTimeMillis());
-
-    public static AtomicInteger totalGames = new AtomicInteger(0);
 
     private static AtomicInteger processedLeagues = new AtomicInteger(0);
 
     private static int threads;
 
     private static int processedDrivers = 0;
+
+    public static void addTotalGames(int totalGames) {
+        ConsoleLogger.totalGames.addAndGet(totalGames);
+    }
 
     public static synchronized void startLogMessage(LogType type, Integer arg) {
         if (type == LogType.DRIVERS) {
@@ -27,8 +33,9 @@ public class ConsoleLogger {
         } else if (type == LogType.LEAGUES) {
             writeInLine("\nProcessing leagues: ...");
         } else if (type == LogType.GAMES) {
+            totalLeagues = arg;
             writeInLine(String.format("\nProcessing games: 0/%d (0.0%%)",
-                    totalLeagues));
+                    arg));
         }
     }
 
@@ -43,7 +50,7 @@ public class ConsoleLogger {
     }
 
     public static void logLeague() {
-        String output = "Processing leagues: Complete";
+        String output = "Processing leagues: complete";
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
     }
 

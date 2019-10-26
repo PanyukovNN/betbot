@@ -2,6 +2,7 @@ package com.zylex.betbot.service;
 
 import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.controller.LogType;
+import com.zylex.betbot.exception.ParseProcessorException;
 import com.zylex.betbot.model.Game;
 
 import java.util.ArrayList;
@@ -11,18 +12,36 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * Parsing football games for a next day from 1xStavka.ru
+ */
 public class ParseProcessor {
 
-    public List<Game> process(DriverManager driverManager) throws InterruptedException, ExecutionException {
-        ExecutorService service = Executors.newFixedThreadPool(driverManager.getThreads());
+    /**
+     * Get links on leagues which include football matches for a next day,
+     * then from pull information about matches from every link, put it into
+     * list and return.
+     * @param threads - number of threads.
+     * @return - list of games.
+     */
+    public List<Game> process(int threads) {
+        DriverManager driverManager = new DriverManager();
+        driverManager.initiateDrivers(threads);
+        ExecutorService service = Executors.newFixedThreadPool(threads);
         try {
             ConsoleLogger.startLogMessage(LogType.LEAGUES, null);
             LeagueParser leagueParser = new LeagueParser(driverManager);
             List<String> leagueLinks = leagueParser.processLeagueParsing();
             ConsoleLogger.startLogMessage(LogType.GAMES, leagueLinks.size());
-            return processGameParsing(service, driverManager, leagueLinks);
+            List<Game> games = processGameParsing(service, driverManager, leagueLinks);
+            ConsoleLogger.addTotalGames(games.size());
+            return games;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ParseProcessorException(e.getMessage(), e);
         } finally {
             service.shutdown();
+            driverManager.quitDrivers();
+            ConsoleLogger.totalSummarizing();
         }
     }
 
@@ -43,7 +62,6 @@ public class ParseProcessor {
             List<Game> leagueGames = gameList.get();
             games.addAll(leagueGames);
         }
-        ConsoleLogger.totalGames.addAndGet(games.size());
         return games;
     }
 }
