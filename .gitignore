@@ -8,3 +8,4 @@ log
 *.csv
 *.zip
 src\main\resources
+**SecretRule.java

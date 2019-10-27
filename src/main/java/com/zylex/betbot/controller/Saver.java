@@ -21,9 +21,9 @@ public class Saver {
      * @param games - list of games.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void processSaving(List<Game> games) {
+    public void processSaving(List<Game> games, String fileName) {
         try {
-            File file = new File("results/results.csv");
+            File file = new File("results/" + fileName + ".csv");
             if (!file.exists()) {
                 file.createNewFile();
             }
@@ -36,10 +36,11 @@ public class Saver {
     }
 
     private void writeToFile(List<Game> games, BufferedWriter writer) throws IOException {
-        final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s";
+        final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
         for (Game game : games) {
             String line = String.format(GAME_FORMAT,
                     game.getLeague(),
+                    game.getLeagueLink(),
                     DATE_FORMATTER.format(game.getDateTime()),
                     game.getFirstTeam(),
                     game.getSecondTeam(),

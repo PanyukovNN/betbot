@@ -1,8 +1,9 @@
-package com.zylex.betbot.service;
+package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.exception.GameParserException;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.service.DriverManager;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -48,17 +49,17 @@ public class CallableGameParser implements Callable<List<Game>> {
             return processGameParsing(driver);
         } catch (InterruptedException e) {
             throw new GameParserException(e.getMessage(), e);
-        }finally {
+        } finally {
             driverManager.addDriverToQueue(driver);
         }
     }
 
-    private List<Game> processGameParsing(WebDriver driver) {
+    private List<Game> processGameParsing(WebDriver driver) throws InterruptedException {
         driver.navigate().to(String.format("https://1xstavka.ru/%s", league));
         wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
         Document document = Jsoup.parse(driver.getPageSource());
         List<Game> games = new ArrayList<>();
-        String leagueName = document.select("div.c-events__name > a.c-events__liga").get(0).text();
+        String leagueName = document.select("a.c-events__liga").text();
         Elements gameElements = document.select("div.c-events__item_game");
         int nextDay = Calendar.getInstance().get(Calendar.DATE) + 1;
         for (Element gameElement : gameElements) {

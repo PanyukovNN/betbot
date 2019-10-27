@@ -1,7 +1,8 @@
-package com.zylex.betbot.service;
+package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.exception.LeagueParserException;
+import com.zylex.betbot.service.DriverManager;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

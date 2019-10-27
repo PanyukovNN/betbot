@@ -5,10 +5,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.text.DecimalFormat;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ConsoleLogger {
+
+    public static int eligibleGames = 0;
 
     private static int totalLeagues = 0;
 
@@ -68,6 +68,7 @@ public class ConsoleLogger {
     public static void totalSummarizing() {
         writeInLine(String.format("\nTotal games: %d", totalGames.get()));
         writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
+        writeLineSeparator();
     }
 
     private static String computeTime(long startTime) {

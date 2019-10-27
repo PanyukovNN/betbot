@@ -1,9 +1,10 @@
-package com.zylex.betbot.service;
+package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.controller.LogType;
 import com.zylex.betbot.exception.ParseProcessorException;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.service.DriverManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class ParseProcessor {
      */
     public List<Game> process(int threads) {
         DriverManager driverManager = new DriverManager();
-        driverManager.initiateDrivers(threads);
+        driverManager.initiateDrivers(threads, true);
         ExecutorService service = Executors.newFixedThreadPool(threads);
         try {
             ConsoleLogger.startLogMessage(LogType.LEAGUES, null);
