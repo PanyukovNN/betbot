@@ -1,7 +1,6 @@
 package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.ConsoleLogger;
-import com.zylex.betbot.exception.GameParserException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.DriverManager;
 import org.jsoup.Jsoup;
@@ -47,14 +46,12 @@ public class CallableGameParser implements Callable<List<Game>> {
             driver = driverManager.getDriver();
             wait = new WebDriverWait(driver, 2);
             return processGameParsing(driver);
-        } catch (InterruptedException e) {
-            throw new GameParserException(e.getMessage(), e);
         } finally {
             driverManager.addDriverToQueue(driver);
         }
     }
 
-    private List<Game> processGameParsing(WebDriver driver) throws InterruptedException {
+    private List<Game> processGameParsing(WebDriver driver) {
         driver.navigate().to(String.format("https://1xstavka.ru/%s", league));
         wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
         Document document = Jsoup.parse(driver.getPageSource());
