@@ -18,7 +18,7 @@ public class ConsoleLogger {
 
     private static AtomicInteger processedLeagues = new AtomicInteger(0);
 
-    private static int threads;
+    public static int threads;
 
     private static int processedDrivers = 0;
 
@@ -85,11 +85,15 @@ public class ConsoleLogger {
                 + seconds % 60 + " sec.";
     }
 
-    private static void writeLineSeparator() {
+    public static void writeLineSeparator() {
         writeInLine("\n" + StringUtils.repeat("-", 50));
     }
 
-    private static synchronized void writeInLine(String message) {
+    public static void writeErrorMessage(String message) {
+        System.err.println(message);
+    }
+
+    public static synchronized void writeInLine(String message) {
         System.out.print(message);
     }
 }

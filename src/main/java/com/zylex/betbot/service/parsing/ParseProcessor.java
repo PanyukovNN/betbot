@@ -4,6 +4,7 @@ import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.controller.LogType;
 import com.zylex.betbot.exception.ParseProcessorException;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
 
 import java.util.ArrayList;
@@ -25,16 +26,16 @@ public class ParseProcessor {
      * @param threads - number of threads.
      * @return - list of games.
      */
-    public List<Game> process(int threads) {
+    public List<Game> process(int threads, Day day) {
         DriverManager driverManager = new DriverManager();
         driverManager.initiateDrivers(threads, true);
         ExecutorService service = Executors.newFixedThreadPool(threads);
         try {
             ConsoleLogger.startLogMessage(LogType.LEAGUES, null);
             LeagueParser leagueParser = new LeagueParser(driverManager);
-            List<String> leagueLinks = leagueParser.processLeagueParsing();
+            List<String> leagueLinks = leagueParser.processLeagueParsing(day);
             ConsoleLogger.startLogMessage(LogType.GAMES, leagueLinks.size());
-            List<Game> games = processGameParsing(service, driverManager, leagueLinks);
+            List<Game> games = processGameParsing(service, driverManager, leagueLinks, day);
             ConsoleLogger.addTotalGames(games.size());
             return games;
         } catch (InterruptedException | ExecutionException e) {
@@ -48,10 +49,11 @@ public class ParseProcessor {
 
     private List<Game> processGameParsing(ExecutorService service,
                                           DriverManager driverManager,
-                                          List<String> leagueLinks) throws InterruptedException, ExecutionException {
+                                          List<String> leagueLinks,
+                                          Day day) throws InterruptedException, ExecutionException {
         List<CallableGameParser> callableGameParsers = new ArrayList<>();
         for (String leagueLink : leagueLinks) {
-            callableGameParsers.add(new CallableGameParser(driverManager, leagueLink));
+            callableGameParsers.add(new CallableGameParser(driverManager, leagueLink, day));
         }
         List<Future<List<Game>>> futureGameParsers = service.invokeAll(callableGameParsers);
         return convertFutureGames(futureGameParsers);

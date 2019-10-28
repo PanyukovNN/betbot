@@ -9,6 +9,8 @@ public class Game {
 
     private String league;
 
+    private String leagueLink;
+
     private LocalDateTime dateTime;
 
     private String firstTeam;
@@ -25,10 +27,9 @@ public class Game {
 
     private String secondWinOrTie;
 
-    private String leagueLink;
-
-    public Game(String league, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie, String leagueLink) {
+    public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie) {
         this.league = league;
+        this.leagueLink = leagueLink;
         this.dateTime = dateTime;
         this.firstTeam = firstTeam;
         this.secondTeam = secondTeam;
@@ -37,11 +38,14 @@ public class Game {
         this.secondWin = secondWin;
         this.firstWinOrTie = firstWinOrTie;
         this.secondWinOrTie = secondWinOrTie;
-        this.leagueLink = leagueLink;
     }
 
     public String getLeague() {
         return league;
+    }
+
+    public String getLeagueLink() {
+        return leagueLink;
     }
 
     public LocalDateTime getDateTime() {
@@ -74,10 +78,6 @@ public class Game {
 
     public String getSecondWinOrTie() {
         return secondWinOrTie;
-    }
-
-    public String getLeagueLink() {
-        return leagueLink;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.exception.LeagueParserException;
+import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,14 +33,15 @@ public class LeagueParser {
     /**
      * Get links on leagues which include football matches for a next day from 1xStavka.ru,
      * put into list and return.
+     * @param day - what day to parse.
      * @return - list of links.
      */
-    public List<String> processLeagueParsing() {
+    public List<String> processLeagueParsing(Day day) {
         try {
             driver = driverManager.getDriver();
             wait = new WebDriverWait(driver, 60);
             driver.navigate().to("https://1xstavka.ru/line/Football/");
-            filterClicks();
+            filterClicks(day);
             return parseLeagueLinks();
         } catch (InterruptedException e) {
             throw new LeagueParserException(e.getMessage(), e);
@@ -67,10 +69,10 @@ public class LeagueParser {
         return leagueLinks;
     }
 
-    private void filterClicks() throws InterruptedException {
+    private void filterClicks(Day day) throws InterruptedException {
         guaranteedClick("ls-filter__name",1);
         guaranteedClick("chosen-container",1);
-        guaranteedClick("active-result",2);
+        guaranteedClick("active-result",1 + day.INDEX);
         guaranteedClick("ls-filter__btn",0);
 
         WebElement sprotMenuElement = driver.findElements(By.className("sport_menu")).get(2).findElement(By.className("link"));
@@ -83,7 +85,9 @@ public class LeagueParser {
             try {
                 wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
                 Thread.sleep(1000);
-                driver.findElements(By.className(className)).get(index).click();
+                if (driver.findElements(By.className(className)).size() > 0) {
+                    driver.findElements(By.className(className)).get(index).click();
+                }
                 break;
             } catch (NoSuchElementException | StaleElementReferenceException | ElementClickInterceptedException e) {
                 System.out.println("Can't click, trying again...");

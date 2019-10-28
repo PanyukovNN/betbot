@@ -2,6 +2,7 @@ package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -29,11 +30,14 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private WebDriverWait wait;
 
-    private String league;
+    private String leagueLink;
 
-    public CallableGameParser(DriverManager driverManager, String league) {
+    private Day day;
+
+    public CallableGameParser(DriverManager driverManager, String leagueLink, Day day) {
         this.driverManager = driverManager;
-        this.league = league;
+        this.leagueLink = leagueLink;
+        this.day = day;
     }
 
     /**
@@ -52,13 +56,13 @@ public class CallableGameParser implements Callable<List<Game>> {
     }
 
     private List<Game> processGameParsing(WebDriver driver) {
-        driver.navigate().to(String.format("https://1xstavka.ru/%s", league));
+        driver.navigate().to(String.format("https://1xstavka.ru/%s", leagueLink));
         wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
         Document document = Jsoup.parse(driver.getPageSource());
         List<Game> games = new ArrayList<>();
         String leagueName = document.select("a.c-events__liga").text();
         Elements gameElements = document.select("div.c-events__item_game");
-        int nextDay = Calendar.getInstance().get(Calendar.DATE) + 1;
+        int nextDay = Calendar.getInstance().get(Calendar.DATE) + day.INDEX;
         for (Element gameElement : gameElements) {
             LocalDateTime dateTime = processDate(gameElement);
             if (nextDay > dateTime.getDayOfMonth()) {
@@ -78,7 +82,7 @@ public class CallableGameParser implements Callable<List<Game>> {
             String secondWin = coefficients.get(2).text();
             String firstWinOrTie = coefficients.get(3).text();
             String secondWinOrTie = coefficients.get(5).text();
-            Game game = new Game(leagueName, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, league);
+            Game game = new Game(leagueName, leagueLink, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie);
             games.add(game);
         }
         ConsoleLogger.logLeagueGame();

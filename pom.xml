@@ -15,10 +15,11 @@
         <selenium.version>3.141.59</selenium.version>
         <maven-dependency-plugin.version>2.4</maven-dependency-plugin.version>
         <maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
-
+        <ibatis-sqlmap.version>2.3.4.726</ibatis-sqlmap.version>
         <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
         <main-class-path>com.zylex.betbot.Main</main-class-path>
         <slf4j.version>1.7.5</slf4j.version>
+        <webdrivermanager.version>3.7.1</webdrivermanager.version>
     </properties>
 
     <dependencies>
@@ -30,7 +31,7 @@
         <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
-            <version>3.7.1</version>
+            <version>${webdrivermanager.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -41,6 +42,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ibatis</groupId>
+            <artifactId>ibatis-sqlmap</artifactId>
+            <version>${ibatis-sqlmap.version}</version>
         </dependency>
     </dependencies>
 

@@ -69,6 +69,7 @@ public class DriverManager {
      * Quit all drivers.
      */
     public void quitDrivers() {
+        ConsoleLogger.threads = 0;
         drivers.forEach(WebDriver::quit);
     }
 }
