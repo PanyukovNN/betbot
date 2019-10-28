@@ -7,9 +7,9 @@ public enum BetCoefficient {
     FIRST_WIN_OR_TIE(3),
     SECOND_WIN_OR_TIE(5);
 
-    public final int index;
+    public final int INDEX;
 
-    private BetCoefficient(int index) {
-        this.index = index;
+    private BetCoefficient(int INDEX) {
+        this.INDEX = INDEX;
     }
 }

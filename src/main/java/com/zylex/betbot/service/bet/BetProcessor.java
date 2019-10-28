@@ -61,7 +61,7 @@ public class BetProcessor {
         for (Game game : eligibleGames) {
             List<WebElement> coefficients = getGameCoefficients(game);
             if (coefficients.size() > 0) {
-                coefficients.get(betCoefficient.index).click();
+                coefficients.get(betCoefficient.INDEX).click();
                 double amount = calculateAmount(eligibleGames.size());
                 singleBet(amount, mock);
                 ConsoleLogger.writeInLine(String.format("\n%d) A bet for %s rub. has been placed on %s for: %s",

@@ -1,6 +1,5 @@
 package com.zylex.betbot.controller;
 
-import com.ibatis.common.jdbc.ScriptRunner;
 import com.zylex.betbot.exception.RepositoryException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
@@ -8,16 +7,15 @@ import com.zylex.betbot.service.Day;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Process saving games into file.
@@ -31,24 +29,29 @@ public class Repository {
 
     private String dirName;
 
+    private Connection connection;
+
     public Repository(Day day) {
         createDirectory(day);
     }
 
-    @SuppressWarnings("ConstantConditions")
-    public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException {
-        Logger.getLogger("org.mybatis").setLevel(Level.OFF);
-        final String user = "postgres";
-        final String password = "postgres";
-        final String url = "jdbc:postgresql://localhost:5432/myscore";
-        Class.forName("org.postgresql.Driver");
-        try (Connection connection = java.sql.DriverManager.getConnection(url, user, password)) {
-            ScriptRunner scriptRunner = new ScriptRunner(connection, false, true);
-            scriptRunner.setLogWriter(null);
-            File dbFile = new File(Repository.class.getClassLoader().getResource("oneXBetDB.sql").getFile());
-            Reader reader = new BufferedReader(new FileReader(dbFile));
-            scriptRunner.runScript(reader);
-            System.out.println("I've got db connection");
+    public void save(Game game) {
+        try (PreparedStatement statement = connection.prepareStatement(SQLGame.INSERT.QUERY)) {
+            statement.setString(1, game.getLeague());
+            statement.setString(2, game.getLeagueLink());
+            statement.setTimestamp(3, Timestamp.valueOf(game.getDateTime()));
+            statement.setString(4, game.getFirstTeam());
+            statement.setString(5, game.getSecondTeam());
+            statement.setDouble(6, Double.parseDouble(game.getFirstWin()));
+            statement.setDouble(7, Double.parseDouble(game.getTie()));
+            statement.setDouble(8, Double.parseDouble(game.getSecondWin()));
+            statement.setDouble(9, Double.parseDouble(game.getFirstWinOrTie()));
+            statement.setDouble(10, Double.parseDouble(game.getSecondWinOrTie()));
+            statement.setObject(11, null);
+            statement.setTimestamp(12, Timestamp.valueOf(LocalDateTime.now()));
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RepositoryException(e.getMessage(), e);
         }
     }
 
@@ -124,6 +127,17 @@ public class Repository {
                     .replace('.', ',');
         } catch (NumberFormatException e) {
             return value;
+        }
+    }
+
+    enum SQLGame {
+        INSERT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win," +
+                "first_win_or_tie, second_win_or_tie, result, recording_time) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))");
+
+        String QUERY;
+
+        SQLGame(String QUERY) {
+            this.QUERY = QUERY;
         }
     }
 }

@@ -82,7 +82,16 @@ public class CallableGameParser implements Callable<List<Game>> {
             String secondWin = coefficients.get(2).text();
             String firstWinOrTie = coefficients.get(3).text();
             String secondWinOrTie = coefficients.get(5).text();
-            Game game = new Game(leagueName, leagueLink, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie);
+            Game game = new Game(leagueName,
+                    String.format("https://1xstavka.ru/%s", leagueLink),
+                    dateTime,
+                    firstTeam,
+                    secondTeam,
+                    firstWin,
+                    tie,
+                    secondWin,
+                    firstWinOrTie,
+                    secondWinOrTie);
             games.add(game);
         }
         ConsoleLogger.logLeagueGame();
