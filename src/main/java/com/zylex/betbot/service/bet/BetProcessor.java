@@ -1,45 +1,60 @@
 package com.zylex.betbot.service.bet;
 
 import com.zylex.betbot.controller.ConsoleLogger;
+import com.zylex.betbot.controller.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.EligibleGameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.DriverManager;
 import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class BetProcessor {
 
-    private DriverManager driverManager = new DriverManager();
+    private DriverManager driverManager;
 
     private WebDriver driver;
 
     private WebDriverWait wait;
 
+    public BetProcessor(DriverManager driverManager) {
+        this.driverManager = driverManager;
+    }
+
     public void process(EligibleGameContainer gameContainer, boolean mock) {
         try {
-            driverManager.initiateDrivers(1, false);
-            driver = driverManager.getDriver();
-            wait = new WebDriverWait(driver, 2);
-            driver.navigate().to("https://1xstavka.ru/");
+            ConsoleLogger.startLogMessage(LogType.BET, null);
+            driverInit();
             logIn();
-            makeBets(gameContainer, mock);
+            processBets(gameContainer, mock);
             logOut();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         } finally {
             driverManager.addDriverToQueue(driver);
             driverManager.quitDrivers();
         }
+    }
+
+    private void driverInit() {
+        driver = driverManager.getDriver();
+        driver.quit();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--window-size=1980,1020");
+        driver = new ChromeDriver(options);
+        wait = new WebDriverWait(driver, 10);
+        driver.navigate().to("https://1xstavka.ru/");
     }
 
     private void logIn() throws IOException, InterruptedException {
@@ -52,32 +67,36 @@ public class BetProcessor {
             authenticationForm.get(1).sendKeys(property.getProperty("oneXBet.password"));
             driver.findElement(By.className("auth-button")).click();
             waitPageLoading(2000);
+            ConsoleLogger.writeInLine("\nLog in.");
         }
     }
 
-    private void makeBets(EligibleGameContainer gameContainer, boolean mock) throws InterruptedException {
+    private void processBets(EligibleGameContainer gameContainer, boolean mock) throws InterruptedException {
+        ConsoleLogger.writeInLine("\nProcessing bets:");
         BetCoefficient betCoefficient = gameContainer.getBetCoefficient();
         List<Game> eligibleGames = gameContainer.getEligibleGames();
+        double totalMoney = Double.parseDouble(driver.findElement(By.className("top-b-acc__amount")).getText());
+        int singleBetAmount = calculateAmount(totalMoney);
+        double availableBalance = totalMoney;
         for (Game game : eligibleGames) {
+            if (availableBalance < singleBetAmount) {
+                ConsoleLogger.writeInLine("\nMoney is over.");
+                break;
+            }
             List<WebElement> coefficients = getGameCoefficients(game);
             if (coefficients.size() > 0) {
                 coefficients.get(betCoefficient.INDEX).click();
-                double amount = calculateAmount(eligibleGames.size());
-                singleBet(amount, mock);
-                ConsoleLogger.writeInLine(String.format("\n%d) A bet for %s rub. has been placed on %s for: %s",
-                        eligibleGames.indexOf(game) + 1,
-                        new DecimalFormat("#.00").format(amount).replace(",", "."),
-                        betCoefficient,
-                        game));
+                singleBet(singleBetAmount, mock);
+                availableBalance -= singleBetAmount;
+                ConsoleLogger.logBet(eligibleGames.indexOf(game) + 1, singleBetAmount, betCoefficient, game);
             }
         }
+        ConsoleLogger.writeInLine("\nBets are made successfully.");
     }
 
-    private int calculateAmount(int gameNumber) {
-        double totalMoney = Double.parseDouble(driver.findElement(By.className("top-b-acc__amount")).getText());
-        int singleBetMoney = (int) totalMoney / gameNumber;
-        int tenPercentBet = (int) totalMoney / 10;
-        return Math.max(Math.min(singleBetMoney, tenPercentBet), 20);
+    private int calculateAmount(double totalMoney) {
+        double singleBetMoney = totalMoney * 0.1d;
+        return (int) Math.max(singleBetMoney, 20);
     }
 
     private void singleBet(double amount, boolean mock) throws InterruptedException {
@@ -94,7 +113,7 @@ public class BetProcessor {
     }
 
     private List<WebElement> getGameCoefficients(Game game) throws InterruptedException {
-        driver.navigate().to(String.format("https://1xstavka.ru/%s", game.getLeagueLink()));
+        driver.navigate().to(game.getLeagueLink());
         waitPageLoading(500);
         List<WebElement> gameWebElements = driver.findElements(By.className("c-events__item_game"));
         for (WebElement gameWebElement : gameWebElements) {
@@ -125,12 +144,13 @@ public class BetProcessor {
     }
 
     private void logOut() throws InterruptedException {
-        waitPageLoading(2000);
-        WebElement lkWrap = driver.findElement(By.className("wrap_lk"));
+        waitPageLoading(3000);
+        WebElement lkWrap = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("wrap_lk")));
         Actions actions = new Actions(driver);
         actions.moveToElement(lkWrap).build().perform();
         driver.findElements(By.className("lk_header_options_item")).get(4).click();
         driver.findElement(By.className("swal2-confirm")).click();
+        ConsoleLogger.writeInLine("\nLog out.");
     }
 
     private void waitPageLoading(int millis) throws InterruptedException {

@@ -18,11 +18,14 @@ public class DriverManager {
 
     private Queue<WebDriver> drivers = new ConcurrentLinkedQueue<>();
 
-    /**
-     * Initiates chrome drivers in the amount of threads number, and puts them into threadsafe queue.
-     * @param threads - number of threads.
-     */
-    public void initiateDrivers(int threads, boolean headless) {
+    private final int threads;
+
+    public DriverManager(int threads, boolean headless) {
+        this.threads = threads;
+        initiateDrivers(headless);
+    }
+
+    private void initiateDrivers(boolean headless) {
         System.setProperty("webdriver.chrome.silentOutput", "true");
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
         WebDriverManager.chromedriver().version("77.0.3865.40").setup();
@@ -38,6 +41,10 @@ public class DriverManager {
             drivers.add(driver);
             ConsoleLogger.logDriver();
         }
+    }
+
+    public int getThreads() {
+        return threads;
     }
 
     /**
@@ -66,10 +73,18 @@ public class DriverManager {
     }
 
     /**
+     * Quit all drivers, but one.
+     */
+    public void quitDriversButOne() {
+        WebDriver driver = getDriver();
+        drivers.forEach(WebDriver::quit);
+        drivers.add(driver);
+    }
+
+    /**
      * Quit all drivers.
      */
     public void quitDrivers() {
-        ConsoleLogger.threads = 0;
         drivers.forEach(WebDriver::quit);
     }
 }

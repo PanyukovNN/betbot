@@ -2,10 +2,13 @@ package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.controller.LogType;
+import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.exception.ParseProcessorException;
+import com.zylex.betbot.model.EligibleGameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
+import com.zylex.betbot.service.bet.rule.Rule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,30 +23,35 @@ import java.util.concurrent.Future;
 public class ParseProcessor {
 
     /**
-     * Get links on leagues which include football matches for a next day,
-     * then from pull information about matches from every link, put it into
-     * list and return.
-     * @param threads - number of threads.
-     * @return - list of games.
+     * Get links on leagues which include football matches for a specified day,
+     * then pull information about matches from every link, put them into list,
+     * filter the list by specified Rule, and save all games and filtered games
+     * in separate files.
+     * @param driverManager - manager for web drivers.
+     * @param rule - rule for filter matches.
+     * @param day - specified day.
+     * @return - game container returned after filtering.
      */
-    public List<Game> process(int threads, Day day) {
-        DriverManager driverManager = new DriverManager();
-        driverManager.initiateDrivers(threads, true);
-        ExecutorService service = Executors.newFixedThreadPool(threads);
+    public EligibleGameContainer process(DriverManager driverManager, Rule rule, Day day, Repository repository, boolean fromFile) {
+        ExecutorService service = Executors.newFixedThreadPool(driverManager.getThreads());
         try {
+            if (fromFile) {
+                List<Game> games = repository.readGamesFromFile("all_matches_");
+                return rule.filter(games);
+            }
             ConsoleLogger.startLogMessage(LogType.LEAGUES, null);
             LeagueParser leagueParser = new LeagueParser(driverManager);
             List<String> leagueLinks = leagueParser.processLeagueParsing(day);
             ConsoleLogger.startLogMessage(LogType.GAMES, leagueLinks.size());
             List<Game> games = processGameParsing(service, driverManager, leagueLinks, day);
             ConsoleLogger.addTotalGames(games.size());
-            return games;
+            return rule.filter(games);
         } catch (InterruptedException | ExecutionException e) {
             throw new ParseProcessorException(e.getMessage(), e);
         } finally {
             service.shutdown();
-            driverManager.quitDrivers();
-            ConsoleLogger.totalSummarizing();
+            driverManager.quitDriversButOne();
+            ConsoleLogger.parsingSummarizing();
         }
     }
 

@@ -4,8 +4,8 @@ public enum BetCoefficient {
     FIRST_WIN(0),
     TIE(1),
     SECOND_WIN(2),
-    FIRST_WIN_OR_TIE(3),
-    SECOND_WIN_OR_TIE(5);
+    ONE_X(3),
+    X_TWO(5);
 
     public final int INDEX;
 

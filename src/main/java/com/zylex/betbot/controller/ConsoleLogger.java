@@ -1,8 +1,11 @@
 package com.zylex.betbot.controller;
 
+import com.zylex.betbot.model.BetCoefficient;
+import com.zylex.betbot.model.Game;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -18,7 +21,7 @@ public class ConsoleLogger {
 
     private static AtomicInteger processedLeagues = new AtomicInteger(0);
 
-    public static int threads;
+    private static int threads;
 
     private static int processedDrivers = 0;
 
@@ -36,6 +39,8 @@ public class ConsoleLogger {
             totalLeagues = arg;
             writeInLine(String.format("\nProcessing games: 0/%d (0.0%%)",
                     arg));
+        } else if (type == LogType.BET) {
+            threads = 0;
         }
     }
 
@@ -65,7 +70,15 @@ public class ConsoleLogger {
         }
     }
 
-    public static void totalSummarizing() {
+    public static void logBet(int index, int singleBetAmount, BetCoefficient betCoefficient, Game game) {
+        writeInLine(String.format("\n%d) %s rub. bet has been placed on %s for: %s",
+                index,
+                singleBetAmount,
+                betCoefficient,
+                game));
+    }
+
+    public static void parsingSummarizing() {
         writeInLine(String.format("\nTotal games: %d", totalGames.get()));
         writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
         writeLineSeparator();
@@ -83,6 +96,11 @@ public class ConsoleLogger {
         return (houres == 0 ? "" : houres + "h. ")
                 + minutes + " min. "
                 + seconds % 60 + " sec.";
+    }
+
+    public static void writeEligibleGamesNumber(int size) {
+        eligibleGames = size;
+        writeInLine("\nEligible games: " + eligibleGames);
     }
 
     public static void writeLineSeparator() {
