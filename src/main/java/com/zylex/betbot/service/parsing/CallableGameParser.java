@@ -19,6 +19,9 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+/**
+ * Thread for parsing one league link.
+ */
 @SuppressWarnings("WeakerAccess")
 public class CallableGameParser implements Callable<List<Game>> {
 

@@ -6,7 +6,7 @@ public enum Day {
     
     public final int INDEX;
     
-    private Day(int INDEX) {
+    Day(int INDEX) {
         this.INDEX = INDEX;
     }
 }

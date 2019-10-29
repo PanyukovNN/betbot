@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * Making bets.
+ */
 public class BetProcessor {
 
     private DriverManager driverManager;
@@ -32,6 +35,12 @@ public class BetProcessor {
         this.driverManager = driverManager;
     }
 
+    /**
+     * Log in on the site, go for every link and make a bet of calculated money amount
+     * and log out.
+     * @param gameContainer - value of bet coefficient and list of games, on which needed to bet.
+     * @param mock - for testing.
+     */
     public void process(EligibleGameContainer gameContainer, boolean mock) {
         try {
             ConsoleLogger.startLogMessage(LogType.BET, null);
