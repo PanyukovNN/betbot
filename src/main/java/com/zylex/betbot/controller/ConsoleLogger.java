@@ -108,7 +108,7 @@ public class ConsoleLogger {
     }
 
     public static void writeErrorMessage(String message) {
-        System.err.println(message);
+        System.err.print(message);
     }
 
     public static synchronized void writeInLine(String message) {

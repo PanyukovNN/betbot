@@ -14,16 +14,18 @@ import com.zylex.betbot.service.parsing.ParseProcessor;
 public class OneXBetBot {
 
     public static void main(String[] args) {
-        Day day = Day.TOMORROW;
         int threads = Integer.parseInt(args[0]);
+        Day day = Day.TOMORROW;
+        boolean fromFile = true;
+        boolean mock = true;
+
         DriverManager driverManager = new DriverManager(threads, true);
         ParseProcessor parseProcessor = new ParseProcessor();
         Repository repository = new Repository(day);
-        Rule rule = new RuleSaver(new firstWinSecretRule(), repository);
+        Rule rule = new RuleSaver(new oneXSecretRule(), repository);
         BetProcessor betProcessor = new BetProcessor(driverManager);
-
-        EligibleGameContainer gameContainer = parseProcessor.process(driverManager, rule, day, repository, false);
-        betProcessor.process(gameContainer, false);
+        EligibleGameContainer gameContainer = parseProcessor.process(driverManager, rule, day, repository, fromFile);
+        betProcessor.process(gameContainer, mock);
     }
 
     /*private static void connectDb() {

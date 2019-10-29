@@ -45,9 +45,10 @@ public class BetProcessor {
         try {
             ConsoleLogger.startLogMessage(LogType.BET, null);
             driverInit();
-            logIn();
-            processBets(gameContainer, mock);
-            logOut();
+            if (logIn()) {
+                processBets(gameContainer, mock);
+                logOut();
+            }
         } catch (IOException | InterruptedException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         } finally {
@@ -66,7 +67,7 @@ public class BetProcessor {
         driver.navigate().to("https://1xstavka.ru/");
     }
 
-    private void logIn() throws IOException, InterruptedException {
+    private boolean logIn() throws IOException, InterruptedException {
         try (FileInputStream inputStream = new FileInputStream("src/main/resources/oneXBetAuth.properties")) {
             Properties property = new Properties();
             property.load(inputStream);
@@ -76,7 +77,14 @@ public class BetProcessor {
             authenticationForm.get(1).sendKeys(property.getProperty("oneXBet.password"));
             driver.findElement(By.className("auth-button")).click();
             waitPageLoading(2000);
-            ConsoleLogger.writeInLine("\nLog in.");
+            String url = driver.getCurrentUrl();
+            if (!url.contains("accountverify")) {
+                ConsoleLogger.writeInLine("\nLog in.");
+                return true;
+            } else {
+                ConsoleLogger.writeErrorMessage("\nError: problem with authorization, need to verify.");
+                return false;
+            }
         }
     }
 
