@@ -1,8 +1,10 @@
 package com.zylex.betbot.controller;
 
 import com.zylex.betbot.exception.RepositoryException;
+import com.zylex.betbot.model.EligibleGameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
+import com.zylex.betbot.service.bet.rule.Rule;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +19,6 @@ import java.util.List;
 /**
  * Process saving games into file.
  */
-@SuppressWarnings("WeakerAccess")
 public class Repository {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
@@ -26,8 +27,13 @@ public class Repository {
 
     private static String dirName;
 
-    public Repository(Day day) {
-        createDirectory(day);
+    private Day day;
+
+    private Rule rule;
+
+    public Repository(Rule rule, Day day) {
+        this.rule = rule;
+        this.day = day;
     }
 
     /**
@@ -53,51 +59,55 @@ public class Repository {
     }
 
     /**
+     * Saves all games in "results" file.
+     */
+    public EligibleGameContainer processSaving() {
+        EligibleGameContainer gameContainer = rule.filter();
+        try {
+            createDirectory(day);
+            writeToFile("all_matches_", gameContainer.getAllGames());
+            writeToFile(String.format("eligible_matches_%s_", gameContainer.getBetCoefficient()),
+                    gameContainer.getEligibleGames());
+        } catch (IOException e) {
+            throw new RepositoryException(e.getMessage(), e);
+        }
+        return gameContainer;
+    }
+
+    /**
      * Creates directory for concrete day.
      * @param day - day for parsing.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void createDirectory(Day day) {
+    private void createDirectory(Day day) {
         LocalDate date = LocalDate.now().plusDays(day.INDEX);
         dirName = DIR_DATE_FORMATTER.format(date);
         new File("results").mkdir();
         new File("results/" + dirName).mkdir();
     }
 
-    /**
-     * Saves all games in "results" file.
-     * @param games - list of games.
-     */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void processSaving(List<Game> games, String fileName) {
-        try {
-            File file = new File(String.format("results/%s/%s.csv", dirName, fileName + dirName));
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-                writeToFile(games, writer);
-            }
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
+    private void writeToFile(String fileName, List<Game> games) throws IOException {
+        File file = new File(String.format("results/%s/%s.csv", dirName, fileName + dirName));
+        if (!file.exists()) {
+            file.createNewFile();
         }
-    }
-
-    private void writeToFile(List<Game> games, BufferedWriter writer) throws IOException {
-        final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
-        for (Game game : games) {
-            String line = String.format(GAME_FORMAT,
-                    game.getLeague(),
-                    game.getLeagueLink(),
-                    DATE_FORMATTER.format(game.getDateTime()),
-                    game.getFirstTeam(),
-                    game.getSecondTeam(),
-                    formatDouble(game.getFirstWin()),
-                    formatDouble(game.getTie()),
-                    formatDouble(game.getSecondWin()),
-                    formatDouble(game.getFirstWinOrTie()),
-                    formatDouble(game.getSecondWinOrTie())) + "\n";
-            writer.write(line);
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+            final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
+            for (Game game : games) {
+                String line = String.format(GAME_FORMAT,
+                        game.getLeague(),
+                        game.getLeagueLink(),
+                        DATE_FORMATTER.format(game.getDateTime()),
+                        game.getFirstTeam(),
+                        game.getSecondTeam(),
+                        formatDouble(game.getFirstWin()),
+                        formatDouble(game.getTie()),
+                        formatDouble(game.getSecondWin()),
+                        formatDouble(game.getFirstWinOrTie()),
+                        formatDouble(game.getSecondWinOrTie())) + "\n";
+                writer.write(line);
+            }
         }
     }
 

@@ -23,12 +23,11 @@ public class DriverManager {
 
     private final int threads;
 
-    public DriverManager(int threads, boolean headless) {
+    public DriverManager(int threads) {
         this.threads = threads;
-        initiateDrivers(headless);
     }
 
-    private void initiateDrivers(boolean headless) {
+    public void initiateDrivers(boolean headless) {
         System.setProperty("webdriver.chrome.silentOutput", "true");
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
         WebDriverManager.chromedriver().version("77.0.3865.40").setup();

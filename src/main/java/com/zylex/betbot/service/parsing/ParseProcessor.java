@@ -1,15 +1,12 @@
 package com.zylex.betbot.service.parsing;
 
-import com.zylex.betbot.OneXBetBot;
 import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.controller.LogType;
 import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.exception.ParseProcessorException;
-import com.zylex.betbot.model.EligibleGameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
-import com.zylex.betbot.service.bet.rule.Rule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,29 +20,39 @@ import java.util.concurrent.Future;
  */
 public class ParseProcessor {
 
+    private ExecutorService service;
+
+    private DriverManager driverManager;
+
+    private Day day;
+
+    public ParseProcessor(DriverManager driverManager, Day day) {
+        this.driverManager = driverManager;
+        this.day = day;
+    }
+
     /**
      * Get links on leagues which include football matches for a specified day,
      * then pull information about matches from every link, put them into list,
      * filter the list by specified Rule, and save all games and filtered games
      * in separate files.
-     * @param driverManager - manager for web drivers.
-     * @param rule - rule for filter matches.
-     * @return - game container returned after filtering.
+     * @return - list of games.
      */
-    public EligibleGameContainer process(DriverManager driverManager, Rule rule, boolean fromFile) {
-        ExecutorService service = Executors.newFixedThreadPool(driverManager.getThreads());
+    public List<Game> process(boolean fromFile) {
         try {
             if (fromFile) {
-                List<Game> games = Repository.readGamesFromFile("all_matches_");
-                return rule.filter(games);
+                System.out.println("Matches have read from file.");
+                return Repository.readGamesFromFile("all_matches_");
             }
+            driverManager.initiateDrivers(true);
+            service = Executors.newFixedThreadPool(driverManager.getThreads());
             ConsoleLogger.startLogMessage(LogType.LEAGUES, null);
             LeagueParser leagueParser = new LeagueParser(driverManager);
-            List<String> leagueLinks = leagueParser.processLeagueParsing(OneXBetBot.day);
+            List<String> leagueLinks = leagueParser.processLeagueParsing(day);
             ConsoleLogger.startLogMessage(LogType.GAMES, leagueLinks.size());
-            List<Game> games = processGameParsing(service, driverManager, leagueLinks, OneXBetBot.day);
+            List<Game> games = processGameParsing(service, driverManager, leagueLinks, day);
             ConsoleLogger.addTotalGames(games.size());
-            return rule.filter(games);
+            return games;
         } catch (InterruptedException | ExecutionException e) {
             throw new ParseProcessorException(e.getMessage(), e);
         } finally {

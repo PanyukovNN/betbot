@@ -8,8 +8,6 @@ import com.zylex.betbot.model.EligibleGameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.DriverManager;
 import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -31,11 +29,13 @@ public class BetProcessor {
 
     private WebDriverWait wait;
 
-    public BetProcessor(EligibleGameContainer gameContainer, boolean mock) {
-        process(gameContainer, mock);
+    private EligibleGameContainer gameContainer;
+
+    public BetProcessor(EligibleGameContainer gameContainer) {
+        this.gameContainer = gameContainer;
     }
 
-    private void process(EligibleGameContainer gameContainer, boolean mock) {
+    public void process(boolean mock) {
         try {
             ConsoleLogger.startLogMessage(LogType.BET, null);
             driverInit();
@@ -53,12 +53,9 @@ public class BetProcessor {
 
     private void driverInit() {
         System.out.println();
-        driverManager = new DriverManager(1, false);
+        driverManager = new DriverManager(1);
+        driverManager.initiateDrivers(false);
         driver = driverManager.getDriver();
-        driver.quit();
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--window-size=1980,1020");
-        driver = new ChromeDriver(options);
         wait = new WebDriverWait(driver, 10);
         driver.navigate().to("https://1xstavka.ru/");
     }

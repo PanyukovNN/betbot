@@ -5,13 +5,10 @@ import com.zylex.betbot.model.Game;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ConsoleLogger {
-
-    public static int eligibleGames = 0;
 
     private static int totalLeagues = 0;
 
@@ -82,7 +79,7 @@ public class ConsoleLogger {
         writeInLine(String.format("\nTotal games: %d", totalGames.get()));
         writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
         writeLineSeparator();
-        threads = 0;
+        processedDrivers = 0;
     }
 
     private static String computeTime(long startTime) {
@@ -100,11 +97,11 @@ public class ConsoleLogger {
     }
 
     public static void writeEligibleGamesNumber(int size) {
-        eligibleGames = size;
-        writeInLine("\nEligible games: " + eligibleGames);
+        writeInLine("\nEligible games: " + size);
+        writeLineSeparator();
     }
 
-    public static void writeLineSeparator() {
+    private static void writeLineSeparator() {
         writeInLine("\n" + StringUtils.repeat("-", 50));
     }
 
