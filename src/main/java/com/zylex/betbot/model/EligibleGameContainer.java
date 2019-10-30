@@ -1,31 +1,24 @@
 package com.zylex.betbot.model;
 
 import java.util.List;
+import java.util.Map;
 
 public class EligibleGameContainer {
 
-    private BetCoefficient betCoefficient;
-
     private List<Game> allGames;
 
-    private List<Game> eligibleGames;
+    private Map<BetCoefficient, List<Game>> eligibleGames;
 
-    public EligibleGameContainer(BetCoefficient betCoefficient, List<Game> allGames, List<Game> eligibleGames) {
-        this.betCoefficient = betCoefficient;
+    public EligibleGameContainer(List<Game> allGames, Map<BetCoefficient, List<Game>> eligibleGames) {
         this.allGames = allGames;
         this.eligibleGames = eligibleGames;
-    }
-
-    public BetCoefficient getBetCoefficient() {
-        return betCoefficient;
     }
 
     public List<Game> getAllGames() {
         return allGames;
     }
 
-    public List<Game> getEligibleGames() {
+    public Map<BetCoefficient, List<Game>> getEligibleGames() {
         return eligibleGames;
     }
-
 }

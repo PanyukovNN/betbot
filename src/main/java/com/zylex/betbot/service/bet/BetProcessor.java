@@ -31,8 +31,11 @@ public class BetProcessor {
 
     private EligibleGameContainer gameContainer;
 
-    public BetProcessor(EligibleGameContainer gameContainer) {
+    private BetCoefficient betCoefficient;
+
+    public BetProcessor(EligibleGameContainer gameContainer, BetCoefficient betCoefficient) {
         this.gameContainer = gameContainer;
+        this.betCoefficient = betCoefficient;
     }
 
     public void process(boolean mock) {
@@ -82,8 +85,7 @@ public class BetProcessor {
 
     private void processBets(EligibleGameContainer gameContainer, boolean mock) throws InterruptedException {
         ConsoleLogger.writeInLine("\nProcessing bets:");
-        BetCoefficient betCoefficient = gameContainer.getBetCoefficient();
-        List<Game> eligibleGames = gameContainer.getEligibleGames();
+        List<Game> eligibleGames = gameContainer.getEligibleGames().get(betCoefficient);
         double totalMoney = Double.parseDouble(driver.findElement(By.className("top-b-acc__amount")).getText());
         int singleBetAmount = calculateAmount(totalMoney);
         double availableBalance = totalMoney;

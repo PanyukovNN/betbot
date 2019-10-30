@@ -1,10 +1,12 @@
 package com.zylex.betbot;
 
 import com.zylex.betbot.controller.Repository;
+import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.*;
-import com.zylex.betbot.service.bet.rule.firstWinSecretRule;
+
+import com.zylex.betbot.service.bet.rule.RuleProcessor;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 
 public class OneXBetBot {
@@ -14,14 +16,15 @@ public class OneXBetBot {
         Day day = Day.TOMORROW;
         new BetProcessor(
             new Repository(
-                new firstWinSecretRule(
+                new RuleProcessor(
                     new ParseProcessor(
                         new DriverManager(threads),
                         day
                     )
                 ),
                 day
-            ).processSaving()
+            ).processSaving(),
+            BetCoefficient.FIRST_WIN
         ).process(true);
     }
 }

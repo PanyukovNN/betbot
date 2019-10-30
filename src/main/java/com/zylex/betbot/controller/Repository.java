@@ -1,10 +1,11 @@
 package com.zylex.betbot.controller;
 
 import com.zylex.betbot.exception.RepositoryException;
+import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.EligibleGameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
-import com.zylex.betbot.service.bet.rule.Rule;
+import com.zylex.betbot.service.bet.rule.RuleProcessor;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -29,10 +30,10 @@ public class Repository {
 
     private Day day;
 
-    private Rule rule;
+    private RuleProcessor ruleProcessor;
 
-    public Repository(Rule rule, Day day) {
-        this.rule = rule;
+    public Repository(RuleProcessor ruleProcessor, Day day) {
+        this.ruleProcessor = ruleProcessor;
         this.day = day;
     }
 
@@ -59,15 +60,16 @@ public class Repository {
     }
 
     /**
-     * Saves all games in "results" file.
+     * Saves all games in "all_matches" file,
+     * saves lists of eligible games in separated files.
      */
     public EligibleGameContainer processSaving() {
-        EligibleGameContainer gameContainer = rule.filter();
+        EligibleGameContainer gameContainer = ruleProcessor.process();
         try {
             createDirectory(day);
             writeToFile("all_matches_", gameContainer.getAllGames());
-            writeToFile(String.format("eligible_matches_%s_", gameContainer.getBetCoefficient()),
-                    gameContainer.getEligibleGames());
+            writeToFile("eligible_matches_FIRST_WIN_", gameContainer.getEligibleGames().get(BetCoefficient.FIRST_WIN));
+            writeToFile("eligible_matches_ONE_X_", gameContainer.getEligibleGames().get(BetCoefficient.ONE_X));
         } catch (IOException e) {
             throw new RepositoryException(e.getMessage(), e);
         }
