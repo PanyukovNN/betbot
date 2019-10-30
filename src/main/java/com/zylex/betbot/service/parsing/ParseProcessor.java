@@ -1,5 +1,6 @@
 package com.zylex.betbot.service.parsing;
 
+import com.zylex.betbot.OneXBetBot;
 import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.controller.LogType;
 import com.zylex.betbot.controller.Repository;
@@ -29,28 +30,27 @@ public class ParseProcessor {
      * in separate files.
      * @param driverManager - manager for web drivers.
      * @param rule - rule for filter matches.
-     * @param day - specified day.
      * @return - game container returned after filtering.
      */
-    public EligibleGameContainer process(DriverManager driverManager, Rule rule, Day day, Repository repository, boolean fromFile) {
+    public EligibleGameContainer process(DriverManager driverManager, Rule rule, boolean fromFile) {
         ExecutorService service = Executors.newFixedThreadPool(driverManager.getThreads());
         try {
             if (fromFile) {
-                List<Game> games = repository.readGamesFromFile("all_matches_");
+                List<Game> games = Repository.readGamesFromFile("all_matches_");
                 return rule.filter(games);
             }
             ConsoleLogger.startLogMessage(LogType.LEAGUES, null);
             LeagueParser leagueParser = new LeagueParser(driverManager);
-            List<String> leagueLinks = leagueParser.processLeagueParsing(day);
+            List<String> leagueLinks = leagueParser.processLeagueParsing(OneXBetBot.day);
             ConsoleLogger.startLogMessage(LogType.GAMES, leagueLinks.size());
-            List<Game> games = processGameParsing(service, driverManager, leagueLinks, day);
+            List<Game> games = processGameParsing(service, driverManager, leagueLinks, OneXBetBot.day);
             ConsoleLogger.addTotalGames(games.size());
             return rule.filter(games);
         } catch (InterruptedException | ExecutionException e) {
             throw new ParseProcessorException(e.getMessage(), e);
         } finally {
             service.shutdown();
-            driverManager.quitDriversButOne();
+            driverManager.quitDrivers();
             ConsoleLogger.parsingSummarizing();
         }
     }

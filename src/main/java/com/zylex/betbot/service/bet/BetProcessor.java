@@ -31,17 +31,11 @@ public class BetProcessor {
 
     private WebDriverWait wait;
 
-    public BetProcessor(DriverManager driverManager) {
-        this.driverManager = driverManager;
+    public BetProcessor(EligibleGameContainer gameContainer, boolean mock) {
+        process(gameContainer, mock);
     }
 
-    /**
-     * Log in on the site, go for every link and make a bet of calculated money amount
-     * and log out.
-     * @param gameContainer - value of bet coefficient and list of games, on which needed to bet.
-     * @param mock - for testing.
-     */
-    public void process(EligibleGameContainer gameContainer, boolean mock) {
+    private void process(EligibleGameContainer gameContainer, boolean mock) {
         try {
             ConsoleLogger.startLogMessage(LogType.BET, null);
             driverInit();
@@ -58,6 +52,8 @@ public class BetProcessor {
     }
 
     private void driverInit() {
+        System.out.println();
+        driverManager = new DriverManager(1, false);
         driver = driverManager.getDriver();
         driver.quit();
         ChromeOptions options = new ChromeOptions();
@@ -78,13 +74,12 @@ public class BetProcessor {
             driver.findElement(By.className("auth-button")).click();
             waitPageLoading(2000);
             String url = driver.getCurrentUrl();
-            if (!url.contains("accountverify")) {
-                ConsoleLogger.writeInLine("\nLog in.");
-                return true;
-            } else {
+            if (url.contains("accountverify")) {
                 ConsoleLogger.writeErrorMessage("\nError: problem with authorization, need to verify.");
                 return false;
             }
+            ConsoleLogger.writeInLine("\nLog in.");
+            return true;
         }
     }
 
@@ -165,7 +160,9 @@ public class BetProcessor {
         WebElement lkWrap = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("wrap_lk")));
         Actions actions = new Actions(driver);
         actions.moveToElement(lkWrap).build().perform();
+        waitPageLoading(1000);
         driver.findElements(By.className("lk_header_options_item")).get(4).click();
+        waitPageLoading(1000);
         driver.findElement(By.className("swal2-confirm")).click();
         ConsoleLogger.writeInLine("\nLog out.");
     }

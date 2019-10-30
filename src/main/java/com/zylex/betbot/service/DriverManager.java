@@ -76,18 +76,10 @@ public class DriverManager {
     }
 
     /**
-     * Quit all drivers, but one.
-     */
-    public void quitDriversButOne() {
-        WebDriver driver = getDriver();
-        drivers.forEach(WebDriver::quit);
-        drivers.add(driver);
-    }
-
-    /**
      * Quit all drivers.
      */
     public void quitDrivers() {
         drivers.forEach(WebDriver::quit);
+        drivers.clear();
     }
 }

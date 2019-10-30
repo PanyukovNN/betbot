@@ -82,6 +82,7 @@ public class ConsoleLogger {
         writeInLine(String.format("\nTotal games: %d", totalGames.get()));
         writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
         writeLineSeparator();
+        threads = 0;
     }
 
     private static String computeTime(long startTime) {

@@ -7,15 +7,12 @@ import com.zylex.betbot.service.Day;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.sql.*;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * Process saving games into file.
@@ -23,39 +20,22 @@ import java.util.Set;
 @SuppressWarnings("WeakerAccess")
 public class Repository {
 
-    private final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
     private final DateTimeFormatter DIR_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    private String dirName;
-
-    private Connection connection;
+    private static String dirName;
 
     public Repository(Day day) {
         createDirectory(day);
     }
 
-    public void save(Game game) {
-        try (PreparedStatement statement = connection.prepareStatement(SQLGame.INSERT.QUERY)) {
-            statement.setString(1, game.getLeague());
-            statement.setString(2, game.getLeagueLink());
-            statement.setTimestamp(3, Timestamp.valueOf(game.getDateTime()));
-            statement.setString(4, game.getFirstTeam());
-            statement.setString(5, game.getSecondTeam());
-            statement.setDouble(6, Double.parseDouble(game.getFirstWin()));
-            statement.setDouble(7, Double.parseDouble(game.getTie()));
-            statement.setDouble(8, Double.parseDouble(game.getSecondWin()));
-            statement.setDouble(9, Double.parseDouble(game.getFirstWinOrTie()));
-            statement.setDouble(10, Double.parseDouble(game.getSecondWinOrTie()));
-            statement.setObject(11, null);
-            statement.setTimestamp(12, Timestamp.valueOf(LocalDateTime.now()));
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RepositoryException(e.getMessage(), e);
-        }
-    }
-
-    public List<Game> readGamesFromFile(String fileName) {
+    /**
+     * Reading all games from specified file, and return them.
+     * @param fileName - name of the file.
+     * @return - list of games.
+     */
+    public static List<Game> readGamesFromFile(String fileName) {
         try {
             File file = new File(String.format("results/%s/%s.csv", dirName, fileName + dirName));
             List<String> lines = Files.readAllLines(file.toPath());
@@ -127,17 +107,6 @@ public class Repository {
                     .replace('.', ',');
         } catch (NumberFormatException e) {
             return value;
-        }
-    }
-
-    enum SQLGame {
-        INSERT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win," +
-                "first_win_or_tie, second_win_or_tie, result, recording_time) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))");
-
-        String QUERY;
-
-        SQLGame(String QUERY) {
-            this.QUERY = QUERY;
         }
     }
 }
