@@ -2,7 +2,6 @@ package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.controller.LogType;
-import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.exception.ParseProcessorException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
@@ -38,12 +37,8 @@ public class ParseProcessor {
      * in separate files.
      * @return - list of games.
      */
-    public List<Game> process(boolean fromFile) {
+    public List<Game> process() {
         try {
-            if (fromFile) {
-                System.out.println("Matches have read from file.");
-                return Repository.readGamesFromFile("all_matches_");
-            }
             driverManager.initiateDrivers(true);
             service = Executors.newFixedThreadPool(driverManager.getThreads());
             ConsoleLogger.startLogMessage(LogType.LEAGUES, null);

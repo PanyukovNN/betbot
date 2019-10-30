@@ -4,7 +4,7 @@ import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.controller.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.BetCoefficient;
-import com.zylex.betbot.model.EligibleGameContainer;
+import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.DriverManager;
 import org.openqa.selenium.*;
@@ -29,15 +29,20 @@ public class BetProcessor {
 
     private WebDriverWait wait;
 
-    private EligibleGameContainer gameContainer;
+    private GameContainer gameContainer;
 
     private BetCoefficient betCoefficient;
 
-    public BetProcessor(EligibleGameContainer gameContainer, BetCoefficient betCoefficient) {
+    public BetProcessor(GameContainer gameContainer, BetCoefficient betCoefficient) {
         this.gameContainer = gameContainer;
         this.betCoefficient = betCoefficient;
     }
 
+    /**
+     * Initiates one non-headless chrome driver, navigates to site,
+     * logs in, makes bets and log out.
+     * @param mock - flag for doing mock bets.
+     */
     public void process(boolean mock) {
         try {
             ConsoleLogger.startLogMessage(LogType.BET, null);
@@ -83,7 +88,7 @@ public class BetProcessor {
         }
     }
 
-    private void processBets(EligibleGameContainer gameContainer, boolean mock) throws InterruptedException {
+    private void processBets(GameContainer gameContainer, boolean mock) throws InterruptedException {
         ConsoleLogger.writeInLine("\nProcessing bets:");
         List<Game> eligibleGames = gameContainer.getEligibleGames().get(betCoefficient);
         double totalMoney = Double.parseDouble(driver.findElement(By.className("top-b-acc__amount")).getText());

@@ -29,10 +29,6 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private DriverManager driverManager;
 
-    private WebDriver driver;
-
-    private WebDriverWait wait;
-
     private String leagueLink;
 
     private Day day;
@@ -44,14 +40,13 @@ public class CallableGameParser implements Callable<List<Game>> {
     }
 
     /**
-     * Processes parsing of one league and returns its games in list.
+     * Processes parsing of one league.
      * @return - list of games.
      */
     @Override
     public List<Game> call() {
+        WebDriver driver = driverManager.getDriver();
         try {
-            driver = driverManager.getDriver();
-            wait = new WebDriverWait(driver, 2);
             return processGameParsing(driver);
         } finally {
             driverManager.addDriverToQueue(driver);
@@ -60,17 +55,22 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private List<Game> processGameParsing(WebDriver driver) {
         driver.navigate().to(String.format("https://1xstavka.ru/%s", leagueLink));
+        WebDriverWait wait = new WebDriverWait(driver, 2);
         wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
         Document document = Jsoup.parse(driver.getPageSource());
+        return parseGames(document);
+    }
+
+    private List<Game> parseGames(Document document) {
         List<Game> games = new ArrayList<>();
         String leagueName = document.select("a.c-events__liga").text();
         Elements gameElements = document.select("div.c-events__item_game");
-        int nextDay = Calendar.getInstance().get(Calendar.DATE) + day.INDEX;
+        int currentDay = Calendar.getInstance().get(Calendar.DATE) + day.INDEX;
         for (Element gameElement : gameElements) {
             LocalDateTime dateTime = processDate(gameElement);
-            if (nextDay > dateTime.getDayOfMonth()) {
+            if (currentDay > dateTime.getDayOfMonth()) {
                 continue;
-            } else if (nextDay < dateTime.getDayOfMonth()) {
+            } else if (currentDay < dateTime.getDayOfMonth()) {
                 break;
             }
             Elements teams = gameElement.select("span.c-events__team");

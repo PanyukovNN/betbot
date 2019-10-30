@@ -1,5 +1,8 @@
 package com.zylex.betbot.model;
 
+/**
+ * Specifies the coefficient for betting.
+ */
 @SuppressWarnings("unused")
 public enum BetCoefficient {
     FIRST_WIN(0, 0.1d),
@@ -10,7 +13,7 @@ public enum BetCoefficient {
 
     public final int INDEX;
 
-    public final double PERCENT;
+    public double PERCENT;
 
     BetCoefficient(int INDEX, double PERCENT) {
         this.INDEX = INDEX;

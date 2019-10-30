@@ -2,20 +2,18 @@ package com.zylex.betbot.controller;
 
 import com.zylex.betbot.exception.RepositoryException;
 import com.zylex.betbot.model.BetCoefficient;
-import com.zylex.betbot.model.EligibleGameContainer;
+import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.bet.rule.RuleProcessor;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Process saving games into file.
@@ -26,7 +24,7 @@ public class Repository {
 
     private final DateTimeFormatter DIR_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    private static String dirName;
+    private String dirName;
 
     private Day day;
 
@@ -38,38 +36,16 @@ public class Repository {
     }
 
     /**
-     * Reading all games from specified file, and return them.
-     * @param fileName - name of the file.
-     * @return - list of games.
+     * Saves all lists of games from GameContainer into separate files.
      */
-    public static List<Game> readGamesFromFile(String fileName) {
-        try {
-            File file = new File(String.format("results/%s/%s.csv", dirName, fileName + dirName));
-            List<String> lines = Files.readAllLines(file.toPath());
-            List<Game> games = new ArrayList<>();
-            for (String line : lines) {
-                String[] fields = line.replace(",", ".").split(";");
-                Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
-                        fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10]);
-                games.add(game);
-            }
-            return games;
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Saves all games in "all_matches" file,
-     * saves lists of eligible games in separated files.
-     */
-    public EligibleGameContainer processSaving() {
-        EligibleGameContainer gameContainer = ruleProcessor.process();
+    public GameContainer processSaving() {
+        GameContainer gameContainer = ruleProcessor.process();
         try {
             createDirectory(day);
             writeToFile("all_matches_", gameContainer.getAllGames());
-            writeToFile("eligible_matches_FIRST_WIN_", gameContainer.getEligibleGames().get(BetCoefficient.FIRST_WIN));
-            writeToFile("eligible_matches_ONE_X_", gameContainer.getEligibleGames().get(BetCoefficient.ONE_X));
+            for (Map.Entry<BetCoefficient, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
+                writeToFile(String.format("matches_%s_", entry.getKey()), entry.getValue());
+            }
         } catch (IOException e) {
             throw new RepositoryException(e.getMessage(), e);
         }

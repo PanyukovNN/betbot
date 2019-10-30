@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Parsing football leagues links, which includes game for a next day on 1xStavka.ru
+ * Parsing football leagues links, which includes game for a next day on site.
  */
 @SuppressWarnings("WeakerAccess")
 public class LeagueParser {
@@ -31,8 +31,8 @@ public class LeagueParser {
     }
 
     /**
-     * Get links on leagues which include football matches for a next day from 1xStavka.ru,
-     * put into list and return.
+     * Gets links on leagues which include football matches for a specified day from site,
+     * puts them into list and return.
      * @param day - what day to parse.
      * @return - list of links.
      */
@@ -74,10 +74,8 @@ public class LeagueParser {
         guaranteedClick("chosen-container",1);
         guaranteedClick("active-result",1 + day.INDEX);
         guaranteedClick("ls-filter__btn",0);
-
         WebElement sprotMenuElement = driver.findElements(By.className("sport_menu")).get(2).findElement(By.className("link"));
-        JavascriptExecutor executor = (JavascriptExecutor) driver;
-        executor.executeScript("arguments[0].click();", sprotMenuElement);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", sprotMenuElement);
     }
 
     private void guaranteedClick(String className, int index) throws InterruptedException {
@@ -90,7 +88,7 @@ public class LeagueParser {
                 }
                 break;
             } catch (NoSuchElementException | StaleElementReferenceException | ElementClickInterceptedException e) {
-                System.out.println("Can't click, trying again...");
+//                System.out.println("Can't click, trying again...");
             }
         }
     }

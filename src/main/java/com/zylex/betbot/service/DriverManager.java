@@ -27,6 +27,10 @@ public class DriverManager {
         this.threads = threads;
     }
 
+    /**
+     * Initiate chrome drivers.
+     * @param headless - flag for running chrome drivers in headless mode.
+     */
     public void initiateDrivers(boolean headless) {
         System.setProperty("webdriver.chrome.silentOutput", "true");
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
