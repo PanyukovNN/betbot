@@ -106,7 +106,7 @@ public class BetProcessor {
     }
 
     private int calculateAmount(double totalMoney) {
-        double singleBetMoney = totalMoney * 0.1d;
+        double singleBetMoney = totalMoney * betCoefficient.PERCENT;
         return (int) Math.max(singleBetMoney, 20);
     }
 
