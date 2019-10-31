@@ -12,10 +12,10 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -68,7 +68,7 @@ public class CallableGameParser implements Callable<List<Game>> {
         List<Game> games = new ArrayList<>();
         String leagueName = document.select("a.c-events__liga").text();
         Elements gameElements = document.select("div.c-events__item_game");
-        int currentDay = Calendar.getInstance().get(Calendar.DATE) + day.INDEX;
+        int currentDay = LocalDate.now().plusDays(day.INDEX).getDayOfMonth();
         for (Element gameElement : gameElements) {
             LocalDateTime dateTime = processDate(gameElement);
             if (currentDay > dateTime.getDayOfMonth()) {
@@ -106,7 +106,7 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private LocalDateTime processDate(Element gameElement) {
         String time = gameElement.select("div.c-events__time > span").text();
-        String year = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
+        String year = String.valueOf(LocalDate.now().getYear());
         time = time.replace(" ", String.format(".%s ", year)).substring(0, 16);
         return LocalDateTime.parse(time, FORMATTER);
     }

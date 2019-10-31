@@ -9,6 +9,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.File;
@@ -45,44 +46,28 @@ public class LeagueParser {
     public List<String> processLeagueParsing(Day day) {
         try {
             driver = driverManager.getDriver();
-            wait = new WebDriverWait(driver, 60);
+            wait = new WebDriverWait(driver, 10);
             driver.navigate().to("https://1xstavka.ru/line/Football/");
             dayFilterClicks(day);
             return parseLeagueLinks();
-        } catch (InterruptedException | IOException e) {
+        } catch (IOException e) {
             throw new LeagueParserException(e.getMessage(), e);
         } finally {
             driverManager.addDriverToQueue(driver);
         }
     }
 
-    private void dayFilterClicks(Day day) throws InterruptedException {
-        guaranteedClick("ls-filter__name",1);
-        guaranteedClick("chosen-container",1);
-        guaranteedClick("active-result",1 + day.INDEX);
-        guaranteedClick("ls-filter__btn",0);
-        WebElement sprotMenuElement = driver.findElements(By.className("sport_menu")).get(2).findElement(By.className("link"));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", sprotMenuElement);
+    private void dayFilterClicks(Day day) {
+        waitElementsAndGet("ls-filter__name").get(1).click();
+        waitElementsAndGet("chosen-container").get(1).click();
+        waitElementsAndGet("active-result").get(1 + day.INDEX).click();
+        waitElementsAndGet("ls-filter__btn").get(0).click();
+        WebElement sportMenuElement = waitElementsAndGet("sport_menu").get(2).findElement(By.className("link"));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", sportMenuElement);
     }
 
-    private void guaranteedClick(String className, int index) throws InterruptedException {
-        while (true) {
-            try {
-                wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-                Thread.sleep(1000);
-                if (driver.findElements(By.className(className)).size() > 0) {
-                    driver.findElements(By.className(className)).get(index).click();
-                }
-                break;
-            } catch (NoSuchElementException | StaleElementReferenceException | ElementClickInterceptedException e) {
-//                System.out.println("Can't click, trying again...");
-            }
-        }
-    }
-
-    private List<String> parseLeagueLinks() throws InterruptedException, IOException {
-        wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-        Thread.sleep(2000);
+    private List<String> parseLeagueLinks() throws IOException {
+        waitElementsAndGet("link");
         String pageSource = driver.getPageSource();
         Document document = Jsoup.parse(pageSource);
         Elements leagueLinksElements = document.select("ul.liga_menu > li > a.link");
@@ -92,9 +77,10 @@ public class LeagueParser {
             if (checkLeagueLink(link)) {
                 leagueLinks.add(link);
             }
-
         }
         logger.logLeague();
+//        File file = new File("results/leagues.txt");
+//        Files.write(file.toPath(), leagueLinks);
         return leagueLinks;
     }
 
@@ -110,5 +96,11 @@ public class LeagueParser {
         return link.contains("Football")
                 && !link.contains("Special")
                 && !link.contains("Statistics");
+    }
+
+    private List<WebElement> waitElementsAndGet(String className) {
+        wait.ignoring(StaleElementReferenceException.class)
+                .until(ExpectedConditions.elementToBeClickable(By.className(className)));
+        return driver.findElements(By.className(className));
     }
 }

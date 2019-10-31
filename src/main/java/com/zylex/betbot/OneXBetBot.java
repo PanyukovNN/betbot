@@ -12,8 +12,8 @@ import com.zylex.betbot.service.parsing.ParseProcessor;
 public class OneXBetBot {
 
     public static void main(String[] args) {
-        int threads = 4;
-        Day day = Day.TODAY;
+        int threads = 6;
+        Day day = Day.TOMORROW;
         new BetProcessor(
             new Repository(
                 new RuleProcessor(
@@ -25,6 +25,6 @@ public class OneXBetBot {
                 day
             ).processSaving(),
             RuleNumber.ONE
-        ).process(true, true);
+        ).process(true, false);
     }
 }

@@ -41,7 +41,7 @@ public class ParseProcessor {
      */
     public List<Game> process() {
         try {
-            driverManager.initiateDrivers(true);
+            driverManager.initiateDrivers(false);
             service = Executors.newFixedThreadPool(driverManager.getThreads());
             logger.startLogMessage(LogType.LEAGUES, null);
             LeagueParser leagueParser = new LeagueParser(logger, driverManager);

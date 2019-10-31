@@ -15,6 +15,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -47,18 +48,19 @@ public class BetProcessor {
      * @param mock - flag for doing mock bets.
      */
     public void process(boolean mock, boolean doBets) {
-        if (!doBets) {
+        if (gameContainer.getEligibleGames().get(ruleNumber).size() > 0
+                && !doBets) {
             logger.betsMade(LogType.ERROR);
             return;
         }
         try {
             driverInit();
             logger.logRule(ruleNumber);
-            logger.startLogMessage(LogType.LOG_IN, null);
+            logger.startLogMessage(LogType.LOG_IN);
             if (logIn()) {
-                logger.startLogMessage(LogType.BET, null);
+                logger.startLogMessage(LogType.BET);
                 processBets(gameContainer, mock);
-                logger.startLogMessage(LogType.LOG_OUT, null);
+                logger.startLogMessage(LogType.LOG_OUT);
                 logOut();
             }
         } catch (IOException | InterruptedException | ElementNotInteractableException e) {
@@ -78,16 +80,15 @@ public class BetProcessor {
         driver.navigate().to("https://1xstavka.ru/");
     }
 
-    private boolean logIn() throws IOException, InterruptedException {
+    private boolean logIn() throws IOException {
         try (FileInputStream inputStream = new FileInputStream("src/main/resources/oneXBetAuth.properties")) {
             Properties property = new Properties();
             property.load(inputStream);
-            driver.findElement(By.className("base_auth_form")).click();
-            List<WebElement> authenticationForm = driver.findElements(By.className("c-input-material__input"));
+            waitSingleElementAndGet("base_auth_form").click();
+            List<WebElement> authenticationForm = waitElementsAndGet("c-input-material__input");
             authenticationForm.get(0).sendKeys(property.getProperty("oneXBet.login"));
             authenticationForm.get(1).sendKeys(property.getProperty("oneXBet.password"));
-            driver.findElement(By.className("auth-button")).click();
-            waitPageLoading(2000);
+            waitSingleElementAndGet("auth-button").click();
             String url = driver.getCurrentUrl();
             logger.logInLog(LogType.OK);
             if (url.contains("accountverify")) {
@@ -98,11 +99,10 @@ public class BetProcessor {
         }
     }
 
-    private void processBets(GameContainer gameContainer, boolean mock) throws InterruptedException {
-        waitPageLoading(1000);
+    private void processBets(GameContainer gameContainer, boolean mock) {
         List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
-        double totalMoney = Double.parseDouble(driver.findElement(By.className("top-b-acc__amount")).getText());
+        double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
         int singleBetAmount = calculateAmount(betCoefficient, totalMoney);
         double availableBalance = totalMoney;
         for (Game game : eligibleGames) {
@@ -126,23 +126,22 @@ public class BetProcessor {
         return (int) Math.max(singleBetMoney, 20);
     }
 
-    private void singleBet(double amount, boolean mock) throws InterruptedException {
+    private void singleBet(double amount, boolean mock) {
         driver.findElement(By.className("bet_sum_input")).sendKeys(String.valueOf(amount));
         if (!mock) {
-            WebElement betButton = driver.findElement(By.className("coupon-btn-group__item")).findElement(By.cssSelector("button"));
+            WebElement betButton = waitSingleElementAndGet("coupon-btn-group__item")
+                    .findElement(By.cssSelector("button"));
             JavascriptExecutor executor = (JavascriptExecutor) driver;
             executor.executeScript("arguments[0].click();", betButton);
-            waitPageLoading(1500);
-            WebElement okButton = driver.findElement(By.className("o-btn-group__item")).findElement(By.cssSelector("button"));
+            WebElement okButton = waitSingleElementAndGet("o-btn-group__item")
+                    .findElement(By.cssSelector("button"));
             executor.executeScript("arguments[0].click();", okButton);
-            waitPageLoading(500);
         }
     }
 
-    private List<WebElement> getGameCoefficients(Game game) throws InterruptedException {
+    private List<WebElement> getGameCoefficients(Game game) {
         driver.navigate().to(game.getLeagueLink());
-        waitPageLoading(500);
-        List<WebElement> gameWebElements = driver.findElements(By.className("c-events__item_game"));
+        List<WebElement> gameWebElements = waitElementsAndGet("c-events__item_game");
         for (WebElement gameWebElement : gameWebElements) {
             LocalDateTime dateTime = processDateTime(gameWebElement);
             if (!dateTime.equals(game.getDateTime())) {
@@ -165,25 +164,30 @@ public class BetProcessor {
         String dateTime = gameElement.findElement(By.className("c-events__time"))
                 .findElement(By.cssSelector("span"))
                 .getText();
-        String year = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
+        String year = String.valueOf(LocalDate.now().getYear());
         dateTime = dateTime.replace(" ", String.format(".%s ", year)).substring(0, 16);
         return LocalDateTime.parse(dateTime, dateTimeFormatter);
     }
 
     private void logOut() throws InterruptedException {
-        waitPageLoading(3000);
-        WebElement lkWrap = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("wrap_lk")));
+        WebElement lkWrap = waitSingleElementAndGet("wrap_lk");
         Actions actions = new Actions(driver);
         actions.moveToElement(lkWrap).build().perform();
-        waitPageLoading(1000);
-        driver.findElements(By.className("lk_header_options_item")).get(4).click();
-        waitPageLoading(1000);
-        driver.findElement(By.className("swal2-confirm")).click();
+        Thread.sleep(1000);
+        waitElementsAndGet("lk_header_options_item").get(4).click();
+        waitSingleElementAndGet("swal2-confirm").click();
         logger.logOutLog(LogType.OK);
     }
 
-    private void waitPageLoading(int millis) throws InterruptedException {
-        wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-        Thread.sleep(millis);
+    private List<WebElement> waitElementsAndGet(String className) {
+        wait.ignoring(StaleElementReferenceException.class)
+                .until(ExpectedConditions.elementToBeClickable(By.className(className)));
+        return driver.findElements(By.className(className));
+    }
+
+    private WebElement waitSingleElementAndGet(String className) {
+        wait.ignoring(StaleElementReferenceException.class)
+                .until(ExpectedConditions.elementToBeClickable(By.className(className)));
+        return driver.findElement(By.className(className));
     }
 }

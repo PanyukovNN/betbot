@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class BetConsoleLogger extends ConsoleLogger{
 
-    public synchronized void startLogMessage(LogType type, Integer arg) {
+    public synchronized void startLogMessage(LogType type) {
         if (type == LogType.BET) {
             writeInLine("\nProcessing bets:");
         } else if (type == LogType.LOG_IN) {
@@ -37,7 +37,8 @@ public class BetConsoleLogger extends ConsoleLogger{
 
     public void logInLog(LogType type) {
         if (type == LogType.OK) {
-            writeInLine(StringUtils.repeat("\b", 18) + "Logging in: complete");
+            String output = "Logging in: complete";
+            writeInLine(StringUtils.repeat("\b", output.length()) + output);
             writeLineSeparator();
         } else if (type == LogType.ERROR) {
             writeErrorMessage("\nError: problem with authorization, need to verify.");
@@ -60,7 +61,8 @@ public class BetConsoleLogger extends ConsoleLogger{
 
     public void betsMade(LogType type) {
         if (type == LogType.OK) {
-            writeInLine("\n\nBets are made successfully.");
+            writeLineSeparator();
+            writeInLine("\nBets are made successfully.");
         } else if (type == LogType.ERROR) {
             writeInLine("\nBets aren't made.");
         }

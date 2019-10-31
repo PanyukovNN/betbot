@@ -46,6 +46,8 @@ public class DriverManager {
             }
             WebDriver driver = new ChromeDriver(options);
             driver.manage().timeouts().pageLoadTimeout(600, TimeUnit.SECONDS);
+            driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+            driver.manage().timeouts().setScriptTimeout(10, TimeUnit.SECONDS);
             drivers.add(driver);
             logger.logDriver();
         }
