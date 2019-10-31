@@ -1,10 +1,10 @@
 package com.zylex.betbot.controller;
 
 import com.zylex.betbot.exception.RepositoryException;
-import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
+import com.zylex.betbot.service.bet.rule.RuleNumber;
 import com.zylex.betbot.service.bet.rule.RuleProcessor;
 
 import java.io.*;
@@ -43,8 +43,8 @@ public class Repository {
         try {
             createDirectory(day);
             writeToFile("all_matches_", gameContainer.getAllGames());
-            for (Map.Entry<BetCoefficient, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
-                writeToFile(String.format("matches_%s_", entry.getKey()), entry.getValue());
+            for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
+                writeToFile(String.format("matches_%s_", entry.getKey().betCoefficient), entry.getValue());
             }
         } catch (IOException e) {
             throw new RepositoryException(e.getMessage(), e);

@@ -7,6 +7,8 @@ import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.DriverManager;
+import com.zylex.betbot.service.bet.rule.RuleNumber;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -31,11 +33,11 @@ public class BetProcessor {
 
     private GameContainer gameContainer;
 
-    private BetCoefficient betCoefficient;
+    private RuleNumber ruleNumber;
 
-    public BetProcessor(GameContainer gameContainer, BetCoefficient betCoefficient) {
+    public BetProcessor(GameContainer gameContainer, RuleNumber ruleNumber) {
         this.gameContainer = gameContainer;
-        this.betCoefficient = betCoefficient;
+        this.ruleNumber = ruleNumber;
     }
 
     /**
@@ -43,13 +45,16 @@ public class BetProcessor {
      * logs in, makes bets and log out.
      * @param mock - flag for doing mock bets.
      */
-    public void process(boolean mock) {
+    public void process(boolean mock, boolean doBets) {
+        if (!doBets) {
+            ConsoleLogger.writeInLine("\nBets have not made.");
+            return;
+        }
         try {
-            ConsoleLogger.startLogMessage(LogType.BET, null);
             driverInit();
-            if (logIn()) {
+            if (logInDecorator()) {
                 processBets(gameContainer, mock);
-                logOut();
+                logOutDecorator();
             }
         } catch (IOException | InterruptedException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
@@ -57,6 +62,22 @@ public class BetProcessor {
             driverManager.addDriverToQueue(driver);
             driverManager.quitDrivers();
         }
+    }
+
+    private void logOutDecorator() throws InterruptedException {
+        ConsoleLogger.writeLineSeparator();
+        ConsoleLogger.writeInLine("\nLogging out: ...");
+        logOut();
+        ConsoleLogger.writeInLine(StringUtils.repeat("\b", 19) + "Logging out: complete\n");
+    }
+
+    private boolean logInDecorator() throws IOException, InterruptedException {
+        ConsoleLogger.startLogMessage(LogType.BET, ruleNumber);
+        ConsoleLogger.writeInLine("\nLogging in: ...");
+        boolean result = logIn();
+        ConsoleLogger.writeInLine(StringUtils.repeat("\b", 18) + "Logging in: complete");
+        ConsoleLogger.writeLineSeparator();
+        return result;
     }
 
     private void driverInit() {
@@ -83,16 +104,17 @@ public class BetProcessor {
                 ConsoleLogger.writeErrorMessage("\nError: problem with authorization, need to verify.");
                 return false;
             }
-            ConsoleLogger.writeInLine("\nLog in.");
             return true;
         }
     }
 
     private void processBets(GameContainer gameContainer, boolean mock) throws InterruptedException {
+        waitPageLoading(1000);
         ConsoleLogger.writeInLine("\nProcessing bets:");
-        List<Game> eligibleGames = gameContainer.getEligibleGames().get(betCoefficient);
+        List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
+        BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(driver.findElement(By.className("top-b-acc__amount")).getText());
-        int singleBetAmount = calculateAmount(totalMoney);
+        int singleBetAmount = calculateAmount(betCoefficient, totalMoney);
         double availableBalance = totalMoney;
         for (Game game : eligibleGames) {
             if (availableBalance < singleBetAmount) {
@@ -110,7 +132,7 @@ public class BetProcessor {
         ConsoleLogger.writeInLine("\nBets are made successfully.");
     }
 
-    private int calculateAmount(double totalMoney) {
+    private int calculateAmount(BetCoefficient betCoefficient, double totalMoney) {
         double singleBetMoney = totalMoney * betCoefficient.PERCENT;
         return (int) Math.max(singleBetMoney, 20);
     }
@@ -168,7 +190,6 @@ public class BetProcessor {
         driver.findElements(By.className("lk_header_options_item")).get(4).click();
         waitPageLoading(1000);
         driver.findElement(By.className("swal2-confirm")).click();
-        ConsoleLogger.writeInLine("\nLog out.");
     }
 
     private void waitPageLoading(int millis) throws InterruptedException {

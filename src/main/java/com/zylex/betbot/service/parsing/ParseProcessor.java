@@ -66,14 +66,9 @@ public class ParseProcessor {
             callableGameParsers.add(new CallableGameParser(driverManager, leagueLink, day));
         }
         List<Future<List<Game>>> futureGameParsers = service.invokeAll(callableGameParsers);
-        return convertFutureGames(futureGameParsers);
-    }
-
-    private List<Game> convertFutureGames(List<Future<List<Game>>> futureGameParsers) throws InterruptedException, ExecutionException {
         List<Game> games = new ArrayList<>();
         for (Future<List<Game>> gameList : futureGameParsers) {
-            List<Game> leagueGames = gameList.get();
-            games.addAll(leagueGames);
+            games.addAll(gameList.get());
         }
         return games;
     }

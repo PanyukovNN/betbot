@@ -2,9 +2,12 @@ package com.zylex.betbot.controller;
 
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.service.bet.rule.RuleNumber;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -26,18 +29,19 @@ public class ConsoleLogger {
         ConsoleLogger.totalGames.addAndGet(totalGames);
     }
 
-    public static synchronized void startLogMessage(LogType type, Integer arg) {
+    public static synchronized void startLogMessage(LogType type, Object arg) {
         if (type == LogType.DRIVERS) {
-            threads = arg;
+            threads = (int) arg;
             writeInLine("Starting chrome drivers: 0/" + arg);
         } else if (type == LogType.LEAGUES) {
             writeInLine("\nProcessing leagues: ...");
         } else if (type == LogType.GAMES) {
-            totalLeagues = arg;
+            totalLeagues = (int) arg;
             writeInLine(String.format("\nProcessing games: 0/%d (0.0%%)",
-                    arg));
+                    (int) arg));
         } else if (type == LogType.BET) {
-            threads = 0;
+            writeInLine("\nUsing rule number: " + arg);
+            writeLineSeparator();
         }
     }
 
@@ -96,12 +100,14 @@ public class ConsoleLogger {
                 + seconds % 60 + " sec.";
     }
 
-    public static void writeEligibleGamesNumber(int size) {
-        writeInLine("\nEligible games: " + size);
+    public static void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {
+        for (Map.Entry<RuleNumber, List<Game>> entry : eligibleGames.entrySet()) {
+            writeInLine(String.format("\nEligible games %s: %d", entry.getKey(), entry.getValue().size()));
+        }
         writeLineSeparator();
     }
 
-    private static void writeLineSeparator() {
+    public static void writeLineSeparator() {
         writeInLine("\n" + StringUtils.repeat("-", 50));
     }
 

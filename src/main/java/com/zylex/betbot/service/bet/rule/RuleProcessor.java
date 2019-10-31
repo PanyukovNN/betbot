@@ -1,5 +1,6 @@
 package com.zylex.betbot.service.bet.rule;
 
+import com.zylex.betbot.controller.ConsoleLogger;
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
@@ -26,9 +27,10 @@ public class RuleProcessor {
      */
     public GameContainer process() {
         List<Game> games = parseProcessor.process();
-        Map<BetCoefficient, List<Game>> eligibleGames = new HashMap<>();
-        eligibleGames.put(BetCoefficient.FIRST_WIN, new FirstWinSecretRule().filter(games));
-        eligibleGames.put(BetCoefficient.ONE_X, new OneXSecretRule().filter(games));
+        Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
+        eligibleGames.put(RuleNumber.ONE, new FirstWinSecretRule().filter(games));
+        eligibleGames.put(RuleNumber.TWO, new OneXSecretRule().filter(games));
+        ConsoleLogger.writeEligibleGamesNumber(eligibleGames);
         return new GameContainer(games, eligibleGames);
     }
 }

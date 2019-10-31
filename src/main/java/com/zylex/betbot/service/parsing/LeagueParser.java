@@ -11,6 +11,9 @@ import org.jsoup.select.Elements;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,35 +44,16 @@ public class LeagueParser {
             driver = driverManager.getDriver();
             wait = new WebDriverWait(driver, 60);
             driver.navigate().to("https://1xstavka.ru/line/Football/");
-            filterClicks(day);
+            dayFilterClicks(day);
             return parseLeagueLinks();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             throw new LeagueParserException(e.getMessage(), e);
         } finally {
             driverManager.addDriverToQueue(driver);
         }
     }
 
-    private List<String> parseLeagueLinks() throws InterruptedException {
-        wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-        Thread.sleep(2000);
-        String pageSource = driver.getPageSource();
-        Document document = Jsoup.parse(pageSource);
-        Elements leagueLinksElements = document.select("ul.liga_menu > li > a.link");
-        List<String> leagueLinks = new ArrayList<>();
-        for (Element element : leagueLinksElements) {
-            String link = element.attr("href");
-            if (link.contains("Football")
-                    && !link.contains("Special")
-                    && !link.contains("Statistics")) {
-                leagueLinks.add(link);
-            }
-        }
-        ConsoleLogger.logLeague();
-        return leagueLinks;
-    }
-
-    private void filterClicks(Day day) throws InterruptedException {
+    private void dayFilterClicks(Day day) throws InterruptedException {
         guaranteedClick("ls-filter__name",1);
         guaranteedClick("chosen-container",1);
         guaranteedClick("active-result",1 + day.INDEX);
@@ -91,5 +75,37 @@ public class LeagueParser {
 //                System.out.println("Can't click, trying again...");
             }
         }
+    }
+
+    private List<String> parseLeagueLinks() throws InterruptedException, IOException {
+        wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
+        Thread.sleep(2000);
+        String pageSource = driver.getPageSource();
+        Document document = Jsoup.parse(pageSource);
+        Elements leagueLinksElements = document.select("ul.liga_menu > li > a.link");
+        List<String> leagueLinks = new ArrayList<>();
+        for (Element element : leagueLinksElements) {
+            String link = element.attr("href");
+            if (checkLeagueLink(link)) {
+                leagueLinks.add(link);
+            }
+
+        }
+        ConsoleLogger.logLeague();
+        return leagueLinks;
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private boolean checkLeagueLink(String link) throws IOException {
+        File file = new File(this.getClass().getClassLoader().getResource("exclude_leagues.txt").getFile());
+        List<String> excludeLeagues = Files.readAllLines(file.toPath());
+        for (String excludeLeague : excludeLeagues) {
+            if (link.contains(excludeLeague)) {
+                return false;
+            }
+        }
+        return link.contains("Football")
+                && !link.contains("Special")
+                && !link.contains("Statistics");
     }
 }
