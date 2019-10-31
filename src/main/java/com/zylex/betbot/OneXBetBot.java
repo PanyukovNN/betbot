@@ -12,7 +12,7 @@ import com.zylex.betbot.service.parsing.ParseProcessor;
 public class OneXBetBot {
 
     public static void main(String[] args) {
-        int threads = 6;
+        int threads = 4;
         Day day = Day.TODAY;
         new BetProcessor(
             new Repository(

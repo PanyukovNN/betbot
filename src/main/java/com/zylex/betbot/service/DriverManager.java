@@ -1,7 +1,7 @@
 package com.zylex.betbot.service;
 
-import com.zylex.betbot.controller.ConsoleLogger;
-import com.zylex.betbot.controller.LogType;
+import com.zylex.betbot.controller.logger.DriverConsoleLogger;
+import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.DriverManagerException;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
@@ -19,6 +19,8 @@ import java.util.logging.Logger;
  */
 public class DriverManager {
 
+    private DriverConsoleLogger logger = new DriverConsoleLogger();
+
     private Queue<WebDriver> drivers = new ConcurrentLinkedQueue<>();
 
     private final int threads;
@@ -35,7 +37,7 @@ public class DriverManager {
         System.setProperty("webdriver.chrome.silentOutput", "true");
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
         WebDriverManager.chromedriver().version("77.0.3865.40").setup();
-        ConsoleLogger.startLogMessage(LogType.DRIVERS, threads);
+        logger.startLogMessage(LogType.DRIVERS, threads);
         for (int i = 0; i < threads; i++) {
             ChromeOptions options = new ChromeOptions();
             options.addArguments("--window-size=1980,1020");
@@ -45,7 +47,7 @@ public class DriverManager {
             WebDriver driver = new ChromeDriver(options);
             driver.manage().timeouts().pageLoadTimeout(600, TimeUnit.SECONDS);
             drivers.add(driver);
-            ConsoleLogger.logDriver();
+            logger.logDriver();
         }
     }
 

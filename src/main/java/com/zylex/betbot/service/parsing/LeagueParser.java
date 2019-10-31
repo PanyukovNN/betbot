@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.parsing;
 
-import com.zylex.betbot.controller.ConsoleLogger;
+import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.LeagueParserException;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
@@ -23,13 +23,16 @@ import java.util.List;
 @SuppressWarnings("WeakerAccess")
 public class LeagueParser {
 
+    private ParsingConsoleLogger logger;
+
     private DriverManager driverManager;
 
     private WebDriverWait wait;
 
     private WebDriver driver;
 
-    public LeagueParser(DriverManager driverManager) {
+    public LeagueParser(ParsingConsoleLogger logger, DriverManager driverManager) {
+        this.logger = logger;
         this.driverManager = driverManager;
     }
 
@@ -91,7 +94,7 @@ public class LeagueParser {
             }
 
         }
-        ConsoleLogger.logLeague();
+        logger.logLeague();
         return leagueLinks;
     }
 

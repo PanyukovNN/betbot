@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.parsing;
 
-import com.zylex.betbot.controller.ConsoleLogger;
+import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
@@ -25,6 +25,8 @@ import java.util.concurrent.Callable;
 @SuppressWarnings("WeakerAccess")
 public class CallableGameParser implements Callable<List<Game>> {
 
+    private ParsingConsoleLogger logger;
+
     private final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     private DriverManager driverManager;
@@ -33,7 +35,8 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private Day day;
 
-    public CallableGameParser(DriverManager driverManager, String leagueLink, Day day) {
+    public CallableGameParser(ParsingConsoleLogger logger, DriverManager driverManager, String leagueLink, Day day) {
+        this.logger = logger;
         this.driverManager = driverManager;
         this.leagueLink = leagueLink;
         this.day = day;
@@ -97,7 +100,7 @@ public class CallableGameParser implements Callable<List<Game>> {
                     secondWinOrTie);
             games.add(game);
         }
-        ConsoleLogger.logLeagueGame();
+        logger.logLeagueGame();
         return games;
     }
 

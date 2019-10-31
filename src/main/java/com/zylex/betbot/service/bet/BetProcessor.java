@@ -1,7 +1,7 @@
 package com.zylex.betbot.service.bet;
 
-import com.zylex.betbot.controller.ConsoleLogger;
-import com.zylex.betbot.controller.LogType;
+import com.zylex.betbot.controller.logger.BetConsoleLogger;
+import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.GameContainer;
@@ -34,6 +34,8 @@ public class BetProcessor {
 
     private RuleNumber ruleNumber;
 
+    private BetConsoleLogger logger = new BetConsoleLogger();
+
     public BetProcessor(GameContainer gameContainer, RuleNumber ruleNumber) {
         this.gameContainer = gameContainer;
         this.ruleNumber = ruleNumber;
@@ -46,17 +48,17 @@ public class BetProcessor {
      */
     public void process(boolean mock, boolean doBets) {
         if (!doBets) {
-            ConsoleLogger.betsMade(LogType.ERROR);
+            logger.betsMade(LogType.ERROR);
             return;
         }
         try {
             driverInit();
-            ConsoleLogger.logRule(ruleNumber);
-            ConsoleLogger.startLogMessage(LogType.LOG_IN, null);
+            logger.logRule(ruleNumber);
+            logger.startLogMessage(LogType.LOG_IN, null);
             if (logIn()) {
-                ConsoleLogger.startLogMessage(LogType.BET, null);
+                logger.startLogMessage(LogType.BET, null);
                 processBets(gameContainer, mock);
-                ConsoleLogger.startLogMessage(LogType.LOG_OUT, null);
+                logger.startLogMessage(LogType.LOG_OUT, null);
                 logOut();
             }
         } catch (IOException | InterruptedException | ElementNotInteractableException e) {
@@ -87,9 +89,9 @@ public class BetProcessor {
             driver.findElement(By.className("auth-button")).click();
             waitPageLoading(2000);
             String url = driver.getCurrentUrl();
-            ConsoleLogger.logInLog(LogType.OK);
+            logger.logInLog(LogType.OK);
             if (url.contains("accountverify")) {
-                ConsoleLogger.logInLog(LogType.ERROR);
+                logger.logInLog(LogType.ERROR);
                 return false;
             }
             return true;
@@ -105,7 +107,7 @@ public class BetProcessor {
         double availableBalance = totalMoney;
         for (Game game : eligibleGames) {
             if (availableBalance < singleBetAmount) {
-                ConsoleLogger.noMoney();
+                logger.noMoney();
                 break;
             }
             List<WebElement> coefficients = getGameCoefficients(game);
@@ -113,10 +115,10 @@ public class BetProcessor {
                 coefficients.get(betCoefficient.INDEX).click();
                 singleBet(singleBetAmount, mock);
                 availableBalance -= singleBetAmount;
-                ConsoleLogger.logBet(eligibleGames.indexOf(game) + 1, singleBetAmount, betCoefficient, game, LogType.OK);
+                logger.logBet(eligibleGames.indexOf(game) + 1, singleBetAmount, betCoefficient, game, LogType.OK);
             }
         }
-        ConsoleLogger.betsMade(LogType.OK);
+        logger.betsMade(LogType.OK);
     }
 
     private int calculateAmount(BetCoefficient betCoefficient, double totalMoney) {
@@ -154,7 +156,7 @@ public class BetProcessor {
                 return gameWebElement.findElements(By.className("c-bets__bet"));
             }
         }
-        ConsoleLogger.logBet(0, 0, null, game, LogType.ERROR);
+        logger.logBet(0, 0, null, game, LogType.ERROR);
         return new ArrayList<>();
     }
 
@@ -177,7 +179,7 @@ public class BetProcessor {
         driver.findElements(By.className("lk_header_options_item")).get(4).click();
         waitPageLoading(1000);
         driver.findElement(By.className("swal2-confirm")).click();
-        ConsoleLogger.logOutLog(LogType.OK);
+        logger.logOutLog(LogType.OK);
     }
 
     private void waitPageLoading(int millis) throws InterruptedException {

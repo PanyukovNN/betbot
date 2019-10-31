@@ -1,4 +1,4 @@
-package com.zylex.betbot.controller;
+package com.zylex.betbot.controller.logger;
 
 /**
  * Type of log for printing new line in console logger.
