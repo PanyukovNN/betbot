@@ -25,23 +25,28 @@ public class ConsoleLogger {
 
     private static int processedDrivers = 0;
 
-    public static void addTotalGames(int totalGames) {
-        ConsoleLogger.totalGames.addAndGet(totalGames);
+    public static void addTotalGames(int number) {
+        totalGames.addAndGet(number);
     }
 
-    public static synchronized void startLogMessage(LogType type, Object arg) {
+    public static synchronized void startLogMessage(LogType type, Integer arg) {
         if (type == LogType.DRIVERS) {
-            threads = (int) arg;
+            threads = arg;
             writeInLine("Starting chrome drivers: 0/" + arg);
         } else if (type == LogType.LEAGUES) {
             writeInLine("\nProcessing leagues: ...");
         } else if (type == LogType.GAMES) {
-            totalLeagues = (int) arg;
+            totalLeagues = arg;
             writeInLine(String.format("\nProcessing games: 0/%d (0.0%%)",
-                    (int) arg));
+                    arg));
         } else if (type == LogType.BET) {
-            writeInLine("\nUsing rule number: " + arg);
+            writeInLine("\nProcessing bets:");
+        } else if (type == LogType.LOG_IN) {
             writeLineSeparator();
+            writeInLine("\nLogging in: ...");
+        } else if (type == LogType.LOG_OUT) {
+            writeLineSeparator();
+            writeInLine("\nLogging out: ...");
         }
     }
 
@@ -71,12 +76,43 @@ public class ConsoleLogger {
         }
     }
 
-    public static void logBet(int index, int singleBetAmount, BetCoefficient betCoefficient, Game game) {
-        writeInLine(String.format("\n%d) %s rub. bet has been placed on %s for: %s",
-                index,
-                singleBetAmount,
-                betCoefficient,
-                game));
+    public static void logBet(int index, int singleBetAmount, BetCoefficient betCoefficient, Game game, LogType type) {
+        if (type == LogType.OK) {
+            writeInLine(String.format("\n%d) %s rub. bet has been placed on %s for: %s",
+                    index,
+                    singleBetAmount,
+                    betCoefficient,
+                    game));
+        } else if (type == LogType.ERROR) {
+            writeErrorMessage("Did't find the game: " + game);
+        }
+    }
+
+    public static void noMoney() {
+        writeInLine("\nMoney is over.");
+    }
+
+    public static void logRule(RuleNumber ruleNumber) {
+        writeInLine("\nUsing rule number: " + ruleNumber);
+    }
+
+    public static void logInLog(LogType type) {
+        if (type == LogType.OK) {
+            writeInLine(StringUtils.repeat("\b", 18) + "Logging in: complete");
+            writeLineSeparator();
+        } else if (type == LogType.ERROR) {
+            writeErrorMessage("\nError: problem with authorization, need to verify.");
+        }
+    }
+
+    public static void logOutLog(LogType type) {
+        if (type == LogType.OK) {
+            String output = "Logging out: complete\n";
+            writeInLine(StringUtils.repeat("\b", output.length()) + output);
+        } else if (type == LogType.ERROR) {
+            String output = "Logging out: error (program terminated)\n";
+            writeErrorMessage(StringUtils.repeat("\b", output.length()) + output);
+        }
     }
 
     public static void parsingSummarizing() {
@@ -107,15 +143,23 @@ public class ConsoleLogger {
         writeLineSeparator();
     }
 
-    public static void writeLineSeparator() {
+    private static void writeLineSeparator() {
         writeInLine("\n" + StringUtils.repeat("-", 50));
     }
 
-    public static void writeErrorMessage(String message) {
+    private static void writeErrorMessage(String message) {
         System.err.print(message);
     }
 
-    public static synchronized void writeInLine(String message) {
+    private static synchronized void writeInLine(String message) {
         System.out.print(message);
+    }
+
+    public static void betsMade(LogType type) {
+        if (type == LogType.OK) {
+            writeInLine("\nBets are made successfully.");
+        } else if (type == LogType.ERROR) {
+            writeInLine("\nBets aren't made.");
+        }
     }
 }

@@ -8,7 +8,6 @@ import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
-import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -47,14 +46,18 @@ public class BetProcessor {
      */
     public void process(boolean mock, boolean doBets) {
         if (!doBets) {
-            ConsoleLogger.writeInLine("\nBets have not made.");
+            ConsoleLogger.betsMade(LogType.ERROR);
             return;
         }
         try {
             driverInit();
-            if (logInDecorator()) {
+            ConsoleLogger.logRule(ruleNumber);
+            ConsoleLogger.startLogMessage(LogType.LOG_IN, null);
+            if (logIn()) {
+                ConsoleLogger.startLogMessage(LogType.BET, null);
                 processBets(gameContainer, mock);
-                logOutDecorator();
+                ConsoleLogger.startLogMessage(LogType.LOG_OUT, null);
+                logOut();
             }
         } catch (IOException | InterruptedException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
@@ -62,22 +65,6 @@ public class BetProcessor {
             driverManager.addDriverToQueue(driver);
             driverManager.quitDrivers();
         }
-    }
-
-    private void logOutDecorator() throws InterruptedException {
-        ConsoleLogger.writeLineSeparator();
-        ConsoleLogger.writeInLine("\nLogging out: ...");
-        logOut();
-        ConsoleLogger.writeInLine(StringUtils.repeat("\b", 19) + "Logging out: complete\n");
-    }
-
-    private boolean logInDecorator() throws IOException, InterruptedException {
-        ConsoleLogger.startLogMessage(LogType.BET, ruleNumber);
-        ConsoleLogger.writeInLine("\nLogging in: ...");
-        boolean result = logIn();
-        ConsoleLogger.writeInLine(StringUtils.repeat("\b", 18) + "Logging in: complete");
-        ConsoleLogger.writeLineSeparator();
-        return result;
     }
 
     private void driverInit() {
@@ -100,8 +87,9 @@ public class BetProcessor {
             driver.findElement(By.className("auth-button")).click();
             waitPageLoading(2000);
             String url = driver.getCurrentUrl();
+            ConsoleLogger.logInLog(LogType.OK);
             if (url.contains("accountverify")) {
-                ConsoleLogger.writeErrorMessage("\nError: problem with authorization, need to verify.");
+                ConsoleLogger.logInLog(LogType.ERROR);
                 return false;
             }
             return true;
@@ -110,7 +98,6 @@ public class BetProcessor {
 
     private void processBets(GameContainer gameContainer, boolean mock) throws InterruptedException {
         waitPageLoading(1000);
-        ConsoleLogger.writeInLine("\nProcessing bets:");
         List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(driver.findElement(By.className("top-b-acc__amount")).getText());
@@ -118,7 +105,7 @@ public class BetProcessor {
         double availableBalance = totalMoney;
         for (Game game : eligibleGames) {
             if (availableBalance < singleBetAmount) {
-                ConsoleLogger.writeInLine("\nMoney is over.");
+                ConsoleLogger.noMoney();
                 break;
             }
             List<WebElement> coefficients = getGameCoefficients(game);
@@ -126,10 +113,10 @@ public class BetProcessor {
                 coefficients.get(betCoefficient.INDEX).click();
                 singleBet(singleBetAmount, mock);
                 availableBalance -= singleBetAmount;
-                ConsoleLogger.logBet(eligibleGames.indexOf(game) + 1, singleBetAmount, betCoefficient, game);
+                ConsoleLogger.logBet(eligibleGames.indexOf(game) + 1, singleBetAmount, betCoefficient, game, LogType.OK);
             }
         }
-        ConsoleLogger.writeInLine("\nBets are made successfully.");
+        ConsoleLogger.betsMade(LogType.OK);
     }
 
     private int calculateAmount(BetCoefficient betCoefficient, double totalMoney) {
@@ -167,7 +154,7 @@ public class BetProcessor {
                 return gameWebElement.findElements(By.className("c-bets__bet"));
             }
         }
-        ConsoleLogger.writeErrorMessage("Did't find the game: " + game);
+        ConsoleLogger.logBet(0, 0, null, game, LogType.ERROR);
         return new ArrayList<>();
     }
 
@@ -190,6 +177,7 @@ public class BetProcessor {
         driver.findElements(By.className("lk_header_options_item")).get(4).click();
         waitPageLoading(1000);
         driver.findElement(By.className("swal2-confirm")).click();
+        ConsoleLogger.logOutLog(LogType.OK);
     }
 
     private void waitPageLoading(int millis) throws InterruptedException {

@@ -7,5 +7,9 @@ public enum LogType {
     DRIVERS,
     LEAGUES,
     GAMES,
-    BET
+    BET,
+    LOG_IN,
+    LOG_OUT,
+    ERROR,
+    OK
 }
