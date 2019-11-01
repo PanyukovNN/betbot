@@ -25,6 +25,6 @@ public class OneXBetBot {
                 day
             ).processSaving(),
             RuleNumber.ONE
-        ).process(true, false);
+        ).process(true, true);
     }
 }

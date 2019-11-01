@@ -12,9 +12,6 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +47,7 @@ public class LeagueParser {
             driver.navigate().to("https://1xstavka.ru/line/Football/");
             dayFilterClicks(day);
             return parseLeagueLinks();
-        } catch (IOException e) {
+        } catch (InterruptedException e) {
             throw new LeagueParserException(e.getMessage(), e);
         } finally {
             driverManager.addDriverToQueue(driver);
@@ -66,8 +63,8 @@ public class LeagueParser {
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", sportMenuElement);
     }
 
-    private List<String> parseLeagueLinks() throws IOException {
-        waitElementsAndGet("link");
+    private List<String> parseLeagueLinks() throws InterruptedException {
+        Thread.sleep(2000);
         String pageSource = driver.getPageSource();
         Document document = Jsoup.parse(pageSource);
         Elements leagueLinksElements = document.select("ul.liga_menu > li > a.link");
@@ -84,15 +81,7 @@ public class LeagueParser {
         return leagueLinks;
     }
 
-    @SuppressWarnings("ConstantConditions")
-    private boolean checkLeagueLink(String link) throws IOException {
-        File file = new File(this.getClass().getClassLoader().getResource("exclude_leagues.txt").getFile());
-        List<String> excludeLeagues = Files.readAllLines(file.toPath());
-        for (String excludeLeague : excludeLeagues) {
-            if (link.contains(excludeLeague)) {
-                return false;
-            }
-        }
+    private boolean checkLeagueLink(String link) {
         return link.contains("Football")
                 && !link.contains("Special")
                 && !link.contains("Statistics");

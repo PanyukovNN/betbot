@@ -1,10 +1,12 @@
 package com.zylex.betbot.service.bet.rule;
 
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
+import com.zylex.betbot.exception.RuleProcessorException;
 import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,11 +29,15 @@ public class RuleProcessor {
      * @return - container of all lists of games.
      */
     public GameContainer process() {
-        List<Game> games = parseProcessor.process();
-        Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
-        eligibleGames.put(RuleNumber.ONE, new FirstWinSecretRule().filter(games));
-        eligibleGames.put(RuleNumber.TWO, new OneXSecretRule().filter(games));
-        logger.writeEligibleGamesNumber(eligibleGames);
-        return new GameContainer(games, eligibleGames);
+        try {
+            List<Game> games = parseProcessor.process();
+            Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
+            eligibleGames.put(RuleNumber.ONE, new FirstWinSecretRule().filter(games));
+            eligibleGames.put(RuleNumber.TWO, new OneXSecretRule().filter(games));
+            logger.writeEligibleGamesNumber(eligibleGames);
+            return new GameContainer(games, eligibleGames);
+        } catch (IOException e) {
+            throw new RuleProcessorException(e.getMessage(), e);
+        }
     }
 }
