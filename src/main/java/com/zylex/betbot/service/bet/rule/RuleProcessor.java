@@ -7,6 +7,7 @@ import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +35,17 @@ public class RuleProcessor {
             Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
             eligibleGames.put(RuleNumber.ONE, new FirstWinSecretRule().filter(games));
             eligibleGames.put(RuleNumber.TWO, new OneXSecretRule().filter(games));
+            sortGamesByDate(eligibleGames);
             logger.writeEligibleGamesNumber(eligibleGames);
             return new GameContainer(games, eligibleGames);
         } catch (IOException e) {
             throw new RuleProcessorException(e.getMessage(), e);
+        }
+    }
+
+    private void sortGamesByDate(Map<RuleNumber, List<Game>> eligibleGames) {
+        for (List<Game> games : eligibleGames.values()) {
+            games.sort(Comparator.comparing(Game::getDateTime));
         }
     }
 }

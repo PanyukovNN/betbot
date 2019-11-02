@@ -1,6 +1,7 @@
 package com.zylex.betbot;
 
 import com.zylex.betbot.controller.Repository;
+import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.*;
@@ -13,6 +14,7 @@ public class OneXBetBot {
 
     public static void main(String[] args) {
         int threads = 6;
+        BetCoefficient.FIRST_WIN.PERCENT = 0.05d;
         Day day = Day.TOMORROW;
         new BetProcessor(
             new Repository(
@@ -25,6 +27,6 @@ public class OneXBetBot {
                 day
             ).processSaving(),
             RuleNumber.ONE
-        ).process(true, true);
+        ).process(true, false);
     }
 }
