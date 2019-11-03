@@ -12,7 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +25,8 @@ public class Repository {
     private final DateTimeFormatter DIR_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     private String dirName;
+
+    private String monthDirName;
 
     private Day day;
 
@@ -60,14 +61,16 @@ public class Repository {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void createDirectory(Day day) {
         LocalDate date = LocalDate.now().plusDays(day.INDEX);
+        monthDirName = date.getMonth().name();
         dirName = DIR_DATE_FORMATTER.format(date);
         new File("results").mkdir();
-        new File("results/" + dirName).mkdir();
+        new File("results/" + monthDirName).mkdir();
+        new File("results/" + monthDirName + "/" + dirName).mkdir();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void writeToFile(String fileName, List<Game> games) throws IOException {
-        File file = new File(String.format("results/%s/%s.csv", dirName, fileName + dirName));
+        File file = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, fileName + dirName));
         if (!file.exists()) {
             file.createNewFile();
         }
