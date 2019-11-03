@@ -1,7 +1,6 @@
 package com.zylex.betbot;
 
 import com.zylex.betbot.controller.Repository;
-import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.*;
@@ -9,8 +8,6 @@ import com.zylex.betbot.service.bet.*;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 import com.zylex.betbot.service.bet.rule.RuleProcessor;
 import com.zylex.betbot.service.parsing.ParseProcessor;
-
-import java.time.LocalDate;
 
 public class OneXBetBot {
 
@@ -26,9 +23,8 @@ public class OneXBetBot {
                         day
                     )
                 ),
-                day
-            ).processSaving(),
+                day),
             RuleNumber.ONE
-        ).process(true, false);
+        ).process(true, true);
     }
 }

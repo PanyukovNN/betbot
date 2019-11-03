@@ -37,6 +37,14 @@ public class Repository {
         this.day = day;
     }
 
+    public String getDirName() {
+        return dirName;
+    }
+
+    public String getMonthDirName() {
+        return monthDirName;
+    }
+
     /**
      * Saves all lists of games from GameContainer into separate files.
      */

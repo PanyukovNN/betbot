@@ -1,5 +1,6 @@
 package com.zylex.betbot.service.bet;
 
+import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
@@ -35,12 +36,12 @@ public class BetProcessor {
 
     private WebDriverWait wait;
 
-    private GameContainer gameContainer;
-
     private RuleNumber ruleNumber;
 
-    public BetProcessor(GameContainer gameContainer, RuleNumber ruleNumber) {
-        this.gameContainer = gameContainer;
+    private Repository repository;
+
+    public BetProcessor(Repository repository, RuleNumber ruleNumber) {
+        this.repository = repository;
         this.ruleNumber = ruleNumber;
     }
 
@@ -50,6 +51,7 @@ public class BetProcessor {
      * @param mock - flag for doing mock bets.
      */
     public void process(boolean mock, boolean doBets) {
+        GameContainer gameContainer = repository.processSaving();
         if (gameContainer.getEligibleGames().get(ruleNumber).size() > 0
                 && !doBets) {
             logger.betsMade(LogType.ERROR);
@@ -83,7 +85,7 @@ public class BetProcessor {
     }
 
     private boolean logIn() throws IOException {
-        try (FileInputStream inputStream = new FileInputStream("src/main/resources/oneXBetAuth.properties")) {
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("oneXBetAuth.properties")) {
             Properties property = new Properties();
             property.load(inputStream);
             waitSingleElementAndGet("base_auth_form").click();
@@ -133,7 +135,7 @@ public class BetProcessor {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private List<Game> readBetsMadeGames() throws IOException {
         List<Game> betsMadeGames = new ArrayList<>();
-        File file = new File(this.getClass().getResource("/BETS_MADE.txt").getFile());
+        File file = new File(String.format("results/%s/%s/BETS_MADE_%s.txt", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
         if (!file.exists()) {
             file.createNewFile();
         }
@@ -150,7 +152,7 @@ public class BetProcessor {
     }
 
     private void saveBetsMadeGamesToFile(List<Game> madeBetsGames) throws IOException {
-        File file = new File(this.getClass().getResource("/BETS_MADE.txt").getFile());
+        File file = new File(String.format("results/%s/%s/BETS_MADE_%s.txt", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
             String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s\n";
             for (Game game : madeBetsGames) {
