@@ -72,12 +72,11 @@ public class LeagueParser {
         for (Element element : leagueLinksElements) {
             String link = element.attr("href");
             if (checkLeagueLink(link)) {
+                link = link.replace("line/Football/", "");
                 leagueLinks.add(link);
             }
         }
         logger.logLeague();
-//        File file = new File("results/leagues.txt");
-//        Files.write(file.toPath(), leagueLinks);
         return leagueLinks;
     }
 

@@ -14,7 +14,7 @@ public class OneXBetBot {
 
     public static void main(String[] args) {
         int threads = 6;
-        BetCoefficient.FIRST_WIN.PERCENT = 0.05d;
+//        BetCoefficient.FIRST_WIN.PERCENT = 0.05d;
         Day day = Day.TOMORROW;
         new BetProcessor(
             new Repository(

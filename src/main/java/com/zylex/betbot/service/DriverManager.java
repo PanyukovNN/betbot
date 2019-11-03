@@ -4,6 +4,7 @@ import com.zylex.betbot.controller.logger.DriverConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.DriverManagerException;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -40,11 +41,11 @@ public class DriverManager {
         logger.startLogMessage(LogType.DRIVERS, threads);
         for (int i = 0; i < threads; i++) {
             ChromeOptions options = new ChromeOptions();
-            options.addArguments("--window-size=1980,1020");
             if (headless) {
                 options.addArguments("--headless");
             }
             WebDriver driver = new ChromeDriver(options);
+            driver.manage().window().setSize(new Dimension(1920, 1080));
             driver.manage().timeouts().pageLoadTimeout(600, TimeUnit.SECONDS);
             driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
             driver.manage().timeouts().setScriptTimeout(10, TimeUnit.SECONDS);

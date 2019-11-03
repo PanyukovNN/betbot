@@ -13,8 +13,8 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -25,6 +25,10 @@ import java.util.*;
  */
 public class BetProcessor {
 
+    private BetConsoleLogger logger = new BetConsoleLogger();
+
+    private DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
+
     private DriverManager driverManager;
 
     private WebDriver driver;
@@ -34,8 +38,6 @@ public class BetProcessor {
     private GameContainer gameContainer;
 
     private RuleNumber ruleNumber;
-
-    private BetConsoleLogger logger = new BetConsoleLogger();
 
     public BetProcessor(GameContainer gameContainer, RuleNumber ruleNumber) {
         this.gameContainer = gameContainer;
@@ -99,13 +101,18 @@ public class BetProcessor {
         }
     }
 
-    private void processBets(GameContainer gameContainer, boolean mock) {
+    private void processBets(GameContainer gameContainer, boolean mock) throws IOException {
         List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
         int singleBetAmount = calculateAmount(betCoefficient, totalMoney);
         double availableBalance = totalMoney;
+        List<Game> betsMadeGames = readBetsMadeGames();
+        int i = 0;
         for (Game game : eligibleGames) {
+            if (betsMadeGames.contains(game)) {
+                continue;
+            }
             if (availableBalance < singleBetAmount) {
                 logger.noMoney();
                 break;
@@ -113,12 +120,49 @@ public class BetProcessor {
             List<WebElement> coefficients = getGameCoefficients(game);
             if (coefficients.size() > 0) {
                 coefficients.get(betCoefficient.INDEX).click();
-                singleBet(singleBetAmount, mock);
+                makeBet(singleBetAmount, mock);
                 availableBalance -= singleBetAmount;
-                logger.logBet(eligibleGames.indexOf(game) + 1, singleBetAmount, betCoefficient, game, LogType.OK);
+                betsMadeGames.add(game);
+                logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
             }
         }
+        saveBetsMadeGamesToFile(betsMadeGames);
         logger.betsMade(LogType.OK);
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private List<Game> readBetsMadeGames() throws IOException {
+        List<Game> betsMadeGames = new ArrayList<>();
+        File file = new File(this.getClass().getResource("/BETS_MADE.txt").getFile());
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        List<String> lines = Files.readAllLines(file.toPath());
+        for (String line : lines) {
+            String[] fields = line.split(";");
+            Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
+                    fields[4], fields[5], "-", "-", "-", "-", "-");
+            if (game.getDateTime().isAfter(LocalDateTime.now().minusDays(1))) {
+                betsMadeGames.add(game);
+            }
+        }
+        return betsMadeGames;
+    }
+
+    private void saveBetsMadeGamesToFile(List<Game> madeBetsGames) throws IOException {
+        File file = new File(this.getClass().getResource("/BETS_MADE.txt").getFile());
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
+            String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s\n";
+            for (Game game : madeBetsGames) {
+                String line = String.format(MADE_BET_GAME_FORMAT,
+                        game.getLeague(),
+                        game.getLeagueLink(),
+                        DATE_FORMATTER.format(game.getDateTime()),
+                        game.getFirstTeam(),
+                        game.getSecondTeam());
+                writer.write(line);
+            }
+        }
     }
 
     private int calculateAmount(BetCoefficient betCoefficient, double totalMoney) {
@@ -126,7 +170,7 @@ public class BetProcessor {
         return (int) Math.max(singleBetMoney, 20);
     }
 
-    private void singleBet(double amount, boolean mock) {
+    private void makeBet(double amount, boolean mock) {
         driver.findElement(By.className("bet_sum_input")).sendKeys(String.valueOf(amount));
         if (!mock) {
             WebElement betButton = waitSingleElementAndGet("coupon-btn-group__item")
@@ -140,7 +184,7 @@ public class BetProcessor {
     }
 
     private List<WebElement> getGameCoefficients(Game game) {
-        driver.navigate().to(game.getLeagueLink());
+        driver.navigate().to("https://1xstavka.ru/line/Football/" + game.getLeagueLink());
         List<WebElement> gameWebElements = waitElementsAndGet("c-events__item_game");
         for (WebElement gameWebElement : gameWebElements) {
             LocalDateTime dateTime = processDateTime(gameWebElement);

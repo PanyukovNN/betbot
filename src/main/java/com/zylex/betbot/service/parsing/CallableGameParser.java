@@ -57,7 +57,7 @@ public class CallableGameParser implements Callable<List<Game>> {
     }
 
     private List<Game> processGameParsing(WebDriver driver) {
-        driver.navigate().to(String.format("https://1xstavka.ru/%s", leagueLink));
+        driver.navigate().to(String.format("https://1xstavka.ru/line/Football/%s", leagueLink));
         WebDriverWait wait = new WebDriverWait(driver, 2);
         wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
         Document document = Jsoup.parse(driver.getPageSource());
@@ -89,7 +89,7 @@ public class CallableGameParser implements Callable<List<Game>> {
             String firstWinOrTie = coefficients.get(3).text();
             String secondWinOrTie = coefficients.get(5).text();
             Game game = new Game(leagueName,
-                    String.format("https://1xstavka.ru/%s", leagueLink),
+                    leagueLink,
                     dateTime,
                     firstTeam,
                     secondTeam,

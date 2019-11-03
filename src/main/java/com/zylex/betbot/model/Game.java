@@ -1,6 +1,7 @@
 package com.zylex.betbot.model;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * Instance of a football game.
@@ -78,6 +79,23 @@ public class Game {
 
     public String getSecondWinOrTie() {
         return secondWinOrTie;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Game game = (Game) o;
+        return Objects.equals(league, game.league) &&
+                Objects.equals(leagueLink, game.leagueLink) &&
+                Objects.equals(dateTime, game.dateTime) &&
+                Objects.equals(firstTeam, game.firstTeam) &&
+                Objects.equals(secondTeam, game.secondTeam);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(league, leagueLink, dateTime, firstTeam, secondTeam);
     }
 
     @Override
