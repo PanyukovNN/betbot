@@ -5,13 +5,12 @@
          version="3.0">
 
     <servlet>
-        <servlet-name>mainServlet</servlet-name>
+        <servlet-name>Servlet</servlet-name>
         <servlet-class>com.zylex.betbot.web.Servlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>mainServlet</servlet-name>
+        <servlet-name>Servlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
-
 </web-app>

@@ -15,6 +15,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -135,7 +136,7 @@ public class BetProcessor {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private List<Game> readBetsMadeGames() throws IOException {
         List<Game> betsMadeGames = new ArrayList<>();
-        File file = new File(String.format("results/%s/%s/BETS_MADE_%s.txt", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
+        File file = new File(String.format("results/%s/%s/BETS_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
         if (!file.exists()) {
             file.createNewFile();
         }
@@ -152,8 +153,8 @@ public class BetProcessor {
     }
 
     private void saveBetsMadeGamesToFile(List<Game> madeBetsGames) throws IOException {
-        File file = new File(String.format("results/%s/%s/BETS_MADE_%s.txt", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
+        File file = new File(String.format("results/%s/%s/BETS_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s\n";
             for (Game game : madeBetsGames) {
                 String line = String.format(MADE_BET_GAME_FORMAT,
