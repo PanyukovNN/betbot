@@ -4,24 +4,15 @@ import org.apache.commons.lang3.StringUtils;
 
 public class DriverConsoleLogger extends ConsoleLogger {
 
-    private int threads;
-
-    private int processedDrivers = 0;
-
-    public synchronized void startLogMessage(LogType type, Integer arg) {
-        if (type == LogType.DRIVERS) {
-            threads = arg;
-            writeInLine("Starting chrome drivers: 0/" + arg);
+    public synchronized void startLogMessage(LogType type) {
+        if (type == LogType.DRIVER) {
+            writeInLine("Starting chrome driver: ...");
         }
     }
 
     public synchronized void logDriver() {
-        String output = String.format("Starting chrome drivers: %d/%d",
-                ++processedDrivers,
-                threads);
+        String output = "Starting chrome drivers: complete";
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
-        if (processedDrivers == threads) {
-            writeLineSeparator();
-        }
+        writeLineSeparator();
     }
 }

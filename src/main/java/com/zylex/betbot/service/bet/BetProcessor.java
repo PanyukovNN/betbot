@@ -7,7 +7,6 @@ import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
@@ -30,8 +29,6 @@ public class BetProcessor {
     private BetConsoleLogger logger = new BetConsoleLogger();
 
     private DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
-
-    private DriverManager driverManager;
 
     private WebDriver driver;
 
@@ -70,16 +67,13 @@ public class BetProcessor {
             }
         } catch (IOException | InterruptedException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
-        } finally {
-            driverManager.addDriverToQueue(driver);
-            driverManager.quitDrivers();
         }
     }
 
     private void driverInit() {
         System.out.println();
-        driverManager = new DriverManager(1);
-        driverManager.initiateDrivers(false);
+        DriverManager driverManager = new DriverManager();
+        driverManager.initiateDriver();
         driver = driverManager.getDriver();
         wait = new WebDriverWait(driver, 10);
         driver.navigate().to("https://1xstavka.ru/");
@@ -220,7 +214,7 @@ public class BetProcessor {
         WebElement lkWrap = waitSingleElementAndGet("wrap_lk");
         Actions actions = new Actions(driver);
         actions.moveToElement(lkWrap).build().perform();
-        Thread.sleep(1000);
+        Thread.sleep(3000);
         waitElementsAndGet("lk_header_options_item").get(4).click();
         waitSingleElementAndGet("swal2-confirm").click();
         logger.logOutLog(LogType.OK);

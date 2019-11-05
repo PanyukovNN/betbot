@@ -5,7 +5,6 @@ import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.ParseProcessorException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
-import com.zylex.betbot.service.DriverManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +22,9 @@ public class ParseProcessor {
 
     private ExecutorService service;
 
-    private DriverManager driverManager;
-
     private Day day;
 
-    public ParseProcessor(DriverManager driverManager, Day day) {
-        this.driverManager = driverManager;
+    public ParseProcessor(Day day) {
         this.day = day;
     }
 
@@ -41,31 +37,29 @@ public class ParseProcessor {
      */
     public List<Game> process() {
         try {
-            driverManager.initiateDrivers(true);
-            service = Executors.newFixedThreadPool(driverManager.getThreads());
+            logger.startLogMessage(LogType.PARSING_START, null);
+            service = Executors.newFixedThreadPool(6);//driverManager.getThreads());
             logger.startLogMessage(LogType.LEAGUES, null);
-            LeagueParser leagueParser = new LeagueParser(logger, driverManager);
-            List<String> leagueLinks = leagueParser.processLeagueParsing(day);
+            LeagueParser leagueParser = new LeagueParser(logger);
+            List<String> leagueLinks = leagueParser.processLeagueParsing();
             logger.startLogMessage(LogType.GAMES, leagueLinks.size());
-            List<Game> games = processGameParsing(service, driverManager, leagueLinks, day);
+            List<Game> games = processGameParsing(service, leagueLinks, day);
             logger.addTotalGames(games.size());
             return games;
         } catch (InterruptedException | ExecutionException e) {
             throw new ParseProcessorException(e.getMessage(), e);
         } finally {
             service.shutdown();
-            driverManager.quitDrivers();
             logger.parsingSummarizing();
         }
     }
 
     private List<Game> processGameParsing(ExecutorService service,
-                                          DriverManager driverManager,
                                           List<String> leagueLinks,
                                           Day day) throws InterruptedException, ExecutionException {
         List<CallableGameParser> callableGameParsers = new ArrayList<>();
         for (String leagueLink : leagueLinks) {
-            callableGameParsers.add(new CallableGameParser(logger, driverManager, leagueLink, day));
+            callableGameParsers.add(new CallableGameParser(logger, leagueLink, day));
         }
         List<Future<List<Game>>> futureGameParsers = service.invokeAll(callableGameParsers);
         List<Game> games = new ArrayList<>();
