@@ -25,7 +25,9 @@ public class ParsingConsoleLogger extends ConsoleLogger {
     }
 
     public synchronized void startLogMessage(LogType type, Integer arg) {
-        if (type == LogType.LEAGUES) {
+        if (type == LogType.PARSING_START) {
+            writeInLine("Start parsing.");
+        } else if (type == LogType.LEAGUES) {
             writeInLine("\nProcessing leagues: ...");
         } else if (type == LogType.GAMES) {
             totalLeagues = arg;

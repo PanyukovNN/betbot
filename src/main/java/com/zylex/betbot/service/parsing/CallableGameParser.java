@@ -1,17 +1,15 @@
 package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
+import com.zylex.betbot.exception.GameParserException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
-import com.zylex.betbot.service.DriverManager;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,15 +27,12 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-    private DriverManager driverManager;
-
     private String leagueLink;
 
     private Day day;
 
-    public CallableGameParser(ParsingConsoleLogger logger, DriverManager driverManager, String leagueLink, Day day) {
+    public CallableGameParser(ParsingConsoleLogger logger, String leagueLink, Day day) {
         this.logger = logger;
-        this.driverManager = driverManager;
         this.leagueLink = leagueLink;
         this.day = day;
     }
@@ -48,29 +43,28 @@ public class CallableGameParser implements Callable<List<Game>> {
      */
     @Override
     public List<Game> call() {
-        WebDriver driver = driverManager.getDriver();
         try {
-            return processGameParsing(driver);
-        } finally {
-            driverManager.addDriverToQueue(driver);
+            return processGameParsing();
+        } catch (IOException e) {
+            throw new GameParserException(e.getMessage(), e);
         }
     }
 
-    private List<Game> processGameParsing(WebDriver driver) {
-        driver.navigate().to(String.format("https://1xstavka.ru/line/Football/%s", leagueLink));
-        WebDriverWait wait = new WebDriverWait(driver, 2);
-        wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-        Document document = Jsoup.parse(driver.getPageSource());
+    private List<Game> processGameParsing() throws IOException {
+        Document document = Jsoup.connect(String.format("https://1xstavka.ru/line/Football/%s", leagueLink))
+                .userAgent("Chrome/4.0.249.0 Safari/532.5")
+                .referrer("http://www.google.com")
+                .get();
         return parseGames(document);
     }
 
     private List<Game> parseGames(Document document) {
         List<Game> games = new ArrayList<>();
-        String leagueName = document.select("a.c-events__liga").text();
+        String leagueName = document.select("span.c-events__liga").text();
         Elements gameElements = document.select("div.c-events__item_game");
         int currentDay = LocalDate.now().plusDays(day.INDEX).getDayOfMonth();
         for (Element gameElement : gameElements) {
-            LocalDateTime dateTime = processDate(gameElement);
+            LocalDateTime dateTime = processDate(gameElement).plusHours(3);
             if (currentDay > dateTime.getDayOfMonth()) {
                 continue;
             } else if (currentDay < dateTime.getDayOfMonth()) {
