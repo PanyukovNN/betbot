@@ -41,8 +41,6 @@ public class LeagueParser {
                 .userAgent("Chrome/4.0.249.0 Safari/532.5")
                 .referrer("http://www.google.com")
                 .get();
-
-
         Elements leagueLinksElements = document.select("ul.liga_menu > li > a.link");
         List<String> leagueLinks = new ArrayList<>();
         for (Element element : leagueLinksElements) {
