@@ -11,15 +11,15 @@ import com.zylex.betbot.service.parsing.ParseProcessor;
 public class OneXBetBot {
 
     public static void main(String[] args) {
+        Day day = Day.TOMORROW;
         boolean mock = true;
         boolean doBets = false;
-        Day day = Day.TOMORROW;
         new BetProcessor(
             new Repository(
                 new RuleProcessor(
                     new ParseProcessor(day)),
                 day),
-            RuleNumber.ONE
+            RuleNumber.RULE_ONE
         ).process(mock, doBets);
     }
 }

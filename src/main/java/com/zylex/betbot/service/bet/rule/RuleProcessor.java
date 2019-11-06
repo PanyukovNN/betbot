@@ -33,8 +33,8 @@ public class RuleProcessor {
         try {
             List<Game> games = parseProcessor.process();
             Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
-            eligibleGames.put(RuleNumber.ONE, new FirstWinSecretRule().filter(games));
-            eligibleGames.put(RuleNumber.TWO, new OneXSecretRule().filter(games));
+            eligibleGames.put(RuleNumber.RULE_ONE, new FirstWinSecretRule().filter(games));
+            eligibleGames.put(RuleNumber.RULE_TWO, new OneXSecretRule().filter(games));
             sortGamesByDate(eligibleGames);
             logger.writeEligibleGamesNumber(eligibleGames);
             return new GameContainer(games, eligibleGames);

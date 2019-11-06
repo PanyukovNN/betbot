@@ -7,9 +7,10 @@ import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.model.GameResult;
+import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 import org.openqa.selenium.*;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -46,34 +47,34 @@ public class BetProcessor {
     /**
      * Initiates one non-headless chrome driver, navigates to site,
      * logs in, makes bets and log out.
+     *
      * @param mock - flag for doing mock bets.
      */
     public void process(boolean mock, boolean doBets) {
         GameContainer gameContainer = repository.processSaving();
-        if (gameContainer.getEligibleGames().get(ruleNumber).size() > 0
-                && !doBets) {
-            logger.betsMade(LogType.ERROR);
-            return;
-        }
         try {
             driverInit();
+            if (gameContainer.getEligibleGames().get(ruleNumber).size() > 0
+                    && !doBets) {
+                logger.betsMade(LogType.ERROR);
+                return;
+            }
             logger.logRule(ruleNumber);
             logger.startLogMessage(LogType.LOG_IN);
             if (logIn()) {
                 logger.startLogMessage(LogType.BET);
                 processBets(gameContainer, mock);
-                logger.startLogMessage(LogType.LOG_OUT);
-                logOut();
             }
-        } catch (IOException | InterruptedException | ElementNotInteractableException e) {
+        } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
+        } finally {
+            driver.quit();
         }
     }
 
     private void driverInit() {
-        System.out.println();
         DriverManager driverManager = new DriverManager();
-        driverManager.initiateDriver();
+        driverManager.initiateDriver(false);
         driver = driverManager.getDriver();
         wait = new WebDriverWait(driver, 10);
         driver.navigate().to("https://1xstavka.ru/");
@@ -138,7 +139,7 @@ public class BetProcessor {
         for (String line : lines) {
             String[] fields = line.split(";");
             Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
-                    fields[4], fields[5], "-", "-", "-", "-", "-");
+                    fields[4], fields[5], RuleNumber.valueOf(fields[6]), GameResult.NO_RESULT);
             if (game.getDateTime().isAfter(LocalDateTime.now().minusDays(1))) {
                 betsMadeGames.add(game);
             }
@@ -148,16 +149,21 @@ public class BetProcessor {
 
     private void saveBetsMadeGamesToFile(List<Game> madeBetsGames) throws IOException {
         File file = new File(String.format("results/%s/%s/BETS_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-            String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s\n";
+        File totalBetsMadeFile = new File(String.format("results/%s/BETS_MADE_%s.csv", repository.getMonthDirName(), repository.getMonthDirName()));
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
+             BufferedWriter totalBetsMadeWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(totalBetsMadeFile, true), StandardCharsets.UTF_8))) {
+            String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s\n";
             for (Game game : madeBetsGames) {
                 String line = String.format(MADE_BET_GAME_FORMAT,
                         game.getLeague(),
                         game.getLeagueLink(),
                         DATE_FORMATTER.format(game.getDateTime()),
                         game.getFirstTeam(),
-                        game.getSecondTeam());
+                        game.getSecondTeam(),
+                        game.getRuleNumber(),
+                        game.getGameResult());
                 writer.write(line);
+                totalBetsMadeWriter.write(line);
             }
         }
     }
@@ -208,16 +214,6 @@ public class BetProcessor {
         String year = String.valueOf(LocalDate.now().getYear());
         dateTime = dateTime.replace(" ", String.format(".%s ", year)).substring(0, 16);
         return LocalDateTime.parse(dateTime, dateTimeFormatter);
-    }
-
-    private void logOut() throws InterruptedException {
-        WebElement lkWrap = waitSingleElementAndGet("wrap_lk");
-        Actions actions = new Actions(driver);
-        actions.moveToElement(lkWrap).build().perform();
-        Thread.sleep(3000);
-        waitElementsAndGet("lk_header_options_item").get(4).click();
-        waitSingleElementAndGet("swal2-confirm").click();
-        logger.logOutLog(LogType.OK);
     }
 
     private List<WebElement> waitElementsAndGet(String className) {

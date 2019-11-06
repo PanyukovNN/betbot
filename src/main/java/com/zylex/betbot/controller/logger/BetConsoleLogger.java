@@ -20,7 +20,7 @@ public class BetConsoleLogger extends ConsoleLogger{
     }
 
     public void logRule(RuleNumber ruleNumber) {
-        writeInLine("\nUsing rule number: " + ruleNumber);
+        writeInLine("\nUsing: " + ruleNumber);
     }
 
     public void logBet(int index, int singleBetAmount, BetCoefficient betCoefficient, Game game, LogType type) {

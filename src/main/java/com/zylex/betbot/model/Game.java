@@ -1,5 +1,7 @@
 package com.zylex.betbot.model;
 
+import com.zylex.betbot.service.bet.rule.RuleNumber;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -28,6 +30,10 @@ public class Game {
 
     private String secondWinOrTie;
 
+    private RuleNumber ruleNumber;
+
+    private GameResult gameResult;
+
     public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie) {
         this.league = league;
         this.leagueLink = leagueLink;
@@ -39,6 +45,16 @@ public class Game {
         this.secondWin = secondWin;
         this.firstWinOrTie = firstWinOrTie;
         this.secondWinOrTie = secondWinOrTie;
+    }
+
+    public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, RuleNumber ruleNumber, GameResult gameResult) {
+        this.league = league;
+        this.leagueLink = leagueLink;
+        this.dateTime = dateTime;
+        this.firstTeam = firstTeam;
+        this.secondTeam = secondTeam;
+        this.ruleNumber = ruleNumber;
+        this.gameResult = gameResult;
     }
 
     public String getLeague() {
@@ -81,6 +97,22 @@ public class Game {
         return secondWinOrTie;
     }
 
+    public RuleNumber getRuleNumber() {
+        return ruleNumber;
+    }
+
+    public void setRuleNumber(RuleNumber ruleNumber) {
+        this.ruleNumber = ruleNumber;
+    }
+
+    public GameResult getGameResult() {
+        return gameResult;
+    }
+
+    public void setGameResult(GameResult gameResult) {
+        this.gameResult = gameResult;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -102,6 +134,7 @@ public class Game {
     public String toString() {
         return "Game{" +
                 "league='" + league + '\'' +
+                ", leagueLink='" + leagueLink + '\'' +
                 ", dateTime=" + dateTime +
                 ", firstTeam='" + firstTeam + '\'' +
                 ", secondTeam='" + secondTeam + '\'' +
@@ -110,6 +143,7 @@ public class Game {
                 ", secondWin='" + secondWin + '\'' +
                 ", firstWinOrTie='" + firstWinOrTie + '\'' +
                 ", secondWinOrTie='" + secondWinOrTie + '\'' +
+                ", gameResult=" + gameResult +
                 '}';
     }
 }

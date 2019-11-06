@@ -6,7 +6,7 @@ public class DriverConsoleLogger extends ConsoleLogger {
 
     public synchronized void startLogMessage(LogType type) {
         if (type == LogType.DRIVER) {
-            writeInLine("Starting chrome driver: ...");
+            writeInLine("\nStarting chrome driver: ...");
         }
     }
 
