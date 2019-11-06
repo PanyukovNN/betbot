@@ -70,9 +70,11 @@ public class ResultScanner {
         waitSingleElementAndGet("c-filter_filled").click();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private List<Game> readBetMadeGames() throws IOException {
         List<Game> betMadeGames = new ArrayList<>();
-        if (betMadeFile.createNewFile()) {
+        if (!betMadeFile.exists()) {
+            betMadeFile.createNewFile();
             return betMadeGames;
         }
         List<String> lines = Files.readAllLines(betMadeFile.toPath());

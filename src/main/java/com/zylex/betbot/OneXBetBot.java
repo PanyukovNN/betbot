@@ -14,7 +14,7 @@ public class OneXBetBot {
     public static void main(String[] args) {
         Day day = Day.TOMORROW;
         boolean mock = true;
-        boolean doBets = false;
+        boolean doBets = true;
         new BetProcessor(
             new Repository(
                 new RuleProcessor(
@@ -22,6 +22,7 @@ public class OneXBetBot {
                 day),
             RuleNumber.RULE_ONE
         ).process(mock, doBets);
+
         new ResultScanner().process();
     }
 }

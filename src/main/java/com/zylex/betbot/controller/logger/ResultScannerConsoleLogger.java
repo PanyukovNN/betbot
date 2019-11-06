@@ -18,5 +18,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
 
     public void endMessage() {
         writeInLine("\nResults are scanned.");
+        writeLineSeparator();
+        writeInLine(String.format("\nBot work completed in %s", computeTime(programStartTime.get())));
     }
 }

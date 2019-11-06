@@ -9,15 +9,12 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class ParsingConsoleLogger extends ConsoleLogger {
 
     private AtomicInteger totalGames = new AtomicInteger(0);
 
     private int totalLeagues = 0;
-
-    private AtomicLong programStartTime = new AtomicLong(System.currentTimeMillis());
 
     private AtomicInteger processedLeagues = new AtomicInteger(0);
 
@@ -57,20 +54,6 @@ public class ParsingConsoleLogger extends ConsoleLogger {
         writeInLine(String.format("\nTotal games: %d", totalGames.get()));
         writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
         writeLineSeparator();
-    }
-
-    private String computeTime(long startTime) {
-        long endTime = System.currentTimeMillis();
-        long seconds = (endTime - startTime) / 1000;
-        long minutes = seconds / 60;
-        long houres = 0;
-        if (minutes > 60) {
-            houres = minutes / 60;
-            minutes = minutes % 60;
-        }
-        return (houres == 0 ? "" : houres + "h. ")
-                + minutes + " min. "
-                + seconds % 60 + " sec.";
     }
 
     public void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {

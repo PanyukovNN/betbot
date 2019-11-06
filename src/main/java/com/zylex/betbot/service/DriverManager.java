@@ -29,9 +29,9 @@ public class DriverManager {
      * Initiate chrome drivers.
      */
     public void initiateDriver(boolean headless) {
+        WebDriverManager.chromedriver().setup();
         System.setProperty("webdriver.chrome.silentOutput", "true");
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
-        WebDriverManager.chromedriver().version("77.0.3865.40").setup();
         logger.startLogMessage(LogType.DRIVER);
         ChromeOptions options = new ChromeOptions();
         if (headless) {

@@ -32,7 +32,7 @@ public class Game {
 
     private RuleNumber ruleNumber;
 
-    private GameResult gameResult;
+    private GameResult gameResult = GameResult.NO_RESULT;
 
     public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie) {
         this.league = league;

@@ -39,6 +39,12 @@ public class BetProcessor {
 
     private Repository repository;
 
+    private File betMadeFile;
+
+    private boolean mock;
+
+    private boolean doBets;
+
     public BetProcessor(Repository repository, RuleNumber ruleNumber) {
         this.repository = repository;
         this.ruleNumber = ruleNumber;
@@ -51,7 +57,10 @@ public class BetProcessor {
      * @param mock - flag for doing mock bets.
      */
     public void process(boolean mock, boolean doBets) {
+        this.mock = mock;
+        this.doBets = doBets;
         GameContainer gameContainer = repository.processSaving();
+        betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
         try {
             driverInit();
             if (gameContainer.getEligibleGames().get(ruleNumber).size() > 0
@@ -63,7 +72,7 @@ public class BetProcessor {
             logger.startLogMessage(LogType.LOG_IN);
             if (logIn()) {
                 logger.startLogMessage(LogType.BET);
-                processBets(gameContainer, mock);
+                processBets(gameContainer);
             }
         } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
@@ -81,7 +90,7 @@ public class BetProcessor {
     }
 
     private boolean logIn() throws IOException {
-        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("oneXBetAuth.properties")) {
+        try (InputStream inputStream = new FileInputStream("src/main/resources/oneXBetAuth.properties")) {
             Properties property = new Properties();
             property.load(inputStream);
             waitSingleElementAndGet("base_auth_form").click();
@@ -99,16 +108,16 @@ public class BetProcessor {
         }
     }
 
-    private void processBets(GameContainer gameContainer, boolean mock) throws IOException {
+    private void processBets(GameContainer gameContainer) throws IOException {
         List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
         int singleBetAmount = calculateAmount(betCoefficient, totalMoney);
         double availableBalance = totalMoney;
-        List<Game> betsMadeGames = readBetsMadeGames();
+        List<Game> betMadeGames = readBetMadeGames();
         int i = 0;
         for (Game game : eligibleGames) {
-            if (betsMadeGames.contains(game)) {
+            if (betMadeGames.contains(game)) {
                 continue;
             }
             if (availableBalance < singleBetAmount) {
@@ -120,22 +129,20 @@ public class BetProcessor {
                 coefficients.get(betCoefficient.INDEX).click();
                 makeBet(singleBetAmount, mock);
                 availableBalance -= singleBetAmount;
-                betsMadeGames.add(game);
+                betMadeGames.add(game);
                 logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
             }
         }
-        saveBetsMadeGamesToFile(betsMadeGames);
+        saveBetMadeGamesToFile(betMadeGames);
         logger.betsMade(LogType.OK);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private List<Game> readBetsMadeGames() throws IOException {
+    private List<Game> readBetMadeGames() throws IOException {
         List<Game> betsMadeGames = new ArrayList<>();
-        File file = new File(String.format("results/%s/%s/BET_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
-        if (!file.exists()) {
-            file.createNewFile();
+        if (betMadeFile.createNewFile()) {
+            return betsMadeGames;
         }
-        List<String> lines = Files.readAllLines(file.toPath());
+        List<String> lines = Files.readAllLines(betMadeFile.toPath());
         for (String line : lines) {
             String[] fields = line.split(";");
             Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
@@ -147,10 +154,9 @@ public class BetProcessor {
         return betsMadeGames;
     }
 
-    private void saveBetsMadeGamesToFile(List<Game> madeBetsGames) throws IOException {
-        File file = new File(String.format("results/%s/%s/BET_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
+    private void saveBetMadeGamesToFile(List<Game> madeBetsGames) throws IOException {
         File totalBetsMadeFile = new File(String.format("results/%s/BET_MADE_%s.csv", repository.getMonthDirName(), repository.getMonthDirName()));
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(betMadeFile), StandardCharsets.UTF_8));
              BufferedWriter totalBetsMadeWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(totalBetsMadeFile, true), StandardCharsets.UTF_8))) {
             String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s\n";
             for (Game game : madeBetsGames) {
@@ -163,7 +169,9 @@ public class BetProcessor {
                         game.getRuleNumber(),
                         game.getGameResult());
                 writer.write(line);
-                totalBetsMadeWriter.write(line);
+                if (!mock && doBets) {
+                    totalBetsMadeWriter.write(line);
+                }
             }
         }
     }
