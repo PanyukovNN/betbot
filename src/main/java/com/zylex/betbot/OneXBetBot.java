@@ -7,6 +7,7 @@ import com.zylex.betbot.service.bet.*;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 import com.zylex.betbot.service.bet.rule.RuleProcessor;
 import com.zylex.betbot.service.parsing.ParseProcessor;
+import com.zylex.betbot.service.statistics.ResultScanner;
 
 public class OneXBetBot {
 
@@ -21,5 +22,6 @@ public class OneXBetBot {
                 day),
             RuleNumber.RULE_ONE
         ).process(mock, doBets);
+        new ResultScanner().process();
     }
 }

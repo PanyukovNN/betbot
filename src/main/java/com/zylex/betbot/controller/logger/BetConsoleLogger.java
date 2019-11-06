@@ -66,5 +66,6 @@ public class BetConsoleLogger extends ConsoleLogger{
         } else if (type == LogType.ERROR) {
             writeInLine("\nBets aren't made.");
         }
+        writeLineSeparator();
     }
 }

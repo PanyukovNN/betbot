@@ -38,7 +38,7 @@ public class ParseProcessor {
     public List<Game> process() {
         try {
             logger.startLogMessage(LogType.PARSING_START, day == Day.TODAY ? 0 : 1);
-            service = Executors.newFixedThreadPool(6);//driverManager.getThreads());
+            service = Executors.newFixedThreadPool(8);
             logger.startLogMessage(LogType.LEAGUES, null);
             LeagueParser leagueParser = new LeagueParser(logger);
             List<String> leagueLinks = leagueParser.processLeagueParsing();

@@ -131,7 +131,7 @@ public class BetProcessor {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private List<Game> readBetsMadeGames() throws IOException {
         List<Game> betsMadeGames = new ArrayList<>();
-        File file = new File(String.format("results/%s/%s/BETS_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
+        File file = new File(String.format("results/%s/%s/BET_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
         if (!file.exists()) {
             file.createNewFile();
         }
@@ -148,8 +148,8 @@ public class BetProcessor {
     }
 
     private void saveBetsMadeGamesToFile(List<Game> madeBetsGames) throws IOException {
-        File file = new File(String.format("results/%s/%s/BETS_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
-        File totalBetsMadeFile = new File(String.format("results/%s/BETS_MADE_%s.csv", repository.getMonthDirName(), repository.getMonthDirName()));
+        File file = new File(String.format("results/%s/%s/BET_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
+        File totalBetsMadeFile = new File(String.format("results/%s/BET_MADE_%s.csv", repository.getMonthDirName(), repository.getMonthDirName()));
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
              BufferedWriter totalBetsMadeWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(totalBetsMadeFile, true), StandardCharsets.UTF_8))) {
             String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s\n";
