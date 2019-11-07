@@ -59,7 +59,7 @@ public class BetConsoleLogger extends ConsoleLogger{
         writeInLine("\nMoney is over.");
     }
 
-    public void betsMade(LogType type) {
+    public void betMade(LogType type) {
         if (type == LogType.OK) {
             writeLineSeparator();
             writeInLine("\nBets are made successfully.");

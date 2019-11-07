@@ -1,7 +1,7 @@
 package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
-import com.zylex.betbot.exception.GameParserException;
+import com.zylex.betbot.exception.GameBotException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
 import org.jsoup.Jsoup;
@@ -46,7 +46,7 @@ public class CallableGameParser implements Callable<List<Game>> {
         try {
             return processGameParsing();
         } catch (IOException e) {
-            throw new GameParserException(e.getMessage(), e);
+            throw new GameBotException(e.getMessage(), e);
         }
     }
 
@@ -62,12 +62,12 @@ public class CallableGameParser implements Callable<List<Game>> {
         List<Game> games = new ArrayList<>();
         String leagueName = document.select("span.c-events__liga").text();
         Elements gameElements = document.select("div.c-events__item_game");
-        int currentDay = LocalDate.now().plusDays(day.INDEX).getDayOfMonth();
+        LocalDate nextDay = LocalDate.now().plusDays(day.INDEX);
         for (Element gameElement : gameElements) {
             LocalDateTime dateTime = processDate(gameElement).plusHours(3);
-            if (currentDay > dateTime.getDayOfMonth()) {
+            if (dateTime.toLocalDate().isBefore(nextDay)) {
                 continue;
-            } else if (currentDay < dateTime.getDayOfMonth()) {
+            } else if (dateTime.toLocalDate().isAfter(nextDay)) {
                 break;
             }
             Elements teams = gameElement.select("span.c-events__team");

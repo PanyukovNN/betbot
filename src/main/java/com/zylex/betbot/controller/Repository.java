@@ -54,7 +54,7 @@ public class Repository {
             createDirectory(day);
             writeToFile("all_matches_", gameContainer.getAllGames());
             for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
-                writeToFile(String.format("matches_%s_", entry.getKey().betCoefficient), entry.getValue());
+                writeToFile(String.format("matches_%s_", entry.getKey()), entry.getValue());
             }
         } catch (IOException e) {
             throw new RepositoryException(e.getMessage(), e);

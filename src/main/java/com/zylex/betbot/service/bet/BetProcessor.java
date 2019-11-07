@@ -10,6 +10,7 @@ import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -56,18 +57,18 @@ public class BetProcessor {
      *
      * @param mock - flag for doing mock bets.
      */
-    public void process(boolean mock, boolean doBets) {
+    public void process(boolean mock, boolean doBet) {
         this.mock = mock;
-        this.doBets = doBets;
+        this.doBets = doBet;
         GameContainer gameContainer = repository.processSaving();
         betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
         try {
-            driverInit();
             if (gameContainer.getEligibleGames().get(ruleNumber).size() > 0
-                    && !doBets) {
-                logger.betsMade(LogType.ERROR);
+                    && !doBet) {
+                logger.betMade(LogType.ERROR);
                 return;
             }
+            driverInit();
             logger.logRule(ruleNumber);
             logger.startLogMessage(LogType.LOG_IN);
             if (logIn()) {
@@ -77,7 +78,9 @@ public class BetProcessor {
         } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         } finally {
-            driver.quit();
+            if (driver != null) {
+                driver.quit();
+            }
         }
     }
 
@@ -90,7 +93,7 @@ public class BetProcessor {
     }
 
     private boolean logIn() throws IOException {
-        try (InputStream inputStream = new FileInputStream("src/main/resources/oneXBetAuth.properties")) {
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("oneXBetAuth.properties")) {
             Properties property = new Properties();
             property.load(inputStream);
             waitSingleElementAndGet("base_auth_form").click();
@@ -134,7 +137,7 @@ public class BetProcessor {
             }
         }
         saveBetMadeGamesToFile(betMadeGames);
-        logger.betsMade(LogType.OK);
+        logger.betMade(LogType.OK);
     }
 
     private List<Game> readBetMadeGames() throws IOException {
@@ -146,7 +149,12 @@ public class BetProcessor {
         for (String line : lines) {
             String[] fields = line.split(";");
             Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
-                    fields[4], fields[5], RuleNumber.valueOf(fields[6]), GameResult.NO_RESULT);
+                    fields[4], fields[5], GameResult.NO_RESULT);
+            String[] rules = fields[6].split("__");
+            Set<RuleNumber> ruleNumberSet = game.getRuleNumberSet();
+            for (String rule : rules) {
+                ruleNumberSet.add(RuleNumber.valueOf(rule));
+            }
             if (game.getDateTime().isAfter(LocalDateTime.now().minusDays(1))) {
                 betsMadeGames.add(game);
             }
@@ -166,7 +174,7 @@ public class BetProcessor {
                         DATE_FORMATTER.format(game.getDateTime()),
                         game.getFirstTeam(),
                         game.getSecondTeam(),
-                        game.getRuleNumber(),
+                        StringUtils.join(game.getRuleNumberSet(), "__"),
                         game.getGameResult());
                 writer.write(line);
                 if (!mock && doBets) {

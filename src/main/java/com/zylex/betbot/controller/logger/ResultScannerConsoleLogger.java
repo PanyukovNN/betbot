@@ -1,6 +1,7 @@
 package com.zylex.betbot.controller.logger;
 
 import com.zylex.betbot.model.Game;
+import org.apache.commons.lang3.StringUtils;
 
 public class ResultScannerConsoleLogger extends ConsoleLogger{
 
@@ -11,7 +12,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
     public void logBetMadeGame(int index, Game game) {
         writeInLine(String.format("\n%d) Using rule: %s, match result %s, for game: %s",
                 index,
-                game.getRuleNumber(),
+                StringUtils.join(game.getRuleNumberSet(), ", "),
                 game.getGameResult(),
                 game));
     }

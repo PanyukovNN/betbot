@@ -1,6 +1,6 @@
 package com.zylex.betbot.exception;
 
-public class RuleProcessorException extends OneXBetParserException {
+public class RuleProcessorException extends OneXBetBotException {
 
     public RuleProcessorException() {
     }

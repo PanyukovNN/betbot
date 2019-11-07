@@ -6,14 +6,12 @@ import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.openqa.selenium.By;
-import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -37,7 +35,7 @@ public class ResultScanner {
 
     private WebDriverWait wait;
 
-    private Set<Integer> days = new HashSet<>();
+    private Set<LocalDate> days = new HashSet<>();
 
     private File betMadeFile = new File(String.format("results/%s/BET_MADE_%s.csv", LocalDate.now().getMonth().name(), LocalDate.now().getMonth().name()));
 
@@ -70,11 +68,9 @@ public class ResultScanner {
         waitSingleElementAndGet("c-filter_filled").click();
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private List<Game> readBetMadeGames() throws IOException {
         List<Game> betMadeGames = new ArrayList<>();
-        if (!betMadeFile.exists()) {
-            betMadeFile.createNewFile();
+        if (betMadeFile.createNewFile()) {
             return betMadeGames;
         }
         List<String> lines = Files.readAllLines(betMadeFile.toPath());
@@ -85,14 +81,18 @@ public class ResultScanner {
             LocalDateTime dateTime = LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER);
             String firstTeam = fields[4];
             String secondTeam = fields[5];
-            RuleNumber ruleNumber = RuleNumber.valueOf(fields[6]);
             GameResult gameResult = GameResult.NO_RESULT;
             if (fields.length > 7) {
                 gameResult = GameResult.valueOf(fields[7]);
             }
-            Game game = new Game(league, leagueLink, dateTime, firstTeam, secondTeam, ruleNumber, gameResult);
+            Game game = new Game(league, leagueLink, dateTime, firstTeam, secondTeam, gameResult);
+            Set<RuleNumber> ruleNumberSet = game.getRuleNumberSet();
+            String[] rules = fields[6].split("__");
+            for (String rule : rules) {
+                ruleNumberSet.add(RuleNumber.valueOf(rule));
+            }
             betMadeGames.add(game);
-            days.add(dateTime.getDayOfMonth());
+            days.add(dateTime.toLocalDate());
         }
         return betMadeGames;
     }
@@ -107,7 +107,7 @@ public class ResultScanner {
                         DATE_FORMATTER.format(game.getDateTime()),
                         game.getFirstTeam(),
                         game.getSecondTeam(),
-                        game.getRuleNumber(),
+                        StringUtils.join(game.getRuleNumberSet(), "__"),
                         game.getGameResult());
                 writer.write(line);
             }
@@ -115,12 +115,12 @@ public class ResultScanner {
     }
 
     private void processGameResults(List<Game> betsMadeGames) {
-        for (int day : days) {
+        for (LocalDate day : days) {
             navigateToDay(day);
             waitElementsAndGet("c-games__row");
             Document document = Jsoup.parse(driver.getPageSource());
             Elements gameElements = document.select("div[class=c-games__row u-nvpd c-games__row_light c-games__row_can-toggle]");
-            List<Game> betsMadeNoResultGames = findNoResultGames(betsMadeGames, day);
+            List<Game> betsMadeNoResultGames = findNoResultGames(betsMadeGames, day.getDayOfMonth());
             parseGameResults(gameElements, betsMadeNoResultGames);
         }
     }
@@ -172,13 +172,25 @@ public class ResultScanner {
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
-    private void navigateToDay(int day) {
-        waitSingleElementAndGet("vdp-datepicker").click();
-        waitElementsAndGet("day").stream()
-                .filter(element -> element.getText().equals(String.valueOf(day)))
-                .findFirst()
-                .get()
-                .click();
+    private void navigateToDay(LocalDate day) {
+        if (day.getMonth().equals(LocalDate.now().getMonth())) {
+            waitSingleElementAndGet("vdp-datepicker").click();
+            WebElement nextButton = waitSingleElementAndGet("next");
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click()", nextButton);
+            waitElementsAndGet("day").stream()
+                    .filter(element -> element.getText().equals(String.valueOf(day.getDayOfMonth())))
+                    .findFirst()
+                    .get()
+                    .click();
+        } else if (day.getMonth().equals(LocalDate.now().minusMonths(1).getMonth())) {
+            waitSingleElementAndGet("vdp-datepicker").click();
+            waitSingleElementAndGet("prev").click();
+            waitElementsAndGet("day").stream()
+                    .filter(element -> element.getText().equals(String.valueOf(day.getDayOfMonth())))
+                    .findFirst()
+                    .get()
+                    .click();
+        }
     }
 
     private GameResult computeGameResult(int firstBalls, int secondBalls) {
@@ -193,13 +205,13 @@ public class ResultScanner {
 
     private List<WebElement> waitElementsAndGet(String className) {
         wait.ignoring(StaleElementReferenceException.class)
-                .until(ExpectedConditions.elementToBeClickable(By.className(className)));
+                .until(ExpectedConditions.presenceOfElementLocated(By.className(className)));
         return driver.findElements(By.className(className));
     }
 
     private WebElement waitSingleElementAndGet(String className) {
         wait.ignoring(StaleElementReferenceException.class)
-                .until(ExpectedConditions.elementToBeClickable(By.className(className)));
+                .until(ExpectedConditions.presenceOfElementLocated(By.className(className)));
         return driver.findElement(By.className(className));
     }
 }

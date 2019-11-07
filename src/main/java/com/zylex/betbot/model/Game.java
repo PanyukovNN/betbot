@@ -3,7 +3,9 @@ package com.zylex.betbot.model;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Instance of a football game.
@@ -30,7 +32,7 @@ public class Game {
 
     private String secondWinOrTie;
 
-    private RuleNumber ruleNumber;
+    private Set<RuleNumber> ruleNumberSet = new LinkedHashSet<>();
 
     private GameResult gameResult = GameResult.NO_RESULT;
 
@@ -47,13 +49,12 @@ public class Game {
         this.secondWinOrTie = secondWinOrTie;
     }
 
-    public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, RuleNumber ruleNumber, GameResult gameResult) {
+    public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, GameResult gameResult) {
         this.league = league;
         this.leagueLink = leagueLink;
         this.dateTime = dateTime;
         this.firstTeam = firstTeam;
         this.secondTeam = secondTeam;
-        this.ruleNumber = ruleNumber;
         this.gameResult = gameResult;
     }
 
@@ -97,12 +98,8 @@ public class Game {
         return secondWinOrTie;
     }
 
-    public RuleNumber getRuleNumber() {
-        return ruleNumber;
-    }
-
-    public void setRuleNumber(RuleNumber ruleNumber) {
-        this.ruleNumber = ruleNumber;
+    public Set<RuleNumber> getRuleNumberSet() {
+        return ruleNumberSet;
     }
 
     public GameResult getGameResult() {

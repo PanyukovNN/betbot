@@ -1,6 +1,6 @@
 package com.zylex.betbot.exception;
 
-public class ResultsScannerException extends OneXBetParserException {
+public class ResultsScannerException extends OneXBetBotException {
 
     public ResultsScannerException() {
     }

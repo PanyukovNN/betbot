@@ -12,7 +12,7 @@ public class DriverConsoleLogger extends ConsoleLogger {
 
     public synchronized void logDriver() {
         String output = "Starting chrome driver: complete";
-        writeInLine(StringUtils.repeat("\b", output.length()) + output);
+        writeInLine(StringUtils.repeat("\b", "\nStarting chrome driver: ...".length()) + output);
         writeLineSeparator();
     }
 }

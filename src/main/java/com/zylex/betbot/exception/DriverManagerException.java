@@ -1,6 +1,6 @@
 package com.zylex.betbot.exception;
 
-public class DriverManagerException extends OneXBetParserException {
+public class DriverManagerException extends OneXBetBotException {
 
     public DriverManagerException() {
     }
