@@ -1,12 +1,11 @@
 package com.zylex.betbot.service.statistics;
 
+import com.zylex.betbot.controller.ResultRepository;
 import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
 import com.zylex.betbot.exception.ResultsScannerException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
-import com.zylex.betbot.service.bet.rule.RuleNumber;
-import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -16,20 +15,16 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class ResultScanner {
 
     private ResultScannerConsoleLogger logger = new ResultScannerConsoleLogger();
 
-    private DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
     private WebDriver driver;
 
@@ -37,16 +32,21 @@ public class ResultScanner {
 
     private Set<LocalDate> days = new HashSet<>();
 
-    private File betMadeFile = new File(String.format("results/%s/BET_MADE_%s.csv", LocalDate.now().getMonth().name(), LocalDate.now().getMonth().name()));
+    private ResultRepository resultRepository;
+
+    public ResultScanner(ResultRepository resultRepository) {
+        this.resultRepository = resultRepository;
+    }
 
     public void process() {
         try {
             initiateDriver();
             logger.startLogMessage();
             openFootballGamesResults();
-            List<Game> betMadeGames = readBetMadeGames();
+            List<Game> betMadeGames = resultRepository.readResultGames();
+            betMadeGames.forEach(game -> days.add(game.getDateTime().toLocalDate()));
             processGameResults(betMadeGames);
-            saveBetsMadeGamesToFile(betMadeGames);
+            resultRepository.saveResultGamesToFile(betMadeGames);
             logger.endMessage();
         } catch (IOException e) {
             throw new ResultsScannerException(e.getMessage(), e);
@@ -68,52 +68,6 @@ public class ResultScanner {
         waitSingleElementAndGet("c-filter_filled").click();
     }
 
-    private List<Game> readBetMadeGames() throws IOException {
-        List<Game> betMadeGames = new ArrayList<>();
-        if (betMadeFile.createNewFile()) {
-            return betMadeGames;
-        }
-        List<String> lines = Files.readAllLines(betMadeFile.toPath());
-        for (String line : lines) {
-            String[] fields = line.split(";");
-            String league = fields[0];
-            String leagueLink = fields[1];
-            LocalDateTime dateTime = LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER);
-            String firstTeam = fields[4];
-            String secondTeam = fields[5];
-            GameResult gameResult = GameResult.NO_RESULT;
-            if (fields.length > 7) {
-                gameResult = GameResult.valueOf(fields[7]);
-            }
-            Game game = new Game(league, leagueLink, dateTime, firstTeam, secondTeam, gameResult);
-            Set<RuleNumber> ruleNumberSet = game.getRuleNumberSet();
-            String[] rules = fields[6].split("__");
-            for (String rule : rules) {
-                ruleNumberSet.add(RuleNumber.valueOf(rule));
-            }
-            betMadeGames.add(game);
-            days.add(dateTime.toLocalDate());
-        }
-        return betMadeGames;
-    }
-
-    private void saveBetsMadeGamesToFile(List<Game> madeBetsGames) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(betMadeFile), StandardCharsets.UTF_8))) {
-            String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s\n";
-            for (Game game : madeBetsGames) {
-                String line = String.format(MADE_BET_GAME_FORMAT,
-                        game.getLeague(),
-                        game.getLeagueLink(),
-                        DATE_FORMATTER.format(game.getDateTime()),
-                        game.getFirstTeam(),
-                        game.getSecondTeam(),
-                        StringUtils.join(game.getRuleNumberSet(), "__"),
-                        game.getGameResult());
-                writer.write(line);
-            }
-        }
-    }
-
     private void processGameResults(List<Game> betsMadeGames) {
         for (LocalDate day : days) {
             navigateToDay(day);
@@ -126,7 +80,6 @@ public class ResultScanner {
     }
 
     private void parseGameResults(Elements gameElements, List<Game> betsMadeNoResultGames) {
-        AtomicInteger i = new AtomicInteger();
         for (Element gameElement : gameElements) {
             LocalDateTime date = processDateTime(gameElement);
             String[] teams = gameElement.select("div[class=c-games__opponents u-dir-ltr]").text().split(" - ");
@@ -152,7 +105,7 @@ public class ResultScanner {
                     .findFirst()
                     .ifPresent(game -> {
                         game.setGameResult(gameResult);
-                        logger.logBetMadeGame(i.incrementAndGet(), game);
+                        logger.logBetMadeGame(game);
                     });
         }
     }

@@ -186,13 +186,13 @@ public class BetProcessor {
 
     private List<WebElement> waitElementsAndGet(String className) {
         wait.ignoring(StaleElementReferenceException.class)
-                .until(ExpectedConditions.elementToBeClickable(By.className(className)));
+                .until(ExpectedConditions.presenceOfElementLocated(By.className(className)));
         return driver.findElements(By.className(className));
     }
 
     private WebElement waitSingleElementAndGet(String className) {
         wait.ignoring(StaleElementReferenceException.class)
-                .until(ExpectedConditions.elementToBeClickable(By.className(className)));
+                .until(ExpectedConditions.presenceOfElementLocated(By.className(className)));
         return driver.findElement(By.className(className));
     }
 }

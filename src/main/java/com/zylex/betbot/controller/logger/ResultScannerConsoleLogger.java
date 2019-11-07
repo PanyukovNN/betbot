@@ -5,13 +5,15 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ResultScannerConsoleLogger extends ConsoleLogger{
 
+    private int index = 0;
+
     public synchronized void startLogMessage() {
         writeInLine("\nScanning results:");
     }
 
-    public void logBetMadeGame(int index, Game game) {
+    public void logBetMadeGame(Game game) {
         writeInLine(String.format("\n%d) Using rule: %s, match result %s, for game: %s",
-                index,
+                ++index,
                 StringUtils.join(game.getRuleNumberSet(), ", "),
                 game.getGameResult(),
                 game));

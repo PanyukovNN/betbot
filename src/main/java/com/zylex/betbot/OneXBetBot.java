@@ -2,6 +2,7 @@ package com.zylex.betbot;
 
 import com.zylex.betbot.controller.BetRepository;
 import com.zylex.betbot.controller.ParsingRepository;
+import com.zylex.betbot.controller.ResultRepository;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.bet.*;
@@ -28,7 +29,10 @@ public class OneXBetBot {
                 mock,
                 doBets
             ).process();
-            new ResultScanner().process();
+
+            new ResultScanner(
+                new ResultRepository()
+            ).process();
         } finally {
             ConsoleLogger.writeToLogFile();
         }
