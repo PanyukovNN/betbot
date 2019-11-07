@@ -1,11 +1,8 @@
 package com.zylex.betbot.controller;
 
-import com.zylex.betbot.exception.RepositoryException;
-import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
-import com.zylex.betbot.service.bet.rule.RuleNumber;
-import com.zylex.betbot.service.bet.rule.RuleProcessor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -13,75 +10,52 @@ import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
-/**
- * Process saving games into file.
- */
-public class Repository {
+abstract class Repository {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
     private final DateTimeFormatter DIR_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    private String dirName;
+    static String dirName;
 
-    private String monthDirName;
+    static String monthDirName;
 
-    private Day day;
-
-    private RuleProcessor ruleProcessor;
-
-    public Repository(RuleProcessor ruleProcessor, Day day) {
-        this.ruleProcessor = ruleProcessor;
-        this.day = day;
-    }
-
-    public String getDirName() {
-        return dirName;
-    }
-
-    public String getMonthDirName() {
-        return monthDirName;
-    }
-
-    /**
-     * Saves all lists of games from GameContainer into separate files.
-     */
-    public GameContainer processSaving() {
-        GameContainer gameContainer = ruleProcessor.process();
-        try {
-            createDirectory(day);
-            writeToFile("all_matches_", gameContainer.getAllGames());
-            for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
-                writeToFile(String.format("matches_%s_", entry.getKey()), entry.getValue());
-            }
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
-        }
-        return gameContainer;
-    }
+    static File betMadeFile;
 
     /**
      * Creates directory for concrete day.
      * @param day - day for parsing.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void createDirectory(Day day) {
+    void createDirectory(Day day) {
         LocalDate date = LocalDate.now().plusDays(day.INDEX);
         monthDirName = date.getMonth().name();
         dirName = DIR_DATE_FORMATTER.format(date);
         new File("results").mkdir();
         new File("results/" + monthDirName).mkdir();
         new File("results/" + monthDirName + "/" + dirName).mkdir();
+        betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s.csv", monthDirName, dirName, dirName));
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void writeToFile(String fileName, List<Game> games) throws IOException {
-        File file = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, fileName + dirName));
-        if (!file.exists()) {
-            file.createNewFile();
+    void writeBetMadeGamesToFile(File file, List<Game> madeBetsGames) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+            String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s\n";
+            for (Game game : madeBetsGames) {
+                String line = String.format(MADE_BET_GAME_FORMAT,
+                        game.getLeague(),
+                        game.getLeagueLink(),
+                        DATE_FORMATTER.format(game.getDateTime()),
+                        game.getFirstTeam(),
+                        game.getSecondTeam(),
+                        StringUtils.join(game.getRuleNumberSet(), "__"),
+                        game.getGameResult());
+                writer.write(line);
+            }
         }
+    }
+
+    void writeParsedGamesToFile(File file, List<Game> games) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
             for (Game game : games) {

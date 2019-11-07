@@ -1,23 +1,20 @@
 package com.zylex.betbot.service.bet;
 
-import com.zylex.betbot.controller.Repository;
+import com.zylex.betbot.controller.BetRepository;
+import com.zylex.betbot.controller.ParsingRepository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
-import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,38 +27,34 @@ public class BetProcessor {
 
     private BetConsoleLogger logger = new BetConsoleLogger();
 
-    private DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
-
     private WebDriver driver;
 
     private WebDriverWait wait;
 
     private RuleNumber ruleNumber;
 
-    private Repository repository;
+    private ParsingRepository parsingRepository;
 
-    private File betMadeFile;
+    private BetRepository betRepository;
 
     private boolean mock;
 
-    private boolean doBets;
+    private boolean doBet;
 
-    public BetProcessor(Repository repository, RuleNumber ruleNumber) {
-        this.repository = repository;
+    public BetProcessor(ParsingRepository parsingRepository, BetRepository betRepository, RuleNumber ruleNumber, boolean mock, boolean doBet) {
+        this.parsingRepository = parsingRepository;
+        this.betRepository = betRepository;
         this.ruleNumber = ruleNumber;
+        this.mock = mock;
+        this.doBet = doBet;
     }
 
     /**
      * Initiates one non-headless chrome driver, navigates to site,
      * logs in, makes bets and log out.
-     *
-     * @param mock - flag for doing mock bets.
      */
-    public void process(boolean mock, boolean doBet) {
-        this.mock = mock;
-        this.doBets = doBet;
-        GameContainer gameContainer = repository.processSaving();
-        betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s.csv", repository.getMonthDirName(), repository.getDirName(), repository.getDirName()));
+    public void process() {
+        GameContainer gameContainer = parsingRepository.processSaving();
         try {
             if (gameContainer.getEligibleGames().get(ruleNumber).size() > 0
                     && !doBet) {
@@ -117,7 +110,7 @@ public class BetProcessor {
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
         int singleBetAmount = calculateAmount(betCoefficient, totalMoney);
         double availableBalance = totalMoney;
-        List<Game> betMadeGames = readBetMadeGames();
+        List<Game> betMadeGames = betRepository.readBetMadeFile();
         int i = 0;
         for (Game game : eligibleGames) {
             if (betMadeGames.contains(game)) {
@@ -136,51 +129,10 @@ public class BetProcessor {
                 logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
             }
         }
-        saveBetMadeGamesToFile(betMadeGames);
         logger.betMade(LogType.OK);
-    }
-
-    private List<Game> readBetMadeGames() throws IOException {
-        List<Game> betsMadeGames = new ArrayList<>();
-        if (betMadeFile.createNewFile()) {
-            return betsMadeGames;
-        }
-        List<String> lines = Files.readAllLines(betMadeFile.toPath());
-        for (String line : lines) {
-            String[] fields = line.split(";");
-            Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
-                    fields[4], fields[5], GameResult.NO_RESULT);
-            String[] rules = fields[6].split("__");
-            Set<RuleNumber> ruleNumberSet = game.getRuleNumberSet();
-            for (String rule : rules) {
-                ruleNumberSet.add(RuleNumber.valueOf(rule));
-            }
-            if (game.getDateTime().isAfter(LocalDateTime.now().minusDays(1))) {
-                betsMadeGames.add(game);
-            }
-        }
-        return betsMadeGames;
-    }
-
-    private void saveBetMadeGamesToFile(List<Game> madeBetsGames) throws IOException {
-        File totalBetsMadeFile = new File(String.format("results/%s/BET_MADE_%s.csv", repository.getMonthDirName(), repository.getMonthDirName()));
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(betMadeFile), StandardCharsets.UTF_8));
-             BufferedWriter totalBetsMadeWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(totalBetsMadeFile, true), StandardCharsets.UTF_8))) {
-            String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s\n";
-            for (Game game : madeBetsGames) {
-                String line = String.format(MADE_BET_GAME_FORMAT,
-                        game.getLeague(),
-                        game.getLeagueLink(),
-                        DATE_FORMATTER.format(game.getDateTime()),
-                        game.getFirstTeam(),
-                        game.getSecondTeam(),
-                        StringUtils.join(game.getRuleNumberSet(), "__"),
-                        game.getGameResult());
-                writer.write(line);
-                if (!mock && doBets) {
-                    totalBetsMadeWriter.write(line);
-                }
-            }
+        betRepository.saveBetMadeGamesToFile(betMadeGames);
+        if (!mock && doBet) {
+            betRepository.saveTotalBetGamesToFile(betMadeGames);
         }
     }
 
