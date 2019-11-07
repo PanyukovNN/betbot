@@ -23,7 +23,7 @@ public class OneXBetBot {
                     new RuleProcessor(
                         new ParseProcessor(day)),
                     day),
-                new BetRepository(),
+                new BetRepository(day),
                 RuleNumber.RULE_ONE,
                 mock,
                 doBets
