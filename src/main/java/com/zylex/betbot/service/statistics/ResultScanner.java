@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.statistics;
 
-import com.zylex.betbot.controller.ResultRepository;
+import com.zylex.betbot.controller.BetRepository;
 import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
 import com.zylex.betbot.exception.ResultsScannerException;
 import com.zylex.betbot.model.Game;
@@ -32,10 +32,10 @@ public class ResultScanner {
 
     private Set<LocalDate> days = new HashSet<>();
 
-    private ResultRepository resultRepository;
+    private BetRepository betRepository;
 
-    public ResultScanner(ResultRepository resultRepository) {
-        this.resultRepository = resultRepository;
+    public ResultScanner(BetRepository betRepository) {
+        this.betRepository = betRepository;
     }
 
     public void process() {
@@ -43,10 +43,10 @@ public class ResultScanner {
             initiateDriver();
             logger.startLogMessage();
             openFootballGamesResults();
-            List<Game> betMadeGames = resultRepository.readResultGames();
+            List<Game> betMadeGames = betRepository.readBetMadeFile();
             betMadeGames.forEach(game -> days.add(game.getDateTime().toLocalDate()));
             processGameResults(betMadeGames);
-            resultRepository.saveResultGamesToFile(betMadeGames);
+            betRepository.saveBetMadeGamesToFile(betMadeGames);
             logger.endMessage();
         } catch (IOException e) {
             throw new ResultsScannerException(e.getMessage(), e);

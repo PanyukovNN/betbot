@@ -4,6 +4,7 @@ import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.GameBotException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -51,11 +52,16 @@ public class CallableGameParser implements Callable<List<Game>> {
     }
 
     private List<Game> processGameParsing() throws IOException {
-        Document document = Jsoup.connect(String.format("https://1xstavka.ru/line/Football/%s", leagueLink))
-                .userAgent("Chrome/4.0.249.0 Safari/532.5")
-                .referrer("http://www.google.com")
-                .get();
-        return parseGames(document);
+        try {
+            logger.logLeagueGame();
+            Document document = Jsoup.connect(String.format("https://1xstavka.ru/line/Football/%s", leagueLink))
+                    .userAgent("Chrome/4.0.249.0 Safari/532.5")
+                    .referrer("http://www.google.com")
+                    .get();
+            return parseGames(document);
+        } catch (HttpStatusException e) {
+            return new ArrayList<>();
+        }
     }
 
     private List<Game> parseGames(Document document) {
@@ -94,7 +100,6 @@ public class CallableGameParser implements Callable<List<Game>> {
                     secondWinOrTie);
             games.add(game);
         }
-        logger.logLeagueGame();
         return games;
     }
 

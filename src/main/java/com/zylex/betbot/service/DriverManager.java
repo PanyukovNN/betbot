@@ -34,6 +34,7 @@ public class DriverManager {
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
         logger.startLogMessage(LogType.DRIVER);
         ChromeOptions options = new ChromeOptions();
+        options.addArguments("--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 11.12; rv:68.0) Gecko/20100101 Firefox/67.0");
         if (headless) {
             options.addArguments("--headless");
         }

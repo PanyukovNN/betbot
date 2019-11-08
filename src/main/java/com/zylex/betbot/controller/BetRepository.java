@@ -53,15 +53,33 @@ public class BetRepository {
                 for (String rule : rules) {
                     ruleNumberSet.add(RuleNumber.valueOf(rule));
                 }
-                if (game.getDateTime().isAfter(LocalDateTime.now().minusDays(1))) {
-                    betMadeGames.add(game);
-                }
+                betMadeGames.add(game);
             }
             return betMadeGames;
         } catch (IOException e) {
             throw new BetRepositoryException(e.getMessage(), e);
         }
     }
+
+//    public List<Game> readResultGames() throws IOException {
+//        List<Game> betMadeGames = new ArrayList<>();
+//        if (betMadeFile.createNewFile()) {
+//            return betMadeGames;
+//        }
+//        List<String> lines = Files.readAllLines(betMadeFile.toPath());
+//        for (String line : lines) {
+//            String[] fields = line.split(";");
+//            Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
+//                    fields[4], fields[5], GameResult.valueOf(fields[7]));
+//            Set<RuleNumber> ruleNumberSet = game.getRuleNumberSet();
+//            String[] rules = fields[6].split("__");
+//            for (String rule : rules) {
+//                ruleNumberSet.add(RuleNumber.valueOf(rule));
+//            }
+//            betMadeGames.add(game);
+//        }
+//        return betMadeGames;
+//    }
 
     public void saveBetMadeGamesToFile(List<Game> betMadeGames) throws IOException {
         writeBetMadeGamesToFile(betMadeFile, betMadeGames);
