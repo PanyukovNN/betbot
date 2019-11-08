@@ -1,5 +1,6 @@
 package com.zylex.betbot.controller;
 
+import com.google.gson.internal.$Gson$Preconditions;
 import com.zylex.betbot.exception.BetRepositoryException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
@@ -26,15 +27,22 @@ public class BetRepository {
 
     private File betMadeFile;
 
+    private File totalBetsMadeFile;
+
     public BetRepository(Day day) {
         LocalDate date = LocalDate.now().plusDays(day.INDEX);
         monthDirName = date.getMonth().name();
         String dirName = DateTimeFormatter.ofPattern("dd.MM.yyyy").format(date);
         betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s.csv", monthDirName, dirName, dirName));
+        totalBetsMadeFile = new File(String.format("results/%s/BET_MADE_%s.csv", monthDirName, monthDirName));
     }
 
     public List<Game> readBetMadeFile() {
         return processReadBetMade(betMadeFile);
+    }
+
+    public List<Game> readTotalBetMadeFile() {
+        return processReadBetMade(totalBetsMadeFile);
     }
 
     private List<Game> processReadBetMade(File file) {
@@ -47,7 +55,7 @@ public class BetRepository {
             for (String line : lines) {
                 String[] fields = line.split(";");
                 Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
-                        fields[4], fields[5], GameResult.NO_RESULT);
+                        fields[4], fields[5], GameResult.valueOf(fields[7]));
                 String[] rules = fields[6].split("__");
                 Set<RuleNumber> ruleNumberSet = game.getRuleNumberSet();
                 for (String rule : rules) {
@@ -61,32 +69,11 @@ public class BetRepository {
         }
     }
 
-//    public List<Game> readResultGames() throws IOException {
-//        List<Game> betMadeGames = new ArrayList<>();
-//        if (betMadeFile.createNewFile()) {
-//            return betMadeGames;
-//        }
-//        List<String> lines = Files.readAllLines(betMadeFile.toPath());
-//        for (String line : lines) {
-//            String[] fields = line.split(";");
-//            Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
-//                    fields[4], fields[5], GameResult.valueOf(fields[7]));
-//            Set<RuleNumber> ruleNumberSet = game.getRuleNumberSet();
-//            String[] rules = fields[6].split("__");
-//            for (String rule : rules) {
-//                ruleNumberSet.add(RuleNumber.valueOf(rule));
-//            }
-//            betMadeGames.add(game);
-//        }
-//        return betMadeGames;
-//    }
-
     public void saveBetMadeGamesToFile(List<Game> betMadeGames) throws IOException {
         writeBetMadeGamesToFile(betMadeFile, betMadeGames);
     }
 
     public void saveTotalBetGamesToFile(List<Game> betMadeGames) throws IOException {
-        File totalBetsMadeFile = new File(String.format("results/%s/BET_MADE_%s.csv", monthDirName, monthDirName));
         List<Game> totalBetMadeGames = processReadBetMade(totalBetsMadeFile);
         totalBetMadeGames.removeAll(betMadeGames);
         totalBetMadeGames.addAll(betMadeGames);

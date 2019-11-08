@@ -43,10 +43,10 @@ public class ResultScanner {
             initiateDriver();
             logger.startLogMessage();
             openFootballGamesResults();
-            List<Game> betMadeGames = betRepository.readBetMadeFile();
+            List<Game> betMadeGames = betRepository.readTotalBetMadeFile();
             betMadeGames.forEach(game -> days.add(game.getDateTime().toLocalDate()));
             processGameResults(betMadeGames);
-            betRepository.saveBetMadeGamesToFile(betMadeGames);
+            betRepository.saveTotalBetGamesToFile(betMadeGames);
             logger.endMessage();
         } catch (IOException e) {
             throw new ResultsScannerException(e.getMessage(), e);
