@@ -18,7 +18,7 @@ public class OneXBetBot {
             Day day = Day.TOMORROW;
             boolean mock = true;//args[0].equals("true");
             boolean doBets = false;//args[1].equals("true");
-            boolean leaguesFromFile = false;
+            boolean leaguesFromFile = true;
             new BetProcessor(
                 new ParsingRepository(
                     new RuleProcessor(

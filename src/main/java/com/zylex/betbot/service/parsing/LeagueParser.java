@@ -10,6 +10,7 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Parsing football leagues links, which includes game for a next day on site.
@@ -41,26 +42,32 @@ public class LeagueParser {
 
     private List<String> parseLeagueLinks() throws IOException {
         List<String> leagueLinks = new ArrayList<>();
-        if (leaguesFromFile) {
-            try (InputStream inputStream = new FileInputStream("external-resources/leagues_list.txt");
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                reader.lines().forEach(leagueLinks::add);
-            }
-        } else {
-            Document document = Jsoup.connect("https://1xstavka.ru/line/Football/")
-                    .userAgent("Chrome/4.0.249.0 Safari/532.5")
-                    .referrer("http://www.google.com")
-                    .get();
-            Elements leagueLinksElements = document.select("ul.liga_menu > li > a.link");
-            for (Element element : leagueLinksElements) {
-                String link = element.attr("href");
-                if (checkLeagueLink(link)) {
-                    link = link.replace("line/Football/", "");
-                    leagueLinks.add(link);
-                }
+        Document document = Jsoup.connect("https://1xstavka.ru/line/Football/")
+                .userAgent("Chrome/4.0.249.0 Safari/532.5")
+                .referrer("http://www.google.com")
+                .get();
+        Elements leagueLinksElements = document.select("ul.liga_menu > li > a.link");
+        for (Element element : leagueLinksElements) {
+            String link = element.attr("href");
+            if (checkLeagueLink(link)) {
+                link = link.replace("line/Football/", "");
+                leagueLinks.add(link);
             }
         }
+        if (leaguesFromFile) {
+            leagueLinks = filterLinksFromFile(leagueLinks);
+        }
         logger.logLeague();
+        return leagueLinks;
+    }
+
+    private List<String> filterLinksFromFile(List<String> leagueLinks) throws IOException {
+        List<String> leagueLinksFromFile = new ArrayList<>();
+        try (InputStream inputStream = new FileInputStream("external-resources/leagues_list.txt");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            reader.lines().forEach(leagueLinksFromFile::add);
+        }
+        leagueLinks = leagueLinks.stream().filter(leagueLinksFromFile::contains).collect(Collectors.toList());
         return leagueLinks;
     }
 
