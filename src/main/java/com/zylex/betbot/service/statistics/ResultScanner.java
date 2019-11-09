@@ -1,6 +1,7 @@
 package com.zylex.betbot.service.statistics;
 
 import com.zylex.betbot.controller.BetRepository;
+import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
 import com.zylex.betbot.exception.ResultsScannerException;
 import com.zylex.betbot.model.Game;
@@ -26,12 +27,9 @@ public class ResultScanner {
 
     private ResultScannerConsoleLogger logger = new ResultScannerConsoleLogger();
 
-
     private WebDriver driver;
 
     private WebDriverWait wait;
-
-    private Set<LocalDate> days = new HashSet<>();
 
     private BetRepository betRepository;
 
@@ -40,21 +38,47 @@ public class ResultScanner {
     }
 
     public void process() {
-        try {
-            initiateDriver();
+        List<Game> betMadeGames = betRepository.readTotalBetMadeFile();
+        Map<LocalDate, List<Game>> betMadeGamesByDay = splitGamesByDay(betMadeGames);
+        if (betMadeGamesByDay.isEmpty()) {
             logger.startLogMessage();
+            logger.endMessage(LogType.NO_GAMES_TO_SCAN);
+            return;
+        }
+        try {
+            logger.startLogMessage();
+            initiateDriver();
             if (openFootballGamesResults()) {
-                List<Game> betMadeGames = betRepository.readTotalBetMadeFile();
-                betMadeGames.forEach(game -> days.add(game.getDateTime().toLocalDate()));
-                processGameResults(betMadeGames);
+                processGameResults(betMadeGamesByDay);
                 betRepository.saveTotalBetGamesToFile(betMadeGames);
             }
-            logger.endMessage();
+            logger.endMessage(LogType.OK);
         } catch (IOException e) {
             throw new ResultsScannerException(e.getMessage(), e);
         } finally {
             driver.quit();
         }
+    }
+
+    private Map<LocalDate, List<Game>> splitGamesByDay(List<Game> betMadeGames) {
+        Map<LocalDate, List<Game>> betMadeGamesByDay = new HashMap<>();
+        Set<LocalDate> days = new HashSet<>();
+        betMadeGames.forEach(game -> days.add(game.getDateTime().toLocalDate()));
+        days.forEach(day -> {
+            List<Game> noResultGames = findNoResultGames(betMadeGames, day);
+            if (!noResultGames.isEmpty()) {
+                betMadeGamesByDay.put(day, noResultGames);
+            }
+        });
+        return betMadeGamesByDay;
+    }
+
+    private List<Game> findNoResultGames(List<Game> betsMadeGames, LocalDate day) {
+        return betsMadeGames.stream()
+                .filter(game -> game.getGameResult() == GameResult.NO_RESULT
+                        && game.getDateTime().toLocalDate().equals(day)
+                        && game.getDateTime().isBefore(LocalDateTime.now().minusHours(3)))
+                .collect(Collectors.toList());
     }
 
     private void initiateDriver() {
@@ -75,17 +99,18 @@ public class ResultScanner {
         return true;
     }
 
-    private void processGameResults(List<Game> betsMadeGames) {
-        for (LocalDate day : days) {
-            List<Game> betsMadeNoResultGames = findNoResultGames(betsMadeGames, day.getDayOfMonth());
-            if (betsMadeNoResultGames.isEmpty()) {
+    private void processGameResults(Map<LocalDate, List<Game>> betsMadeGamesByDay) {
+        for (Map.Entry<LocalDate, List<Game>> entry : betsMadeGamesByDay.entrySet()) {
+            LocalDate day = entry.getKey();
+            List<Game> betMadeGamesNoResult = entry.getValue();
+            if (betMadeGamesNoResult.isEmpty()) {
                 continue;
             }
             navigateToDay(day);
             waitElementsAndGet("c-games__row");
             Document document = Jsoup.parse(driver.getPageSource());
             Elements gameElements = document.select("div[class=c-games__row u-nvpd c-games__row_light c-games__row_can-toggle]");
-            parseGameResults(gameElements, betsMadeNoResultGames);
+            parseGameResults(gameElements, betMadeGamesNoResult);
         }
     }
 
@@ -130,14 +155,6 @@ public class ResultScanner {
         String dateText = element.select("div.c-games__date").text();
         dateText = dateText.substring(0, 5) + "." + LocalDateTime.now().getYear() + dateText.substring(5);
         return LocalDateTime.parse(dateText, dateTimeFormatter);
-    }
-
-    private List<Game> findNoResultGames(List<Game> betsMadeGames, int day) {
-        return betsMadeGames.stream()
-                .filter(game -> game.getGameResult() == GameResult.NO_RESULT
-                        && game.getDateTime().getDayOfMonth() == day
-                        && game.getDateTime().isBefore(LocalDateTime.now().minusHours(3)))
-                .collect(Collectors.toList());
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")

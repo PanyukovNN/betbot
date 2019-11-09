@@ -19,8 +19,12 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
                 game));
     }
 
-    public void endMessage() {
-        writeInLine("\nResults are scanned.");
+    public void endMessage(LogType type) {
+        if (type == LogType.OK) {
+            writeInLine("\nResults are scanned.");
+        } else if (type == LogType.NO_GAMES_TO_SCAN) {
+            writeInLine("\nNo games to scan");
+        }
         writeLineSeparator();
         writeInLine(String.format("\nBot work completed in %s", computeTime(programStartTime.get())));
     }

@@ -58,7 +58,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
 
     public void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {
         for (RuleNumber ruleNumber : RuleNumber.values()) {
-            writeInLine(String.format("\nEligible games for rule %s: %d", ruleNumber, eligibleGames.get(ruleNumber).size()));
+            writeInLine(String.format("\nEligible games for %s: %d", ruleNumber, eligibleGames.get(ruleNumber).size()));
         }
         writeLineSeparator();
     }
