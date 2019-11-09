@@ -15,19 +15,22 @@ public class OneXBetBot {
 
     public static void main(String[] args) {
         try {
-            Day day = Day.TOMORROW;
-//            boolean mock = true;//args[0].equals("true");
-//            boolean doBets = false;//args[1].equals("true");
-//            new BetProcessor(
-//                new ParsingRepository(
-//                    new RuleProcessor(
-//                        new ParseProcessor(day)),
-//                    day),
-//                new BetRepository(day),
-//                RuleNumber.RULE_ONE,
-//                mock,
-//                doBets
-//            ).process();
+            Day day = Day.TODAY;
+            boolean mock = true;//args[0].equals("true");
+            boolean doBets = false;//args[1].equals("true");
+            boolean leaguesFromFile = true;
+            new BetProcessor(
+                new ParsingRepository(
+                    new RuleProcessor(
+                        new ParseProcessor(
+                                day,
+                                leaguesFromFile)),
+                    day),
+                new BetRepository(day),
+                RuleNumber.RULE_ONE,
+                mock,
+                doBets
+            ).process();
 
             new ResultScanner(
                 new BetRepository(day)

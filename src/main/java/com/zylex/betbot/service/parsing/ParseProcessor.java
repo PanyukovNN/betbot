@@ -24,8 +24,11 @@ public class ParseProcessor {
 
     private Day day;
 
-    public ParseProcessor(Day day) {
+    private boolean leaguesFromFile;
+
+    public ParseProcessor(Day day, boolean leaguesFromFile) {
         this.day = day;
+        this.leaguesFromFile = leaguesFromFile;
     }
 
     /**
@@ -40,7 +43,7 @@ public class ParseProcessor {
             logger.startLogMessage(LogType.PARSING_START, day == Day.TODAY ? 0 : 1);
             service = Executors.newFixedThreadPool(8);
             logger.startLogMessage(LogType.LEAGUES, null);
-            LeagueParser leagueParser = new LeagueParser(logger);
+            LeagueParser leagueParser = new LeagueParser(logger, leaguesFromFile);
             List<String> leagueLinks = leagueParser.processLeagueParsing();
             logger.startLogMessage(LogType.GAMES, leagueLinks.size());
             List<Game> games = processGameParsing(service, leagueLinks, day);

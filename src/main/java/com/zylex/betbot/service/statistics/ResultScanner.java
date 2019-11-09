@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class ResultScanner {
@@ -42,11 +43,12 @@ public class ResultScanner {
         try {
             initiateDriver();
             logger.startLogMessage();
-            openFootballGamesResults();
-            List<Game> betMadeGames = betRepository.readTotalBetMadeFile();
-            betMadeGames.forEach(game -> days.add(game.getDateTime().toLocalDate()));
-            processGameResults(betMadeGames);
-            betRepository.saveTotalBetGamesToFile(betMadeGames);
+            if (openFootballGamesResults()) {
+                List<Game> betMadeGames = betRepository.readTotalBetMadeFile();
+                betMadeGames.forEach(game -> days.add(game.getDateTime().toLocalDate()));
+                processGameResults(betMadeGames);
+                betRepository.saveTotalBetGamesToFile(betMadeGames);
+            }
             logger.endMessage();
         } catch (IOException e) {
             throw new ResultsScannerException(e.getMessage(), e);
@@ -59,28 +61,40 @@ public class ResultScanner {
         DriverManager driverManager = new DriverManager();
         driverManager.initiateDriver(true);
         driver = driverManager.getDriver();
-        wait = new WebDriverWait(driver, 10);
+        wait = new WebDriverWait(driver, 20);
         driver.navigate().to("https://1xstavka.ru/results/");
     }
 
-    private void openFootballGamesResults() {
-        waitElementsAndGet("c-nav__link").get(1).click();
+    private boolean openFootballGamesResults() {
+        WebElement footballLink = waitElementsAndGet("c-nav__link").get(1);
+        if (!footballLink.getText().contains("Футбол")) {
+            return false;
+        }
+        footballLink.click();
         waitSingleElementAndGet("c-filter_filled").click();
+        return true;
     }
 
     private void processGameResults(List<Game> betsMadeGames) {
         for (LocalDate day : days) {
+            List<Game> betsMadeNoResultGames = findNoResultGames(betsMadeGames, day.getDayOfMonth());
+            if (betsMadeNoResultGames.isEmpty()) {
+                continue;
+            }
             navigateToDay(day);
             waitElementsAndGet("c-games__row");
             Document document = Jsoup.parse(driver.getPageSource());
             Elements gameElements = document.select("div[class=c-games__row u-nvpd c-games__row_light c-games__row_can-toggle]");
-            List<Game> betsMadeNoResultGames = findNoResultGames(betsMadeGames, day.getDayOfMonth());
             parseGameResults(gameElements, betsMadeNoResultGames);
         }
     }
 
     private void parseGameResults(Elements gameElements, List<Game> betsMadeNoResultGames) {
+        AtomicInteger index = new AtomicInteger();
         for (Element gameElement : gameElements) {
+            if (index.get() == betsMadeNoResultGames.size()) {
+                break;
+            }
             LocalDateTime date = processDateTime(gameElement);
             String[] teams = gameElement.select("div[class=c-games__opponents u-dir-ltr]").text().split(" - ");
             if (teams.length < 2 || teams[0].contains("(голы)") || teams[0].contains("/") || teams[0].contains("(люб)")) {
@@ -104,6 +118,7 @@ public class ResultScanner {
                             && secondTeam.startsWith(game.getSecondTeam()))
                     .findFirst()
                     .ifPresent(game -> {
+                        index.getAndIncrement();
                         game.setGameResult(gameResult);
                         logger.logBetMadeGame(game);
                     });
@@ -120,7 +135,8 @@ public class ResultScanner {
     private List<Game> findNoResultGames(List<Game> betsMadeGames, int day) {
         return betsMadeGames.stream()
                 .filter(game -> game.getGameResult() == GameResult.NO_RESULT
-                        && game.getDateTime().getDayOfMonth() == day)
+                        && game.getDateTime().getDayOfMonth() == day
+                        && game.getDateTime().isBefore(LocalDateTime.now().minusHours(3)))
                 .collect(Collectors.toList());
     }
 

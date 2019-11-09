@@ -7,7 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,8 +19,11 @@ public class LeagueParser {
 
     private ParsingConsoleLogger logger;
 
-    public LeagueParser(ParsingConsoleLogger logger) {
+    private boolean leaguesFromFile;
+
+    public LeagueParser(ParsingConsoleLogger logger, boolean leaguesFromFile) {
         this.logger = logger;
+        this.leaguesFromFile = leaguesFromFile;
     }
 
     /**
@@ -37,17 +40,24 @@ public class LeagueParser {
     }
 
     private List<String> parseLeagueLinks() throws IOException {
-        Document document = Jsoup.connect("https://1xstavka.ru/line/Football/")
-                .userAgent("Chrome/4.0.249.0 Safari/532.5")
-                .referrer("http://www.google.com")
-                .get();
-        Elements leagueLinksElements = document.select("ul.liga_menu > li > a.link");
         List<String> leagueLinks = new ArrayList<>();
-        for (Element element : leagueLinksElements) {
-            String link = element.attr("href");
-            if (checkLeagueLink(link)) {
-                link = link.replace("line/Football/", "");
-                leagueLinks.add(link);
+        if (leaguesFromFile) {
+            try (InputStream inputStream = new FileInputStream("external-resources/leagues_list.txt");
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                reader.lines().forEach(leagueLinks::add);
+            }
+        } else {
+            Document document = Jsoup.connect("https://1xstavka.ru/line/Football/")
+                    .userAgent("Chrome/4.0.249.0 Safari/532.5")
+                    .referrer("http://www.google.com")
+                    .get();
+            Elements leagueLinksElements = document.select("ul.liga_menu > li > a.link");
+            for (Element element : leagueLinksElements) {
+                String link = element.attr("href");
+                if (checkLeagueLink(link)) {
+                    link = link.replace("line/Football/", "");
+                    leagueLinks.add(link);
+                }
             }
         }
         logger.logLeague();
