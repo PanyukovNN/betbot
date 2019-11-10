@@ -46,7 +46,8 @@ public class ParsingRepository {
             for (String line : lines) {
                 String[] fields = line.replace(",", ".").split(";");
                 Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
-                        fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10]);
+                        fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10],
+                        LocalDateTime.parse(fields[11] + ";" + fields[12], DATE_FORMATTER));
                 games.add(game);
             }
             return games;
@@ -90,7 +91,7 @@ public class ParsingRepository {
 
     private void writeParsedGamesToFile(File file, List<Game> games) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-            final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
+            final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
             for (Game game : games) {
                 String line = String.format(GAME_FORMAT,
                         game.getLeague(),
@@ -102,7 +103,8 @@ public class ParsingRepository {
                         formatDouble(game.getTie()),
                         formatDouble(game.getSecondWin()),
                         formatDouble(game.getFirstWinOrTie()),
-                        formatDouble(game.getSecondWinOrTie())) + "\n";
+                        formatDouble(game.getSecondWinOrTie()),
+                        DATE_FORMATTER.format(game.getParsingTime())) + "\n";
                 writer.write(line);
             }
         }

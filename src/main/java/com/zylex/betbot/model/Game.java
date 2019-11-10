@@ -36,7 +36,9 @@ public class Game {
 
     private GameResult gameResult = GameResult.NO_RESULT;
 
-    public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie) {
+    private LocalDateTime parsingTime;
+
+    public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie, LocalDateTime parsingTime) {
         this.league = league;
         this.leagueLink = leagueLink;
         this.dateTime = dateTime;
@@ -47,6 +49,7 @@ public class Game {
         this.secondWin = secondWin;
         this.firstWinOrTie = firstWinOrTie;
         this.secondWinOrTie = secondWinOrTie;
+        this.parsingTime = parsingTime;
     }
 
     public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, GameResult gameResult) {
@@ -108,6 +111,10 @@ public class Game {
 
     public void setGameResult(GameResult gameResult) {
         this.gameResult = gameResult;
+    }
+
+    public LocalDateTime getParsingTime() {
+        return parsingTime;
     }
 
     @Override

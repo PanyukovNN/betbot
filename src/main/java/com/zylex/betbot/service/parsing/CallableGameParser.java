@@ -32,10 +32,13 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private Day day;
 
-    public CallableGameParser(ParsingConsoleLogger logger, String leagueLink, Day day) {
+    private LocalDateTime parsingTime;
+
+    public CallableGameParser(ParsingConsoleLogger logger, String leagueLink, Day day, LocalDateTime parsingTime) {
         this.logger = logger;
         this.leagueLink = leagueLink;
         this.day = day;
+        this.parsingTime = parsingTime;
     }
 
     /**
@@ -97,7 +100,8 @@ public class CallableGameParser implements Callable<List<Game>> {
                     tie,
                     secondWin,
                     firstWinOrTie,
-                    secondWinOrTie);
+                    secondWinOrTie,
+                    parsingTime);
             games.add(game);
         }
         return games;

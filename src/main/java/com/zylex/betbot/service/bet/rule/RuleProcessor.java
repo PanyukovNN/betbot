@@ -9,6 +9,9 @@ import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -23,28 +26,33 @@ public class RuleProcessor {
 
     private ParseProcessor parseProcessor;
 
-    private boolean gamesFromFile;
+    private boolean refresh;
 
     private ParsingRepository parsingRepository;
 
     private Day day;
 
-    public RuleProcessor(ParsingRepository parsingRepository, ParseProcessor parseProcessor, boolean gamesFromFile, Day day) {
+    public RuleProcessor(ParsingRepository parsingRepository, ParseProcessor parseProcessor, boolean refresh, Day day) {
         this.parsingRepository = parsingRepository;
         this.parseProcessor = parseProcessor;
-        this.gamesFromFile = gamesFromFile;
+        this.refresh = refresh;
         this.day = day;
     }
 
     /**
      * Filters games by all rules and puts filtered lists in GameContainer.
+     *
      * @return - container of all lists of games.
      */
     public GameContainer process() {
         try {
-            List<Game> games = gamesFromFile
-                    ? parsingRepository.readGamesFromFile(day)
-                    : parseProcessor.process(day);
+            //TODO log
+            LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.of(23, 0));
+            List<Game> games = parsingRepository.readGamesFromFile(day);
+            if (games.stream().anyMatch(game -> game.getParsingTime().isBefore(startBetTime))
+                    || refresh) {
+                games = parseProcessor.process(day);
+            }
             Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
             eligibleGames.put(RuleNumber.RULE_ONE, new FirstWinSecretRule().filter(games));
             eligibleGames.put(RuleNumber.RULE_TWO, new OneXSecretRule().filter(games));
