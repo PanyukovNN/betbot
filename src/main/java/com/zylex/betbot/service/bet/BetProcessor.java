@@ -1,7 +1,6 @@
 package com.zylex.betbot.service.bet;
 
 import com.zylex.betbot.controller.BetRepository;
-import com.zylex.betbot.controller.ParsingRepository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
@@ -82,7 +81,7 @@ public class BetProcessor {
         DriverManager driverManager = new DriverManager();
         driverManager.initiateDriver(false);
         driver = driverManager.getDriver();
-        wait = new WebDriverWait(driver, 10);
+        wait = new WebDriverWait(driver, 5);
         driver.navigate().to("https://1xstavka.ru/");
     }
 
@@ -128,8 +127,6 @@ public class BetProcessor {
                     availableBalance -= singleBetAmount;
                     betMadeGames.add(game);
                     logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
-                } else {
-                    //TODO log error
                 }
             }
         }
@@ -152,18 +149,23 @@ public class BetProcessor {
                     .findElement(By.cssSelector("button"));
             JavascriptExecutor executor = (JavascriptExecutor) driver;
             executor.executeScript("arguments[0].click();", betButton);
-            try {
-                WebElement okButton = waitSingleElementAndGet("o-btn-group__item")
-                        .findElement(By.cssSelector("button"));
-                executor.executeScript("arguments[0].click();", okButton);
-            } catch (TimeoutException e) {
-                //TODO error Ok button, process error games
-                WebElement okButton = waitSingleElementAndGet("swal2-confirm");
-                executor.executeScript("arguments[0].click();", okButton);
-                WebElement delButton = waitSingleElementAndGet("c-bet-box__del");
-                executor.executeScript("arguments[0].click();", delButton);
-                return false;
-            }
+            return okButtonClick(executor);
+        }
+        return true;
+    }
+
+    private boolean okButtonClick(JavascriptExecutor executor) {
+        try {
+            WebElement okButton = waitSingleElementAndGet("o-btn-group__item")
+                    .findElement(By.cssSelector("button"));
+            executor.executeScript("arguments[0].click();", okButton);
+        } catch (TimeoutException e) {
+            WebElement okButton = waitSingleElementAndGet("swal2-confirm");
+            executor.executeScript("arguments[0].click();", okButton);
+            WebElement delButton = waitSingleElementAndGet("c-bet-box__del");
+            executor.executeScript("arguments[0].click();", delButton);
+            logger.logBet(0, 0, null, null, LogType.BET_ERROR);
+            return false;
         }
         return true;
     }
@@ -184,7 +186,7 @@ public class BetProcessor {
                 return gameWebElement.findElements(By.className("c-bets__bet"));
             }
         }
-        logger.logBet(0, 0, null, game, LogType.ERROR);
+        logger.logBet(0, 0, null, game, LogType.BET_NOT_FOUND);
         return new ArrayList<>();
     }
 

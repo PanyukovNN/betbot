@@ -42,13 +42,9 @@ public class RuleProcessor {
      */
     public GameContainer process() {
         try {
-            List<Game> games;
-            //TODO not like this
-            if (gamesFromFile) {
-                games = parsingRepository.readGamesFromFile(day);
-            } else {
-                games = parseProcessor.process(day);
-            }
+            List<Game> games = gamesFromFile
+                    ? parsingRepository.readGamesFromFile(day)
+                    : parseProcessor.process(day);
             Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
             eligibleGames.put(RuleNumber.RULE_ONE, new FirstWinSecretRule().filter(games));
             eligibleGames.put(RuleNumber.RULE_TWO, new OneXSecretRule().filter(games));

@@ -30,8 +30,10 @@ public class BetConsoleLogger extends ConsoleLogger{
                     singleBetAmount,
                     betCoefficient,
                     game));
-        } else if (type == LogType.ERROR) {
+        } else if (type == LogType.BET_NOT_FOUND) {
             writeErrorMessage("Did't find the game: " + game);
+        } else if (type == LogType.BET_ERROR) {
+            writeErrorMessage("Error during bet making: " + game);
         }
     }
 

@@ -31,24 +31,28 @@ public class ParsingRepository {
 
     private boolean directoryCreated = false;
 
-    public List<Game> readGamesFromFile(Day day) throws IOException {
-        if (!directoryCreated) {
-            createDirectory(day);
+    public List<Game> readGamesFromFile(Day day) {
+        try {
+            if (!directoryCreated) {
+                createDirectory(day);
+            }
+            File file = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "all_matches_" + dirName));
+            List<String> lines = new ArrayList<>();
+            try (InputStream inputStream = new FileInputStream(file);
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                reader.lines().forEach(lines::add);
+            }
+            List<Game> games = new ArrayList<>();
+            for (String line : lines) {
+                String[] fields = line.replace(",", ".").split(";");
+                Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
+                        fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10]);
+                games.add(game);
+            }
+            return games;
+        } catch (IOException e) {
+            throw new RepositoryException(e.getMessage(), e);
         }
-        File file = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "all_matches_" + dirName));
-        List<String> lines = new ArrayList<>();
-        try (InputStream inputStream = new FileInputStream(file);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            reader.lines().forEach(lines::add);
-        }
-        List<Game> games = new ArrayList<>();
-        for (String line : lines) {
-            String[] fields = line.split(";");
-            Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
-                    fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10]);
-            games.add(game);
-        }
-        return games;
     }
 
     /**
