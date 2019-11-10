@@ -10,6 +10,7 @@ import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
+import com.zylex.betbot.service.bet.rule.RuleProcessor;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -33,7 +34,7 @@ public class BetProcessor {
 
     private RuleNumber ruleNumber;
 
-    private ParsingRepository parsingRepository;
+    private RuleProcessor ruleProcessor;
 
     private BetRepository betRepository;
 
@@ -41,8 +42,8 @@ public class BetProcessor {
 
     private boolean doBet;
 
-    public BetProcessor(ParsingRepository parsingRepository, BetRepository betRepository, RuleNumber ruleNumber, boolean mock, boolean doBet) {
-        this.parsingRepository = parsingRepository;
+    public BetProcessor(RuleProcessor ruleProcessor, BetRepository betRepository, RuleNumber ruleNumber, boolean mock, boolean doBet) {
+        this.ruleProcessor = ruleProcessor;
         this.betRepository = betRepository;
         this.ruleNumber = ruleNumber;
         this.mock = mock;
@@ -54,7 +55,7 @@ public class BetProcessor {
      * logs in, makes bets and log out.
      */
     public void process() {
-        GameContainer gameContainer = parsingRepository.processSaving();
+        GameContainer gameContainer = ruleProcessor.process();
         try {
             if (gameContainer.getEligibleGames().get(ruleNumber).size() > 0
                     && !doBet) {
@@ -123,10 +124,13 @@ public class BetProcessor {
             List<WebElement> coefficients = getGameCoefficients(game);
             if (coefficients.size() > 0) {
                 coefficients.get(betCoefficient.INDEX).click();
-                makeBet(singleBetAmount, mock);
-                availableBalance -= singleBetAmount;
-                betMadeGames.add(game);
-                logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
+                if (makeBet(singleBetAmount, mock)) {
+                    availableBalance -= singleBetAmount;
+                    betMadeGames.add(game);
+                    logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
+                } else {
+                    //TODO log error
+                }
             }
         }
         logger.betMade(LogType.OK);
@@ -141,17 +145,27 @@ public class BetProcessor {
         return (int) Math.max(singleBetMoney, 20);
     }
 
-    private void makeBet(double amount, boolean mock) {
+    private boolean makeBet(double amount, boolean mock) {
         driver.findElement(By.className("bet_sum_input")).sendKeys(String.valueOf(amount));
         if (!mock) {
             WebElement betButton = waitSingleElementAndGet("coupon-btn-group__item")
                     .findElement(By.cssSelector("button"));
             JavascriptExecutor executor = (JavascriptExecutor) driver;
             executor.executeScript("arguments[0].click();", betButton);
-            WebElement okButton = waitSingleElementAndGet("o-btn-group__item")
-                    .findElement(By.cssSelector("button"));
-            executor.executeScript("arguments[0].click();", okButton);
+            try {
+                WebElement okButton = waitSingleElementAndGet("o-btn-group__item")
+                        .findElement(By.cssSelector("button"));
+                executor.executeScript("arguments[0].click();", okButton);
+            } catch (TimeoutException e) {
+                //TODO error Ok button, process error games
+                WebElement okButton = waitSingleElementAndGet("swal2-confirm");
+                executor.executeScript("arguments[0].click();", okButton);
+                WebElement delButton = waitSingleElementAndGet("c-bet-box__del");
+                executor.executeScript("arguments[0].click();", delButton);
+                return false;
+            }
         }
+        return true;
     }
 
     private List<WebElement> getGameCoefficients(Game game) {

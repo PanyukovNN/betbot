@@ -46,8 +46,8 @@ public class ResultScanner {
             return;
         }
         try {
-            logger.startLogMessage();
             initiateDriver();
+            logger.startLogMessage();
             if (openFootballGamesResults()) {
                 processGameResults(betMadeGamesByDay);
                 betRepository.saveTotalBetGamesToFile(betMadeGames);

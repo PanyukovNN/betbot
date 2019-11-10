@@ -22,12 +22,9 @@ public class ParseProcessor {
 
     private ExecutorService service;
 
-    private Day day;
-
     private boolean leaguesFromFile;
 
-    public ParseProcessor(Day day, boolean leaguesFromFile) {
-        this.day = day;
+    public ParseProcessor(boolean leaguesFromFile) {
         this.leaguesFromFile = leaguesFromFile;
     }
 
@@ -38,7 +35,7 @@ public class ParseProcessor {
      * in separate files.
      * @return - list of games.
      */
-    public List<Game> process() {
+    public List<Game> process(Day day) {
         try {
             logger.startLogMessage(LogType.PARSING_START, day == Day.TODAY ? 0 : 1);
             service = Executors.newFixedThreadPool(8);

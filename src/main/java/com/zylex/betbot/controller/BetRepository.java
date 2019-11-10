@@ -1,6 +1,5 @@
 package com.zylex.betbot.controller;
 
-import com.google.gson.internal.$Gson$Preconditions;
 import com.zylex.betbot.exception.BetRepositoryException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
@@ -23,18 +22,18 @@ public class BetRepository {
 
     private DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
-    private String monthDirName;
-
     private File betMadeFile;
 
-    private File totalBetsMadeFile;
+    private File totalBetMadeFile;
 
-    public BetRepository(Day day) {
+    private RuleNumber ruleNumber;
+
+    public BetRepository(Day day, RuleNumber ruleNumber) {
         LocalDate date = LocalDate.now().plusDays(day.INDEX);
-        monthDirName = date.getMonth().name();
+        String monthDirName = date.getMonth().name();
         String dirName = DateTimeFormatter.ofPattern("dd.MM.yyyy").format(date);
-        betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s.csv", monthDirName, dirName, dirName));
-        totalBetsMadeFile = new File(String.format("results/%s/BET_MADE_%s.csv", monthDirName, monthDirName));
+        betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s_%s.csv", monthDirName, dirName, ruleNumber, dirName));
+        totalBetMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
     }
 
     public List<Game> readBetMadeFile() {
@@ -42,7 +41,7 @@ public class BetRepository {
     }
 
     public List<Game> readTotalBetMadeFile() {
-        return processReadBetMade(totalBetsMadeFile);
+        return processReadBetMade(totalBetMadeFile);
     }
 
     private List<Game> processReadBetMade(File file) {
@@ -74,11 +73,11 @@ public class BetRepository {
     }
 
     public void saveTotalBetGamesToFile(List<Game> betMadeGames) throws IOException {
-        List<Game> totalBetMadeGames = processReadBetMade(totalBetsMadeFile);
+        List<Game> totalBetMadeGames = processReadBetMade(totalBetMadeFile);
         totalBetMadeGames.removeAll(betMadeGames);
         totalBetMadeGames.addAll(betMadeGames);
         totalBetMadeGames.sort(Comparator.comparing(Game::getDateTime));
-        writeBetMadeGamesToFile(totalBetsMadeFile, totalBetMadeGames);
+        writeBetMadeGamesToFile(totalBetMadeFile, totalBetMadeGames);
     }
 
     private void writeBetMadeGamesToFile(File file, List<Game> madeBetsGames) throws IOException {

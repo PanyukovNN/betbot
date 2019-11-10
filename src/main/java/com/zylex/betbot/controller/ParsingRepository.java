@@ -5,13 +5,14 @@ import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
-import com.zylex.betbot.service.bet.rule.RuleProcessor;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,38 +25,40 @@ public class ParsingRepository {
 
     private final DateTimeFormatter DIR_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    private Day day;
-
-    private RuleProcessor ruleProcessor;
-
     private String dirName;
 
     private String monthDirName;
 
-    public ParsingRepository(RuleProcessor ruleProcessor, Day day) {
-        this.ruleProcessor = ruleProcessor;
-        this.day = day;
-    }
+    private boolean directoryCreated = false;
 
-    /**
-     * Creates directory for concrete day.
-     * @param day - day for parsing.
-     */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void createDirectory(Day day) {
-        LocalDate date = LocalDate.now().plusDays(day.INDEX);
-        monthDirName = date.getMonth().name();
-        dirName = DIR_DATE_FORMATTER.format(date);
-        new File(String.format("results/%s/%s", monthDirName, dirName)).mkdirs();
+    public List<Game> readGamesFromFile(Day day) throws IOException {
+        if (!directoryCreated) {
+            createDirectory(day);
+        }
+        File file = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "all_matches_" + dirName));
+        List<String> lines = new ArrayList<>();
+        try (InputStream inputStream = new FileInputStream(file);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            reader.lines().forEach(lines::add);
+        }
+        List<Game> games = new ArrayList<>();
+        for (String line : lines) {
+            String[] fields = line.split(";");
+            Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
+                    fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10]);
+            games.add(game);
+        }
+        return games;
     }
 
     /**
      * Saves all lists of games from GameContainer into separate files.
      */
-    public GameContainer processSaving() {
-        GameContainer gameContainer = ruleProcessor.process();
+    public void saveGamesToFiles(Day day, GameContainer gameContainer) {
         try {
-            createDirectory(day);
+            if (!directoryCreated) {
+                createDirectory(day);
+            }
             saveParsedGameToFile("all_matches_", gameContainer.getAllGames());
             for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
                 saveParsedGameToFile(String.format("matches_%s_", entry.getKey()), entry.getValue());
@@ -63,15 +66,21 @@ public class ParsingRepository {
         } catch (IOException e) {
             throw new RepositoryException(e.getMessage(), e);
         }
-        return gameContainer;
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private void createDirectory(Day day) {
+        LocalDate date = LocalDate.now().plusDays(day.INDEX);
+        monthDirName = date.getMonth().name();
+        dirName = DIR_DATE_FORMATTER.format(date);
+        new File(String.format("results/%s/%s", monthDirName, dirName)).mkdirs();
+        directoryCreated = true;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void saveParsedGameToFile(String fileName, List<Game> games) throws IOException {
         File file = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, fileName + dirName));
-        if (!file.exists()) {
-            file.createNewFile();
-        }
+        file.createNewFile();
         writeParsedGamesToFile(file, games);
     }
 

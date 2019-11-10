@@ -14,26 +14,29 @@ import com.zylex.betbot.service.statistics.ResultScanner;
 public class OneXBetBot {
 
     public static void main(String[] args) {
+        Day day = Day.TOMORROW;
+        RuleNumber ruleNumber = RuleNumber.RULE_ONE;
+        boolean mock = true;//args[0].equals("true");
+        boolean doBets = false;//args[1].equals("true");
+        boolean leaguesFromFile = false;
+        boolean gamesFromFile = false;
+
         try {
-            Day day = Day.TOMORROW;
-            boolean mock = true;//args[0].equals("true");
-            boolean doBets = false;//args[1].equals("true");
-            boolean leaguesFromFile = true;
             new BetProcessor(
-                new ParsingRepository(
-                    new RuleProcessor(
-                        new ParseProcessor(
-                                day,
-                                leaguesFromFile)),
+                new RuleProcessor(
+                    new ParsingRepository(),
+                    new ParseProcessor(
+                        leaguesFromFile),
+                    gamesFromFile,
                     day),
-                new BetRepository(day),
-                RuleNumber.RULE_ONE,
+                new BetRepository(day, ruleNumber),
+                ruleNumber,
                 mock,
                 doBets
             ).process();
 
             new ResultScanner(
-                new BetRepository(day)
+                new BetRepository(day, ruleNumber)
             ).process();
         } finally {
             ConsoleLogger.writeToLogFile();

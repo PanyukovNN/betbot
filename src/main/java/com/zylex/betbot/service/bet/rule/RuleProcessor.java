@@ -1,9 +1,11 @@
 package com.zylex.betbot.service.bet.rule;
 
+import com.zylex.betbot.controller.ParsingRepository;
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.RuleProcessorException;
 import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 
 import java.io.IOException;
@@ -21,8 +23,17 @@ public class RuleProcessor {
 
     private ParseProcessor parseProcessor;
 
-    public RuleProcessor(ParseProcessor parseProcessor) {
+    private boolean gamesFromFile;
+
+    private ParsingRepository parsingRepository;
+
+    private Day day;
+
+    public RuleProcessor(ParsingRepository parsingRepository, ParseProcessor parseProcessor, boolean gamesFromFile, Day day) {
+        this.parsingRepository = parsingRepository;
         this.parseProcessor = parseProcessor;
+        this.gamesFromFile = gamesFromFile;
+        this.day = day;
     }
 
     /**
@@ -31,13 +42,21 @@ public class RuleProcessor {
      */
     public GameContainer process() {
         try {
-            List<Game> games = parseProcessor.process();
+            List<Game> games;
+            //TODO not like this
+            if (gamesFromFile) {
+                games = parsingRepository.readGamesFromFile(day);
+            } else {
+                games = parseProcessor.process(day);
+            }
             Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
             eligibleGames.put(RuleNumber.RULE_ONE, new FirstWinSecretRule().filter(games));
             eligibleGames.put(RuleNumber.RULE_TWO, new OneXSecretRule().filter(games));
             sortGamesByDate(eligibleGames);
             logger.writeEligibleGamesNumber(eligibleGames);
-            return new GameContainer(games, eligibleGames);
+            GameContainer gameContainer = new GameContainer(games, eligibleGames);
+            parsingRepository.saveGamesToFiles(day, gameContainer);
+            return gameContainer;
         } catch (IOException e) {
             throw new RuleProcessorException(e.getMessage(), e);
         }
