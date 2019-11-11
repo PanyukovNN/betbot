@@ -45,4 +45,10 @@ public class DriverManager {
         driver.manage().timeouts().setScriptTimeout(10, TimeUnit.SECONDS);
         logger.logDriver();
     }
+
+    public void quitDriver() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
 }

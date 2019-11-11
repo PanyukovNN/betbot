@@ -7,10 +7,6 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
 
     private int index = 0;
 
-    public synchronized void startLogMessage() {
-        writeInLine("Scanning results:");
-    }
-
     public void logBetMadeGame(Game game) {
         writeInLine(String.format("\n%d) Using rule: %s, match result %s, for game: %s",
                 ++index,

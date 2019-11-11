@@ -40,30 +40,36 @@ public class ResultScanner {
         return repository;
     }
 
-    public List<Game> process(List<Game> games, WebDriver driver) {
-        this.driver = driver;
-        wait = new WebDriverWait(driver, 20);
-        Map<LocalDate, List<Game>> betMadeGamesByDay = splitGamesByDay(games);
-        if (betMadeGamesByDay.isEmpty()) {
-            logger.startLogMessage();
+    public List<Game> process(List<Game> games, DriverManager driverManager) {
+        Map<LocalDate, List<Game>> betMadeNoResultGamesByDay = splitNoResultGamesByDay(games);
+        if (betMadeNoResultGamesByDay.isEmpty()) {
             logger.endMessage(LogType.NO_GAMES_TO_SCAN);
             return games;
+        } else if (driver == null) {
+            initiateDriver(driverManager);
         }
-        logger.startLogMessage();
+//        logger.
         if (openFootballGamesResults()) {
-            processGameResults(betMadeGamesByDay);
+            processGameResults(betMadeNoResultGamesByDay);
             logger.endMessage(LogType.OK);
         }
         return games;
 
     }
 
-    private Map<LocalDate, List<Game>> splitGamesByDay(List<Game> betMadeGames) {
+    private void initiateDriver(DriverManager driverManager) {
+        driverManager.initiateDriver(true);
+        driver = driverManager.getDriver();
+        wait = new WebDriverWait(driver, 20);
+        driver.navigate().to("https://1xstavka.ru/results/");
+    }
+
+    private Map<LocalDate, List<Game>> splitNoResultGamesByDay(List<Game> betMadeGames) {
         Map<LocalDate, List<Game>> betMadeGamesByDay = new HashMap<>();
         Set<LocalDate> days = new HashSet<>();
         betMadeGames.forEach(game -> days.add(game.getDateTime().toLocalDate()));
         days.forEach(day -> {
-            List<Game> noResultGames = findNoResultGames(betMadeGames, day);
+            List<Game> noResultGames = filterNoResultGames(betMadeGames, day);
             if (!noResultGames.isEmpty()) {
                 betMadeGamesByDay.put(day, noResultGames);
             }
@@ -71,7 +77,7 @@ public class ResultScanner {
         return betMadeGamesByDay;
     }
 
-    private List<Game> findNoResultGames(List<Game> betsMadeGames, LocalDate day) {
+    private List<Game> filterNoResultGames(List<Game> betsMadeGames, LocalDate day) {
         return betsMadeGames.stream()
                 .filter(game -> game.getGameResult() == GameResult.NO_RESULT
                         && game.getDateTime().toLocalDate().equals(day)
