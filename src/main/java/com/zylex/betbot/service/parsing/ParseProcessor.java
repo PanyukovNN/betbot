@@ -40,7 +40,7 @@ public class ParseProcessor {
      */
     public List<Game> process(Day day) {
         try {
-            logger.startLogMessage(LogType.PARSING_START, day == Day.TODAY ? 0 : 1);
+            logger.startLogMessage(LogType.PARSING_SITE_START, day == Day.TODAY ? 0 : 1);
             service = Executors.newFixedThreadPool(8);
             logger.startLogMessage(LogType.LEAGUES, null);
             LeagueParser leagueParser = new LeagueParser(logger, leaguesFromFile);

@@ -1,6 +1,7 @@
 package com.zylex.betbot.service.bet.rule;
 
 import com.zylex.betbot.controller.ParsingRepository;
+import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.RuleProcessorException;
 import com.zylex.betbot.model.GameContainer;
@@ -46,12 +47,14 @@ public class RuleProcessor {
      */
     public GameContainer process() {
         try {
-            //TODO log
-            LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.of(23, 0));
             List<Game> games = parsingRepository.readGamesFromFile(day);
+            LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().plusDays(day.INDEX).minusDays(1), LocalTime.of(23, 0));
             if (games.stream().anyMatch(game -> game.getParsingTime().isBefore(startBetTime))
+                    || games.isEmpty()
                     || refresh) {
                 games = parseProcessor.process(day);
+            } else {
+                logger.startLogMessage(LogType.PARSING_FILE_START, day == Day.TODAY ? 0 : 1);
             }
             Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
             eligibleGames.put(RuleNumber.RULE_ONE, new FirstWinSecretRule().filter(games));

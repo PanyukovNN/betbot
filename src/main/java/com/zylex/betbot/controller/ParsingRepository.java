@@ -31,12 +31,14 @@ public class ParsingRepository {
 
     private boolean directoryCreated = false;
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public List<Game> readGamesFromFile(Day day) {
         try {
             if (!directoryCreated) {
                 createDirectory(day);
             }
             File file = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "all_matches_" + dirName));
+            file.createNewFile();
             List<String> lines = new ArrayList<>();
             try (InputStream inputStream = new FileInputStream(file);
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {

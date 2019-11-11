@@ -11,10 +11,6 @@ import com.zylex.betbot.service.bet.rule.RuleProcessor;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 import com.zylex.betbot.service.statistics.ResultScanner;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
 public class OneXBetBot {
 
     public static void main(String[] args) {
@@ -23,7 +19,7 @@ public class OneXBetBot {
         boolean mock = true;//args[0].equals("true");
         boolean doBets = false;//args[1].equals("true");
         boolean leaguesFromFile = false;
-        boolean refresh = true;
+        boolean refresh = false;
 
         try {
             new BetProcessor(

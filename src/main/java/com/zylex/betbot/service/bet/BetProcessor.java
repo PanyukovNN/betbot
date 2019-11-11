@@ -57,7 +57,7 @@ public class BetProcessor {
         GameContainer gameContainer = ruleProcessor.process();
         try {
             if (gameContainer.getEligibleGames().get(ruleNumber).size() > 0
-                    && !doBet) {
+                    || !doBet) {
                 logger.betMade(LogType.ERROR);
                 return;
             }

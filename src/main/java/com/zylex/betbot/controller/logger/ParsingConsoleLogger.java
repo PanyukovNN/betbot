@@ -23,9 +23,15 @@ public class ParsingConsoleLogger extends ConsoleLogger {
     }
 
     public synchronized void startLogMessage(LogType type, Integer arg) {
-        if (type == LogType.PARSING_START) {
+        if (type == LogType.PARSING_SITE_START) {
             Day day = arg == 0 ? Day.TODAY : Day.TOMORROW;
             writeInLine(String.format("Start parsing %s games.", day));
+        } if (type == LogType.PARSING_FILE_START) {
+            Day day = arg == 0 ? Day.TODAY : Day.TOMORROW;
+            writeInLine(String.format("Start parsing %s games.", day));
+            writeLineSeparator();
+            writeInLine("\nReading from file.");
+            writeLineSeparator();
         } else if (type == LogType.LEAGUES) {
             writeInLine("\nFinding leagues: ...");
         } else if (type == LogType.GAMES) {

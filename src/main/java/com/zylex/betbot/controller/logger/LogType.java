@@ -4,7 +4,8 @@ package com.zylex.betbot.controller.logger;
  * Type of log for printing new line in console logger.
  */
 public enum LogType {
-    PARSING_START,
+    PARSING_SITE_START,
+    PARSING_FILE_START,
     NO_GAMES_TO_SCAN,
     DRIVER,
     LEAGUES,
