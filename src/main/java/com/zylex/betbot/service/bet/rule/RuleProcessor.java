@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.bet.rule;
 
-import com.zylex.betbot.controller.ParsingRepository;
+import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.RuleProcessorException;
@@ -29,15 +29,19 @@ public class RuleProcessor {
 
     private boolean refresh;
 
-    private ParsingRepository parsingRepository;
+    private Repository repository;
 
     private Day day;
 
-    public RuleProcessor(ParsingRepository parsingRepository, ParseProcessor parseProcessor, boolean refresh, Day day) {
-        this.parsingRepository = parsingRepository;
+    public RuleProcessor(Repository repository, ParseProcessor parseProcessor, boolean refresh, Day day) {
+        this.repository = repository;
         this.parseProcessor = parseProcessor;
         this.refresh = refresh;
         this.day = day;
+    }
+
+    public Repository getRepository() {
+        return repository;
     }
 
     /**
@@ -47,7 +51,7 @@ public class RuleProcessor {
      */
     public GameContainer process() {
         try {
-            List<Game> games = parsingRepository.readGamesFromFile(day);
+            List<Game> games = repository.readAllMatchesFile();
             LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().plusDays(day.INDEX).minusDays(1), LocalTime.of(23, 0));
             if (games.stream().anyMatch(game -> game.getParsingTime().isBefore(startBetTime))
                     || games.isEmpty()
@@ -62,7 +66,7 @@ public class RuleProcessor {
             sortGamesByDate(eligibleGames);
             logger.writeEligibleGamesNumber(eligibleGames);
             GameContainer gameContainer = new GameContainer(games, eligibleGames);
-            parsingRepository.saveGamesToFiles(day, gameContainer);
+            repository.saveGamesToFiles(gameContainer);
             return gameContainer;
         } catch (IOException e) {
             throw new RuleProcessorException(e.getMessage(), e);

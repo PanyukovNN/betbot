@@ -8,7 +8,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
     private int index = 0;
 
     public synchronized void startLogMessage() {
-        writeInLine("\nScanning results:");
+        writeInLine("Scanning results:");
     }
 
     public void logBetMadeGame(Game game) {

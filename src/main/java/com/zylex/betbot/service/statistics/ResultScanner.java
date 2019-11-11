@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.statistics;
 
-import com.zylex.betbot.controller.BetRepository;
+import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
 import com.zylex.betbot.exception.ResultsScannerException;
@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("WeakerAccess")
 public class ResultScanner {
 
     private ResultScannerConsoleLogger logger = new ResultScannerConsoleLogger();
@@ -31,14 +32,14 @@ public class ResultScanner {
 
     private WebDriverWait wait;
 
-    private BetRepository betRepository;
+    private Repository repository;
 
-    public ResultScanner(BetRepository betRepository) {
-        this.betRepository = betRepository;
+    public ResultScanner(Repository repository) {
+        this.repository = repository;
     }
 
     public void process() {
-        List<Game> betMadeGames = betRepository.readTotalBetMadeFile();
+        List<Game> betMadeGames = repository.readTotalBetMadeFile();
         Map<LocalDate, List<Game>> betMadeGamesByDay = splitGamesByDay(betMadeGames);
         if (betMadeGamesByDay.isEmpty()) {
             logger.startLogMessage();
@@ -50,7 +51,7 @@ public class ResultScanner {
             logger.startLogMessage();
             if (openFootballGamesResults()) {
                 processGameResults(betMadeGamesByDay);
-                betRepository.saveTotalBetGamesToFile(betMadeGames);
+                repository.saveTotalBetMadeGamesToFile(betMadeGames);
             }
             logger.endMessage(LogType.OK);
         } catch (IOException e) {

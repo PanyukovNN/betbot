@@ -11,16 +11,18 @@ public class StatisticsAnalyserConsoleLogger extends ConsoleLogger{
 
     public synchronized void startLogMessage(LocalDate startDate, LocalDate endDate) {
         writeInLine(String.format("Analyse statistics for period from %s to %s", startDate, endDate));
+        writeLineSeparator();
     }
 
     public void logStatistics(String message, int gamesNumber, int firstWins, int ties, int secondWins, int noResults) {
-        writeInLine("\n" + message + ":");
+        writeInLine("\n" + message);
         writeInLine(" games number: " + gamesNumber);
         if (noResults > 0) {
-            writeInLine(String.format("; No result: %d", noResults));
+            writeInLine(String.format(" (no result: %d)", noResults));
         }
-        writeInLine(String.format("\n1X: %d\n", firstWins));
-        writeInLine(String.format(" X: %d\n", ties));
-        writeInLine(String.format("X2: %d\n", secondWins));
+        writeInLine(String.format("\n\t1X - %d\n", firstWins));
+        writeInLine(String.format("\t X - %d\n", ties));
+        writeInLine(String.format("\tX2 - %d", secondWins));
+        writeLineSeparator();
     }
 }

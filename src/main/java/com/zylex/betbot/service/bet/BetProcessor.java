@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.bet;
 
-import com.zylex.betbot.controller.BetRepository;
+import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
@@ -35,15 +35,15 @@ public class BetProcessor {
 
     private RuleProcessor ruleProcessor;
 
-    private BetRepository betRepository;
+    private Repository repository;
 
     private boolean mock;
 
     private boolean doBet;
 
-    public BetProcessor(RuleProcessor ruleProcessor, BetRepository betRepository, RuleNumber ruleNumber, boolean mock, boolean doBet) {
+    public BetProcessor(RuleProcessor ruleProcessor, RuleNumber ruleNumber, boolean mock, boolean doBet) {
         this.ruleProcessor = ruleProcessor;
-        this.betRepository = betRepository;
+        repository = ruleProcessor.getRepository();
         this.ruleNumber = ruleNumber;
         this.mock = mock;
         this.doBet = doBet;
@@ -110,7 +110,7 @@ public class BetProcessor {
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
         int singleBetAmount = calculateAmount(betCoefficient, totalMoney);
         double availableBalance = totalMoney;
-        List<Game> betMadeGames = betRepository.readBetMadeFile();
+        List<Game> betMadeGames = repository.readBetMadeFile();
         int i = 0;
         for (Game game : eligibleGames) {
             if (betMadeGames.contains(game)) {
@@ -131,9 +131,9 @@ public class BetProcessor {
             }
         }
         logger.betMade(LogType.OK);
-        betRepository.saveBetMadeGamesToFile(betMadeGames);
+        repository.saveBetMadeGamesToFile(betMadeGames);
         if (!mock && doBet) {
-            betRepository.saveTotalBetGamesToFile(betMadeGames);
+            repository.saveTotalBetMadeGamesToFile(betMadeGames);
         }
     }
 
