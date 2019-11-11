@@ -3,7 +3,6 @@ package com.zylex.betbot.service.statistics;
 import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
-import com.zylex.betbot.exception.ResultsScannerException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
@@ -15,7 +14,6 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -42,27 +40,22 @@ public class ResultScanner {
         return repository;
     }
 
-    public void process() {
-        List<Game> betMadeGames = repository.readTotalBetMadeFile();
-        Map<LocalDate, List<Game>> betMadeGamesByDay = splitGamesByDay(betMadeGames);
+    public List<Game> process(List<Game> games, WebDriver driver) {
+        this.driver = driver;
+        wait = new WebDriverWait(driver, 20);
+        Map<LocalDate, List<Game>> betMadeGamesByDay = splitGamesByDay(games);
         if (betMadeGamesByDay.isEmpty()) {
             logger.startLogMessage();
             logger.endMessage(LogType.NO_GAMES_TO_SCAN);
-            return;
+            return games;
         }
-        try {
-            initiateDriver();
-            logger.startLogMessage();
-            if (openFootballGamesResults()) {
-                processGameResults(betMadeGamesByDay);
-                repository.saveTotalBetMadeGamesToFile(betMadeGames);
-            }
+        logger.startLogMessage();
+        if (openFootballGamesResults()) {
+            processGameResults(betMadeGamesByDay);
             logger.endMessage(LogType.OK);
-        } catch (IOException e) {
-            throw new ResultsScannerException(e.getMessage(), e);
-        } finally {
-            driver.quit();
         }
+        return games;
+
     }
 
     private Map<LocalDate, List<Game>> splitGamesByDay(List<Game> betMadeGames) {
@@ -84,14 +77,6 @@ public class ResultScanner {
                         && game.getDateTime().toLocalDate().equals(day)
                         && game.getDateTime().isBefore(LocalDateTime.now().minusHours(3)))
                 .collect(Collectors.toList());
-    }
-
-    private void initiateDriver() {
-        DriverManager driverManager = new DriverManager();
-        driverManager.initiateDriver(true);
-        driver = driverManager.getDriver();
-        wait = new WebDriverWait(driver, 20);
-        driver.navigate().to("https://1xstavka.ru/results/");
     }
 
     private boolean openFootballGamesResults() {

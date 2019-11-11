@@ -47,16 +47,6 @@ public class BetConsoleLogger extends ConsoleLogger{
         }
     }
 
-    public void logOutLog(LogType type) {
-        if (type == LogType.OK) {
-            String output = "Logging out: complete\n";
-            writeInLine(StringUtils.repeat("\b", output.length()) + output);
-        } else if (type == LogType.ERROR) {
-            String output = "Logging out: error (program terminated)\n";
-            writeErrorMessage(StringUtils.repeat("\b", output.length()) + output);
-        }
-    }
-
     public void noMoney() {
         writeInLine("\nMoney is over.");
     }
@@ -69,5 +59,6 @@ public class BetConsoleLogger extends ConsoleLogger{
             writeInLine("\nBets aren't made.");
         }
         writeLineSeparator();
+        writeInLine(String.format("\nBot work completed in %s", computeTime(programStartTime.get())));
     }
 }

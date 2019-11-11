@@ -5,6 +5,10 @@ import com.zylex.betbot.controller.logger.StatisticsAnalyserConsoleLogger;
 import com.zylex.betbot.exception.StatisticsAnalyserException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
+import com.zylex.betbot.service.DriverManager;
+import com.zylex.betbot.service.bet.rule.RuleNumber;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -26,8 +30,17 @@ public class StatisticsAnalyser {
     }
 
     public void analyse(LocalDate startDate, LocalDate endDate) {
+        WebDriver driver = initiateDriver();
         try {
-            resultScanner.process();
+            for (RuleNumber ruleNumber : RuleNumber.values()) {
+                repository.saveTotalRuleResultFile(ruleNumber,
+                    resultScanner.process(
+                        repository.readTotalRuleResultFile(ruleNumber),
+                        driver
+                    )
+                );
+            }
+
             logger.startLogMessage(startDate, endDate);
             List<Game> betMadeGames = filterByDate(startDate, endDate, repository.readTotalBetMadeFile());
             computeStatistics("Total", betMadeGames);
@@ -35,7 +48,17 @@ public class StatisticsAnalyser {
             computeStatistics("From file", betMadeGamesByLeagues);
         } catch (IOException e) {
             throw new StatisticsAnalyserException(e.getMessage(), e);
+        } finally {
+            driver.quit();
         }
+    }
+
+    private WebDriver initiateDriver() {
+        DriverManager driverManager = new DriverManager();
+        driverManager.initiateDriver(true);
+        WebDriver driver = driverManager.getDriver();
+        driver.navigate().to("https://1xstavka.ru/results/");
+        return driver;
     }
 
     private List<Game> getBetMadeGamesByLeagues(List<Game> betMadeGames) throws IOException {

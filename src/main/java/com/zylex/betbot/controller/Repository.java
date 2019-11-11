@@ -144,6 +144,10 @@ public class Repository {
         return processReadResultFile(betMadeFile);
     }
 
+    public List<Game> readTotalRuleResultFile(RuleNumber ruleNumber) {
+        return processReadResultFile(totalRuleFile.get(ruleNumber));
+    }
+
     public List<Game> readTotalBetMadeFile() {
         return processReadResultFile(totalBetMadeFile);
     }
@@ -178,6 +182,10 @@ public class Repository {
 
     public void saveTotalBetMadeGamesToFile(List<Game> games) throws IOException {
         saveResultGamesToFile(totalBetMadeFile, games);
+    }
+
+    public void saveTotalRuleResultFile(RuleNumber ruleNumber, List<Game> games) throws IOException {
+        saveResultGamesToFile(totalRuleFile.get(ruleNumber), games);
     }
 
     private void saveResultGamesToFile(File file, List<Game> games) throws IOException {

@@ -26,6 +26,5 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
             writeInLine("\nNo games to scan");
         }
         writeLineSeparator();
-        writeInLine(String.format("\nBot work completed in %s", computeTime(programStartTime.get())));
     }
 }
