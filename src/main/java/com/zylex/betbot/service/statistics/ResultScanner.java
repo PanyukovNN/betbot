@@ -38,6 +38,10 @@ public class ResultScanner {
         this.repository = repository;
     }
 
+    public Repository getRepository() {
+        return repository;
+    }
+
     public void process() {
         List<Game> betMadeGames = repository.readTotalBetMadeFile();
         Map<LocalDate, List<Game>> betMadeGamesByDay = splitGamesByDay(betMadeGames);

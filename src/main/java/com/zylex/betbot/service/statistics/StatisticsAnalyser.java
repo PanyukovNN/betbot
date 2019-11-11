@@ -5,8 +5,6 @@ import com.zylex.betbot.controller.logger.StatisticsAnalyserConsoleLogger;
 import com.zylex.betbot.exception.StatisticsAnalyserException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
-import com.zylex.betbot.service.Day;
-import com.zylex.betbot.service.bet.rule.RuleNumber;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -20,21 +18,16 @@ public class StatisticsAnalyser {
 
     private Repository repository;
 
-    public StatisticsAnalyser(Repository repository) {
-        this.repository = repository;
-    }
+    private ResultScanner resultScanner;
 
-    public static void main(String[] args) {
-        Repository repository = new Repository(Day.TODAY, RuleNumber.RULE_ONE);
-        new ResultScanner(repository).process();
-        StatisticsAnalyser analyser = new StatisticsAnalyser(repository);
-        LocalDate startDate = LocalDate.of(2019, 11, 5);
-        LocalDate endDate = LocalDate.now().minusDays(1);
-        analyser.analyse(startDate, endDate);
+    public StatisticsAnalyser(ResultScanner resultScanner) {
+        this.resultScanner = resultScanner;
+        this.repository = resultScanner.getRepository();
     }
 
     public void analyse(LocalDate startDate, LocalDate endDate) {
         try {
+            resultScanner.process();
             logger.startLogMessage(startDate, endDate);
             List<Game> betMadeGames = filterByDate(startDate, endDate, repository.readTotalBetMadeFile());
             computeStatistics("Total", betMadeGames);
