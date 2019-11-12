@@ -48,7 +48,7 @@ public class ResultScanner {
         } else if (driver == null) {
             initiateDriver(driverManager);
         }
-//        logger.
+        logger.startLogMessage(betMadeNoResultGamesByDay.size());
         if (openFootballGamesResults()) {
             processGameResults(betMadeNoResultGamesByDay);
             logger.endMessage(LogType.OK);
@@ -141,7 +141,6 @@ public class ResultScanner {
                     .ifPresent(game -> {
                         index.getAndIncrement();
                         game.setGameResult(gameResult);
-                        logger.logBetMadeGame(game);
                     });
         }
     }

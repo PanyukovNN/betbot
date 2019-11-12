@@ -42,7 +42,7 @@ public class StatisticsAnalyser {
 
                 List<Game> gamesByDatePeriod = filterByDatePeriod(startDate, endDate, games);
                 List<Game> betMadeGamesByLeagues = getBetMadeGamesByLeagues(gamesByDatePeriod);
-                computeStatistics(gamesByDatePeriod, betMadeGamesByLeagues);
+                computeStatistics(ruleNumber, gamesByDatePeriod, betMadeGamesByLeagues);
             }
         } catch (IOException e) {
             throw new StatisticsAnalyserException(e.getMessage(), e);
@@ -75,7 +75,7 @@ public class StatisticsAnalyser {
         return betMadeGames;
     }
 
-    private void computeStatistics(List<Game> games1, List<Game> games2) {
+    private void computeStatistics(RuleNumber ruleNumber, List<Game> games1, List<Game> games2) {
         int firstWins1 = countResult(games1, GameResult.FIRST_WIN);
         int ties1 = countResult(games1, GameResult.TIE);
         int secondWins1 = countResult(games1, GameResult.SECOND_WIN);
@@ -84,7 +84,8 @@ public class StatisticsAnalyser {
         int ties2 = countResult(games2, GameResult.TIE);
         int secondWins2 = countResult(games2, GameResult.SECOND_WIN);
         int noResults2 = countResult(games2, GameResult.NO_RESULT);
-        logger.logStatistics(games1.size(), firstWins1, ties1, secondWins1, noResults1,
+        logger.logStatistics(ruleNumber,
+                games1.size(), firstWins1, ties1, secondWins1, noResults1,
                 games2.size(), firstWins2, ties2, secondWins2, noResults2);
     }
 
