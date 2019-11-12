@@ -33,11 +33,11 @@ public class RuleProcessor {
 
     private Day day;
 
-    public RuleProcessor(Repository repository, ParseProcessor parseProcessor, boolean refresh, Day day) {
+    public RuleProcessor(Repository repository, ParseProcessor parseProcessor, boolean refresh) {
         this.repository = repository;
         this.parseProcessor = parseProcessor;
         this.refresh = refresh;
-        this.day = day;
+        this.day = repository.getDay();
     }
 
     public Repository getRepository() {
@@ -52,7 +52,9 @@ public class RuleProcessor {
     public GameContainer process() {
         try {
             List<Game> games = repository.readAllMatchesFile();
-            LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().plusDays(day.INDEX).minusDays(1), LocalTime.of(23, 0));
+            LocalDateTime startBetTime = LocalDateTime.of(
+                    LocalDate.now().plusDays(day.INDEX).minusDays(1),
+                    LocalTime.of(23, 0));
             if (games.stream().anyMatch(game -> game.getParsingTime().isBefore(startBetTime))
                     || games.isEmpty()
                     || refresh) {

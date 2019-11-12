@@ -1,13 +1,8 @@
 package com.zylex.betbot.controller.logger;
 
-import com.zylex.betbot.model.Game;
-import org.apache.commons.lang3.StringUtils;
-
 import java.time.LocalDate;
 
 public class StatisticsAnalyserConsoleLogger extends ConsoleLogger{
-
-    private int index = 0;
 
     public synchronized void startLogMessage(LocalDate startDate, LocalDate endDate) {
         writeInLine(String.format("Analyse statistics for period from %s to %s", startDate, endDate));

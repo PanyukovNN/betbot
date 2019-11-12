@@ -36,34 +36,32 @@ public class Repository {
 
     private Map<RuleNumber, File> totalRuleFile = new HashMap<>();
 
+    private Day day;
+
     public Repository(Day day, RuleNumber ruleNumber) {
+        this.day = day;
         createFiles(day, ruleNumber);
+    }
+
+    public Day getDay() {
+        return day;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void createFiles(Day day, RuleNumber ruleNumber) {
-        try {
-            LocalDate date = LocalDate.now().plusDays(day.INDEX);
-            String monthDirName = date.getMonth().name();
-            String dirName = DIR_DATE_FORMATTER.format(date);
-            new File(String.format("results/%s/%s", monthDirName, dirName)).mkdirs();
-            allMatchesFile = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "all_matches_" + dirName));
-            allMatchesFile.createNewFile();
-            betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s_%s.csv", monthDirName, dirName, ruleNumber, dirName));
-            betMadeFile.createNewFile();
-            totalBetMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
-            totalBetMadeFile.createNewFile();
-            for (RuleNumber rule : RuleNumber.values()) {
-                File totalRuleResultFile = new File(String.format("results/%s/%s.csv", monthDirName, "MATCHES_" + rule + "_" + monthDirName));
-                totalRuleResultFile.createNewFile();
-                totalRuleFile.put(rule, totalRuleResultFile);
+        LocalDate date = LocalDate.now().plusDays(day.INDEX);
+        String monthDirName = date.getMonth().name();
+        String dirName = DIR_DATE_FORMATTER.format(date);
+        new File(String.format("results/%s/%s", monthDirName, dirName)).mkdirs();
+        allMatchesFile = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "all_matches_" + dirName));
+        betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s_%s.csv", monthDirName, dirName, ruleNumber, dirName));
+        totalBetMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
+        for (RuleNumber rule : RuleNumber.values()) {
+            File totalRuleResultFile = new File(String.format("results/%s/%s.csv", monthDirName, "MATCHES_" + rule + "_" + monthDirName));
+            totalRuleFile.put(rule, totalRuleResultFile);
 
-                File ruleResultFile = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "matches_" + rule + "_" + dirName));
-                ruleResultFile.createNewFile();
-                ruleFile.put(rule, ruleResultFile);
-            }
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
+            File ruleResultFile = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "matches_" + rule + "_" + dirName));
+            ruleFile.put(rule, ruleResultFile);
         }
     }
 
@@ -110,7 +108,9 @@ public class Repository {
         }
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void writeParsedGamesToFile(File file, List<Game> games) throws IOException {
+        file.createNewFile();
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
             for (Game game : games) {
@@ -146,10 +146,6 @@ public class Repository {
 
     public List<Game> readTotalRuleResultFile(RuleNumber ruleNumber) {
         return processReadResultFile(totalRuleFile.get(ruleNumber));
-    }
-
-    public List<Game> readTotalBetMadeFile() {
-        return processReadResultFile(totalBetMadeFile);
     }
 
     private List<Game> processReadResultFile(File file) {
@@ -196,7 +192,9 @@ public class Repository {
         writeResultGamesToFile(file, totalResultGames);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void writeResultGamesToFile(File file, List<Game> betMadeGames) throws IOException {
+        file.createNewFile();
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s\n";
             for (Game game : betMadeGames) {

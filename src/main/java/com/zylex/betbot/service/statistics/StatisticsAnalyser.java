@@ -1,14 +1,12 @@
 package com.zylex.betbot.service.statistics;
 
 import com.zylex.betbot.controller.Repository;
-import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
 import com.zylex.betbot.controller.logger.StatisticsAnalyserConsoleLogger;
 import com.zylex.betbot.exception.StatisticsAnalyserException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
-import org.openqa.selenium.WebDriver;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -78,15 +76,19 @@ public class StatisticsAnalyser {
     }
 
     private void computeStatistics(List<Game> games1, List<Game> games2) {
-        int firstWins1 = (int) games1.stream().filter(game -> game.getGameResult().equals(GameResult.FIRST_WIN)).count();
-        int ties1 = (int) games1.stream().filter(game -> game.getGameResult().equals(GameResult.TIE)).count();
-        int secondWins1 = (int) games1.stream().filter(game -> game.getGameResult().equals(GameResult.SECOND_WIN)).count();
-        int noResults1 = (int) games1.stream().filter(game -> game.getGameResult().equals(GameResult.NO_RESULT)).count();
-        int firstWins2 = (int) games2.stream().filter(game -> game.getGameResult().equals(GameResult.FIRST_WIN)).count();
-        int ties2 = (int) games2.stream().filter(game -> game.getGameResult().equals(GameResult.TIE)).count();
-        int secondWins2 = (int) games2.stream().filter(game -> game.getGameResult().equals(GameResult.SECOND_WIN)).count();
-        int noResults2 = (int) games2.stream().filter(game -> game.getGameResult().equals(GameResult.NO_RESULT)).count();
+        int firstWins1 = countResult(games1, GameResult.FIRST_WIN);
+        int ties1 = countResult(games1, GameResult.TIE);
+        int secondWins1 = countResult(games1, GameResult.SECOND_WIN);
+        int noResults1 = countResult(games1, GameResult.NO_RESULT);
+        int firstWins2 = countResult(games2, GameResult.FIRST_WIN);
+        int ties2 = countResult(games2, GameResult.TIE);
+        int secondWins2 = countResult(games2, GameResult.SECOND_WIN);
+        int noResults2 = countResult(games2, GameResult.NO_RESULT);
         logger.logStatistics(games1.size(), firstWins1, ties1, secondWins1, noResults1,
                 games2.size(), firstWins2, ties2, secondWins2, noResults2);
+    }
+
+    private int countResult(List<Game> games1, GameResult firstWin) {
+        return (int) games1.stream().filter(game -> game.getGameResult().equals(firstWin)).count();
     }
 }
