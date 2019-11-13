@@ -96,12 +96,15 @@ public class Repository {
     /**
      * Saves all lists of games from GameContainer into separate files.
      */
-    public void saveGamesToFiles(GameContainer gameContainer) {
+    public void saveGamesToFiles(GameContainer gameContainer, LocalDateTime startBetTime) {
         try {
             writeParsedGamesToFile(allMatchesFile, gameContainer.getAllGames());
             for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
                 writeParsedGamesToFile(ruleFile.get(entry.getKey()), entry.getValue());
-                saveResultGamesToFile(totalRuleFile.get(entry.getKey()), entry.getValue());
+
+                if (entry.getValue().stream().noneMatch(game -> game.getParsingTime().isBefore(startBetTime))) {
+                    saveResultGamesToFile(totalRuleFile.get(entry.getKey()), entry.getValue());
+                }
             }
         } catch (IOException e) {
             throw new RepositoryException(e.getMessage(), e);

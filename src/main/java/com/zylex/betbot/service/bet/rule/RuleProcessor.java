@@ -68,7 +68,7 @@ public class RuleProcessor {
             sortGamesByDate(eligibleGames);
             logger.writeEligibleGamesNumber(eligibleGames);
             GameContainer gameContainer = new GameContainer(games, eligibleGames);
-            repository.saveGamesToFiles(gameContainer);
+            repository.saveGamesToFiles(gameContainer, startBetTime);
             return gameContainer;
         } catch (IOException e) {
             throw new RuleProcessorException(e.getMessage(), e);
