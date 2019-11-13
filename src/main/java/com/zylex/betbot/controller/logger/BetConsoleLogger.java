@@ -41,10 +41,13 @@ public class BetConsoleLogger extends ConsoleLogger{
         if (type == LogType.OK) {
             String output = "Logging in: complete";
             writeInLine(StringUtils.repeat("\b", output.length()) + output);
-            writeLineSeparator();
-        } else if (type == LogType.ERROR) {
-            writeErrorMessage("\nError: problem with authorization, need to verify.");
+        } else if (type == LogType.VERIFY) {
+            String output = "Logging in: need to verify";
+            writeInLine(StringUtils.repeat("\b", output.length()) + output);
+            writeInLine("\nPlease, finish the verify in browser, after that press Enter to continue...");
+            pressEnter();
         }
+        writeLineSeparator();
     }
 
     public void noMoney() {

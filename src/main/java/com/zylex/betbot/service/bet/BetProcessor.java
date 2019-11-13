@@ -56,18 +56,16 @@ public class BetProcessor {
     public void process() {
         GameContainer gameContainer = ruleProcessor.process();
         try {
-            if (gameContainer.getEligibleGames().get(ruleNumber).size() > 0
-                    || !doBet) {
+            if (!doBet) {
                 logger.betMade(LogType.ERROR);
                 return;
             }
             driverInit();
             logger.logRule(ruleNumber);
             logger.startLogMessage(LogType.LOG_IN);
-            if (logIn()) {
-                logger.startLogMessage(LogType.BET);
-                processBets(gameContainer);
-            }
+            logIn();
+            logger.startLogMessage(LogType.BET);
+            processBets(gameContainer);
         } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         } finally {
@@ -85,7 +83,7 @@ public class BetProcessor {
         driver.navigate().to("https://1xstavka.ru/");
     }
 
-    private boolean logIn() throws IOException {
+    private void logIn() throws IOException {
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("oneXBetAuth.properties")) {
             Properties property = new Properties();
             property.load(inputStream);
@@ -94,13 +92,21 @@ public class BetProcessor {
             authenticationForm.get(0).sendKeys(property.getProperty("oneXBet.login"));
             authenticationForm.get(1).sendKeys(property.getProperty("oneXBet.password"));
             waitSingleElementAndGet("auth-button").click();
+            checkVerify();
+        }
+    }
+
+    private void checkVerify() {
+        try {
+            Thread.sleep(1500);
             String url = driver.getCurrentUrl();
-            logger.logInLog(LogType.OK);
             if (url.contains("accountverify")) {
-                logger.logInLog(LogType.ERROR);
-                return false;
+                logger.logInLog(LogType.VERIFY);
+            } else {
+                logger.logInLog(LogType.OK);
             }
-            return true;
+        } catch (InterruptedException e) {
+            throw new BetProcessorException(e.getMessage(), e);
         }
     }
 

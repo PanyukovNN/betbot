@@ -15,7 +15,7 @@ public class OneXBetBot {
         Day day = Day.TOMORROW;
         RuleNumber ruleNumber = RuleNumber.RULE_ONE;
         boolean mock = true;
-        boolean doBets = false;
+        boolean doBets = true;
         boolean leaguesFromFile = false;
         boolean refresh = false;
 

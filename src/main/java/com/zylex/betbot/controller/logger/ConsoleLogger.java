@@ -67,6 +67,15 @@ public abstract class ConsoleLogger {
         addToLog(line);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    synchronized void pressEnter() {
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            throw new ConsoleLoggerException(e.getMessage(), e);
+        }
+    }
+
     String computeTime(long startTime) {
         long millis = System.currentTimeMillis() - startTime;
         String time = String.format("%02d min. %02d sec.",

@@ -12,6 +12,7 @@ public enum LogType {
     GAMES,
     BET,
     LOG_IN,
+    VERIFY,
     LOG_OUT,
     ERROR,
     BET_NOT_FOUND,
