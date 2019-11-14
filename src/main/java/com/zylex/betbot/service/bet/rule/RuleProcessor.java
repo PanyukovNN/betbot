@@ -55,7 +55,7 @@ public class RuleProcessor {
                     LocalTime.of(23, 0));
             List<Game> games = processGames(startBetTime);
             Map<RuleNumber, List<Game>> eligibleGames = splitGamesByRules(games);
-            sortGamesByDate(eligibleGames);
+            eligibleGames.forEach((ruleNumber, gameList) -> gameList.sort(Comparator.comparing(Game::getDateTime)));
             logger.writeEligibleGamesNumber(eligibleGames);
             GameContainer gameContainer = new GameContainer(games, eligibleGames);
             repository.saveGamesToFiles(gameContainer, startBetTime);
@@ -79,14 +79,8 @@ public class RuleProcessor {
 
     private Map<RuleNumber, List<Game>> splitGamesByRules(List<Game> games) throws IOException {
         Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
-        eligibleGames.put(RuleNumber.RULE_ONE, new FirstWinSecretRule().filter(games));
-        eligibleGames.put(RuleNumber.RULE_TWO, new OneXSecretRule().filter(games));
+        eligibleGames.put(RuleNumber.RULE_ONE, new FirstRule().filter(games));
+        eligibleGames.put(RuleNumber.RULE_TWO, new SecondRule().filter(games));
         return eligibleGames;
-    }
-
-    private void sortGamesByDate(Map<RuleNumber, List<Game>> eligibleGames) {
-        for (List<Game> games : eligibleGames.values()) {
-            games.sort(Comparator.comparing(Game::getDateTime));
-        }
     }
 }

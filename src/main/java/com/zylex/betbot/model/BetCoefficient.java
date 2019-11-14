@@ -5,18 +5,15 @@ package com.zylex.betbot.model;
  */
 @SuppressWarnings("unused")
 public enum BetCoefficient {
-    FIRST_WIN(0, 0.10d),
-    TIE(1, 0),
-    SECOND_WIN(2, 0),
-    ONE_X(3, 0.02d),
-    X_TWO(5, 0);
+    FIRST_WIN(0),
+    TIE(1),
+    SECOND_WIN(2),
+    ONE_X(3),
+    X_TWO(5);
 
     public final int INDEX;
 
-    public double PERCENT;
-
-    BetCoefficient(int INDEX, double PERCENT) {
+    BetCoefficient(int INDEX) {
         this.INDEX = INDEX;
-        this.PERCENT = PERCENT;
     }
 }

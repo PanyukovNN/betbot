@@ -113,7 +113,7 @@ public class BetProcessor {
         List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
-        int singleBetAmount = calculateAmount(betCoefficient, totalMoney);
+        int singleBetAmount = calculateAmount(totalMoney);
         double availableBalance = totalMoney;
         List<Game> betMadeGames = repository.readBetMadeFile();
         int i = 0;
@@ -142,8 +142,8 @@ public class BetProcessor {
         }
     }
 
-    private int calculateAmount(BetCoefficient betCoefficient, double totalMoney) {
-        double singleBetMoney = totalMoney * betCoefficient.PERCENT;
+    private int calculateAmount(double totalMoney) {
+        double singleBetMoney = totalMoney * ruleNumber.PERCENT;
         return (int) Math.max(singleBetMoney, 20);
     }
 
