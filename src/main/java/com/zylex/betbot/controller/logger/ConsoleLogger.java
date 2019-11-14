@@ -9,6 +9,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Base class for loggers.
+ */
 public abstract class ConsoleLogger {
 
     private volatile static String logOutput;
@@ -23,6 +26,9 @@ public abstract class ConsoleLogger {
                 + "\n" + StringUtils.repeat("-", 50) + "\n";
     }
 
+    /**
+     * Write log to file.
+     */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void writeToLogFile() {
         try {
@@ -48,6 +54,10 @@ public abstract class ConsoleLogger {
         }
     }
 
+    /**
+     * Write exception in log.
+     * @param message - stack of exception.
+     */
     public synchronized static void writeExceptionToLog(String message) {
         logOutput += "\n" + message;
     }

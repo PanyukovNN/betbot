@@ -45,26 +45,16 @@ public class RuleProcessor {
     }
 
     /**
-     * Filters games by all rules and puts filtered lists in GameContainer.
-     *
+     * Filters games by rules, puts in GameContainer and returns it.
      * @return - container of all lists of games.
      */
     public GameContainer process() {
         try {
-            List<Game> games = repository.readAllMatchesFile();
             LocalDateTime startBetTime = LocalDateTime.of(
                     LocalDate.now().plusDays(day.INDEX).minusDays(1),
                     LocalTime.of(23, 0));
-            if (games.stream().anyMatch(game -> game.getParsingTime().isBefore(startBetTime))
-                    || games.isEmpty()
-                    || refresh) {
-                games = parseProcessor.process(day);
-            } else {
-                logger.startLogMessage(LogType.PARSING_FILE_START, day == Day.TODAY ? 0 : 1);
-            }
-            Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
-            eligibleGames.put(RuleNumber.RULE_ONE, new FirstWinSecretRule().filter(games));
-            eligibleGames.put(RuleNumber.RULE_TWO, new OneXSecretRule().filter(games));
+            List<Game> games = processGames(startBetTime);
+            Map<RuleNumber, List<Game>> eligibleGames = splitGamesByRules(games);
             sortGamesByDate(eligibleGames);
             logger.writeEligibleGamesNumber(eligibleGames);
             GameContainer gameContainer = new GameContainer(games, eligibleGames);
@@ -73,6 +63,25 @@ public class RuleProcessor {
         } catch (IOException e) {
             throw new RuleProcessorException(e.getMessage(), e);
         }
+    }
+
+    private List<Game> processGames(LocalDateTime startBetTime) {
+        List<Game> games = repository.readAllMatchesFile();
+        if (games.stream().anyMatch(game -> game.getParsingTime().isBefore(startBetTime))
+                || games.isEmpty()
+                || refresh) {
+            games = parseProcessor.process(day);
+        } else {
+            logger.startLogMessage(LogType.PARSING_FILE_START, day == Day.TODAY ? 0 : 1);
+        }
+        return games;
+    }
+
+    private Map<RuleNumber, List<Game>> splitGamesByRules(List<Game> games) throws IOException {
+        Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
+        eligibleGames.put(RuleNumber.RULE_ONE, new FirstWinSecretRule().filter(games));
+        eligibleGames.put(RuleNumber.RULE_TWO, new OneXSecretRule().filter(games));
+        return eligibleGames;
     }
 
     private void sortGamesByDate(Map<RuleNumber, List<Game>> eligibleGames) {

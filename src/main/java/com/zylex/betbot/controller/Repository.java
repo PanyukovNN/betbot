@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * Process saving games into file.
+ * Process saving games into files.
  */
 public class Repository {
 
@@ -65,6 +65,10 @@ public class Repository {
         }
     }
 
+    /**
+     * Get games from all_matches file.
+     * @return - list of games from file.
+     */
     public List<Game> readAllMatchesFile() {
         return processReadGames(allMatchesFile);
     }
@@ -143,10 +147,19 @@ public class Repository {
         }
     }
 
+    /**
+     * Read games from bet_made file.
+     * @return - list of games.
+     */
     public List<Game> readBetMadeFile() {
         return processReadResultFile(betMadeFile);
     }
 
+    /**
+     * Read games from total_rule file
+     * @param ruleNumber - number of rule.
+     * @return - list of games.
+     */
     public List<Game> readTotalRuleResultFile(RuleNumber ruleNumber) {
         return processReadResultFile(totalRuleFile.get(ruleNumber));
     }
@@ -175,16 +188,41 @@ public class Repository {
         }
     }
 
-    public void saveBetMadeGamesToFile(List<Game> betMadeGames) throws IOException {
-        writeResultGamesToFile(betMadeFile, betMadeGames);
+    /**
+     * Save games to bet_made file.
+     * @param games - list of games.
+     */
+    public void saveBetMadeGamesToFile(List<Game> games) {
+        try {
+            writeResultGamesToFile(betMadeFile, games);
+        } catch (IOException e) {
+            throw new RepositoryException(e.getMessage(), e);
+        }
     }
 
-    public void saveTotalBetMadeGamesToFile(List<Game> games) throws IOException {
-        saveResultGamesToFile(totalBetMadeFile, games);
+    /**
+     * Save games to total_bet_made file.
+     * @param games - list of games.
+     */
+    public void saveTotalBetMadeGamesToFile(List<Game> games) {
+        try {
+            saveResultGamesToFile(totalBetMadeFile, games);
+        } catch (IOException e) {
+            throw new RepositoryException(e.getMessage(), e);
+        }
     }
 
-    public void saveTotalRuleResultFile(RuleNumber ruleNumber, List<Game> games) throws IOException {
-        saveResultGamesToFile(totalRuleFile.get(ruleNumber), games);
+    /**
+     * Save games to total_rule file.
+     * @param ruleNumber - number of rule.
+     * @param games - list of games.
+     */
+    public void saveTotalRuleResultFile(RuleNumber ruleNumber, List<Game> games) {
+        try {
+            saveResultGamesToFile(totalRuleFile.get(ruleNumber), games);
+        } catch (IOException e) {
+            throw new RepositoryException(e.getMessage(), e);
+        }
     }
 
     private void saveResultGamesToFile(File file, List<Game> games) throws IOException {

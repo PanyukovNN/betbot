@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Parsing football leagues links, which includes game for a next day on site.
+ * Parsing football leagues links from site.
  */
 @SuppressWarnings("WeakerAccess")
 public class LeagueParser {
@@ -28,7 +28,7 @@ public class LeagueParser {
     }
 
     /**
-     * Gets links on leagues which include football matches for a specified day from site,
+     * Gets links on leagues which include football matches from site,
      * puts them into list and return.
      * @return - list of links.
      */

@@ -2,16 +2,26 @@ package com.zylex.betbot.controller.logger;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class ResultScannerConsoleLogger extends ConsoleLogger{
+/**
+ * Logs ResultScanner.
+ */
+public class ScannerConsoleLogger extends ConsoleLogger{
 
+    /**
+     * Log start messages.
+     * @param gamesNumber - number of games.
+     */
     public void startLogMessage(int gamesNumber) {
-        if (gamesNumber == 0) {
-            writeInLine("\nNo games to scan.");
-        } else {
-            writeInLine("\nProcess scanning: ...");
-        }
+        String output = gamesNumber == 0
+                ? "\nNo games to scan."
+                : "\nProcess scanning: ...";
+        writeInLine(output);
     }
 
+    /**
+     * Log end message.
+     * @param type - type of log.
+     */
     public void endMessage(LogType type) {
         if (type == LogType.OK) {
             String output = "Process scanning: complete";

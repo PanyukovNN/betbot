@@ -33,9 +33,9 @@ public class ParseProcessor {
 
     /**
      * Get links on leagues which include football matches for a specified day,
-     * then pull information about matches from every link, put them into list,
-     * filter the list by specified Rule, and save all games and filtered games
-     * in separate files.
+     * then pull information about matches from every link, put matches into list,
+     * and return it.
+     * @param day - specified day.
      * @return - list of games.
      */
     public List<Game> process(Day day) {

@@ -5,8 +5,15 @@ import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Logs BetProcessor.
+ */
 public class BetConsoleLogger extends ConsoleLogger{
 
+    /**
+     * Log start message.
+     * @param type - type of log.
+     */
     public synchronized void startLogMessage(LogType type) {
         if (type == LogType.BET) {
             writeInLine("\nProcessing bets:");
@@ -16,15 +23,27 @@ public class BetConsoleLogger extends ConsoleLogger{
         }
     }
 
+    /**
+     * Log rule.
+     * @param ruleNumber - number of rule.
+     */
     public void logRule(RuleNumber ruleNumber) {
         writeInLine("\nUsing: " + ruleNumber);
     }
 
-    public void logBet(int index, int singleBetAmount, BetCoefficient betCoefficient, Game game, LogType type) {
+    /**
+     * Log single bet.
+     * @param index - number of bet.
+     * @param betAmount - amount of bet.
+     * @param betCoefficient - coefficient of bet.
+     * @param game - game for bet.
+     * @param type - type of log.
+     */
+    public void logBet(int index, int betAmount, BetCoefficient betCoefficient, Game game, LogType type) {
         if (type == LogType.OK) {
             writeInLine(String.format("\n%d) %s rub. bet has been placed on %s for: %s",
                     index,
-                    singleBetAmount,
+                    betAmount,
                     betCoefficient,
                     game));
         } else if (type == LogType.BET_NOT_FOUND) {
@@ -34,6 +53,10 @@ public class BetConsoleLogger extends ConsoleLogger{
         }
     }
 
+    /**
+     * Log of site log in.
+     * @param type - type of log.
+     */
     public void logInLog(LogType type) {
         if (type == LogType.OK) {
             String output = "Logging in: complete";
@@ -47,10 +70,17 @@ public class BetConsoleLogger extends ConsoleLogger{
         writeLineSeparator();
     }
 
+    /**
+     * Log no money situation.
+     */
     public void noMoney() {
         writeInLine("\nMoney is over.");
     }
 
+    /**
+     * Log end of bet making.
+     * @param type - type of log.
+     */
     public void betMade(LogType type) {
         if (type == LogType.OK) {
             writeLineSeparator();

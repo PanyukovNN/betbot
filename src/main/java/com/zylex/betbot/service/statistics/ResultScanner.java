@@ -2,7 +2,7 @@ package com.zylex.betbot.service.statistics;
 
 import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.controller.logger.LogType;
-import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
+import com.zylex.betbot.controller.logger.ScannerConsoleLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
@@ -21,10 +21,13 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/**
+ * Scans games results.
+ */
 @SuppressWarnings("WeakerAccess")
 public class ResultScanner {
 
-    private ResultScannerConsoleLogger logger = new ResultScannerConsoleLogger();
+    private ScannerConsoleLogger logger = new ScannerConsoleLogger();
 
     private WebDriver driver;
 
@@ -40,11 +43,16 @@ public class ResultScanner {
         return repository;
     }
 
-    public List<Game> process(List<Game> games, DriverManager driverManager) {
+    /**
+     * Scans games results from site.
+     * @param games - list of games with no results.
+     * @param driverManager - instance of driver manager.
+     */
+    public void process(List<Game> games, DriverManager driverManager) {
         Map<LocalDate, List<Game>> betMadeNoResultGamesByDay = splitNoResultGamesByDay(games);
         if (betMadeNoResultGamesByDay.isEmpty()) {
             logger.endMessage(LogType.NO_GAMES_TO_SCAN);
-            return games;
+            return;
         } else if (driver == null) {
             driverInit(driverManager);
         }
@@ -53,8 +61,6 @@ public class ResultScanner {
             processGameResults(betMadeNoResultGamesByDay);
             logger.endMessage(LogType.OK);
         }
-        return games;
-
     }
 
     private void driverInit(DriverManager driverManager) {
@@ -63,12 +69,12 @@ public class ResultScanner {
         driver.navigate().to("https://1xstavka.ru/results/");
     }
 
-    private Map<LocalDate, List<Game>> splitNoResultGamesByDay(List<Game> betMadeGames) {
+    private Map<LocalDate, List<Game>> splitNoResultGamesByDay(List<Game> games) {
         Map<LocalDate, List<Game>> betMadeGamesByDay = new HashMap<>();
         Set<LocalDate> days = new HashSet<>();
-        betMadeGames.forEach(game -> days.add(game.getDateTime().toLocalDate()));
+        games.forEach(game -> days.add(game.getDateTime().toLocalDate()));
         days.forEach(day -> {
-            List<Game> noResultGames = filterNoResultGames(betMadeGames, day);
+            List<Game> noResultGames = filterNoResultGames(games, day);
             if (!noResultGames.isEmpty()) {
                 betMadeGamesByDay.put(day, noResultGames);
             }
@@ -76,8 +82,8 @@ public class ResultScanner {
         return betMadeGamesByDay;
     }
 
-    private List<Game> filterNoResultGames(List<Game> betsMadeGames, LocalDate day) {
-        return betsMadeGames.stream()
+    private List<Game> filterNoResultGames(List<Game> games, LocalDate day) {
+        return games.stream()
                 .filter(game -> game.getGameResult() == GameResult.NO_RESULT
                         && game.getDateTime().toLocalDate().equals(day)
                         && game.getDateTime().isBefore(LocalDateTime.now().minusHours(3)))

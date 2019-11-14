@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Instance of container for all lists of games.
+ * Instance of container for all games lists.
  */
 public class GameContainer {
 

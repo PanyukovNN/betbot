@@ -1,7 +1,7 @@
 package com.zylex.betbot.service.statistics;
 
 import com.zylex.betbot.controller.Repository;
-import com.zylex.betbot.controller.logger.StatisticsAnalyserConsoleLogger;
+import com.zylex.betbot.controller.logger.StatisticsConsoleLogger;
 import com.zylex.betbot.exception.StatisticsAnalyserException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
@@ -14,9 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Analyses game results statistics.
+ */
 public class StatisticsAnalyser {
 
-    private StatisticsAnalyserConsoleLogger logger = new StatisticsAnalyserConsoleLogger();
+    private StatisticsConsoleLogger logger = new StatisticsConsoleLogger();
 
     private Repository repository;
 
@@ -27,6 +30,11 @@ public class StatisticsAnalyser {
         this.repository = resultScanner.getRepository();
     }
 
+    /**
+     * Get results of games and compute them statistics for specified period.
+     * @param startDate - start date of period.
+     * @param endDate - end date of period.
+     */
     public void analyse(LocalDate startDate, LocalDate endDate) {
         DriverManager driverManager = new DriverManager();
         try {
@@ -44,14 +52,10 @@ public class StatisticsAnalyser {
         }
     }
 
-    private List<Game> processGames(DriverManager driverManager, RuleNumber ruleNumber) throws IOException {
+    private List<Game> processGames(DriverManager driverManager, RuleNumber ruleNumber) {
         List<Game> games = repository.readTotalRuleResultFile(ruleNumber);
-        repository.saveTotalRuleResultFile(ruleNumber,
-            resultScanner.process(
-                games,
-                driverManager
-            )
-        );
+        resultScanner.process(games, driverManager);
+        repository.saveTotalRuleResultFile(ruleNumber, games);
         return games;
     }
 

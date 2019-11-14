@@ -42,29 +42,27 @@ public class CallableGameParser implements Callable<List<Game>> {
     }
 
     /**
-     * Processes parsing of one league.
+     * Parsing by jsoup league link on site and return all matches for specified day.
      * @return - list of games.
      */
     @Override
     public List<Game> call() {
         try {
             return processGameParsing();
+        } catch (HttpStatusException e) {
+            return new ArrayList<>();
         } catch (IOException e) {
             throw new GameBotException(e.getMessage(), e);
         }
     }
 
     private List<Game> processGameParsing() throws IOException {
-        try {
-            logger.logLeagueGame();
-            Document document = Jsoup.connect(String.format("https://1xstavka.ru/line/Football/%s", leagueLink))
-                    .userAgent("Chrome/4.0.249.0 Safari/532.5")
-                    .referrer("http://www.google.com")
-                    .get();
-            return parseGames(document);
-        } catch (HttpStatusException e) {
-            return new ArrayList<>();
-        }
+        logger.logLeagueGame();
+        Document document = Jsoup.connect(String.format("https://1xstavka.ru/line/Football/%s", leagueLink))
+                .userAgent("Chrome/4.0.249.0 Safari/532.5")
+                .referrer("http://www.google.com")
+                .get();
+        return parseGames(document);
     }
 
     private List<Game> parseGames(Document document) {
@@ -82,7 +80,7 @@ public class CallableGameParser implements Callable<List<Game>> {
             Elements teams = gameElement.select("span.c-events__team");
             String firstTeam = teams.get(0).text();
             String secondTeam = teams.get(1).text();
-            if (firstTeam.contains("Хозяева (голы)")) {
+            if (firstTeam.contains("(голы)")) {
                 continue;
             }
             Elements coefficients = gameElement.select("div.c-bets > a.c-bets__bet");
@@ -91,17 +89,8 @@ public class CallableGameParser implements Callable<List<Game>> {
             String secondWin = coefficients.get(2).text();
             String firstWinOrTie = coefficients.get(3).text();
             String secondWinOrTie = coefficients.get(5).text();
-            Game game = new Game(leagueName,
-                    leagueLink,
-                    dateTime,
-                    firstTeam,
-                    secondTeam,
-                    firstWin,
-                    tie,
-                    secondWin,
-                    firstWinOrTie,
-                    secondWinOrTie,
-                    parsingTime);
+            Game game = new Game(leagueName, leagueLink, dateTime, firstTeam, secondTeam,
+                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, parsingTime);
             games.add(game);
         }
         return games;

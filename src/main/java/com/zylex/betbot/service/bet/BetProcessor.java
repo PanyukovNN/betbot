@@ -51,7 +51,7 @@ public class BetProcessor {
 
     /**
      * Initiates one non-headless chrome driver, navigates to site,
-     * logs in, makes bets and log out.
+     * logs in and makes bets.
      */
     public void process() {
         GameContainer gameContainer = ruleProcessor.process();
@@ -109,7 +109,7 @@ public class BetProcessor {
         }
     }
 
-    private void processBets(GameContainer gameContainer) throws IOException {
+    private void processBets(GameContainer gameContainer) {
         List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());

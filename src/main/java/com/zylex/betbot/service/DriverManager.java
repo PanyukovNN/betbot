@@ -22,7 +22,9 @@ public class DriverManager {
     private WebDriver driver;
 
     /**
-     * Initiate chrome driver.
+     * Initiate web driver and return it.
+     * @param headless - flag for headless driver.
+     * @return - instance of web driver.
      */
     public WebDriver initiateDriver(boolean headless) {
         if (driver != null) {
@@ -48,9 +50,12 @@ public class DriverManager {
     private void setUpLogging() {
         System.setProperty("webdriver.chrome.silentOutput", "true");
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
-        logger.startLogMessage(LogType.DRIVER);
+        logger.startLogMessage();
     }
 
+    /**
+     * Quit driver if it was initiated.
+     */
     public void quitDriver() {
         if (driver != null) {
             driver.quit();

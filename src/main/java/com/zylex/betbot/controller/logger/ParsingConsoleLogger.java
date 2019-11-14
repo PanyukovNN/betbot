@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Logs Parsing processor
+ */
 public class ParsingConsoleLogger extends ConsoleLogger {
 
     private AtomicInteger totalGames = new AtomicInteger(0);
@@ -22,6 +25,11 @@ public class ParsingConsoleLogger extends ConsoleLogger {
         totalGames.addAndGet(number);
     }
 
+    /**
+     * Log start messages.
+     * @param type - type of log.
+     * @param arg - different argument for specified log type.
+     */
     public synchronized void startLogMessage(LogType type, Integer arg) {
         if (type == LogType.PARSING_SITE_START) {
             Day day = arg == 0 ? Day.TODAY : Day.TOMORROW;
@@ -40,11 +48,17 @@ public class ParsingConsoleLogger extends ConsoleLogger {
         }
     }
 
+    /**
+     * Log league finding.
+     */
     public void logLeague() {
         String output = "Finding leagues: complete";
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
     }
 
+    /**
+     * Log count of processed games.
+     */
     public synchronized void logLeagueGame() {
         String output = String.format("Processing leagues: %d/%d (%s%%)",
                 processedLeagues.incrementAndGet(),
@@ -56,12 +70,19 @@ public class ParsingConsoleLogger extends ConsoleLogger {
         }
     }
 
+    /**
+     * Log summarizing of parsing.
+     */
     public void parsingSummarizing() {
         writeInLine(String.format("\nTotal games: %d", totalGames.get()));
         writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
         writeLineSeparator();
     }
 
+    /**
+     * Log number of eligible games for every rule.
+     * @param eligibleGames - map of eligible games.
+     */
     public void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {
         for (RuleNumber ruleNumber : RuleNumber.values()) {
             writeInLine(String.format("\nEligible games for %s: %d", ruleNumber, eligibleGames.get(ruleNumber).size()));
