@@ -51,10 +51,9 @@ public class LeagueParser {
             }
         }
         logger.logLeague();
-        if (leaguesFromFile) {
-            return filterLinksFromFile(leagueLinks);
-        }
-        return leagueLinks;
+        return leaguesFromFile
+                ? filterLinksFromFile(leagueLinks)
+                : leagueLinks;
     }
 
     private Document connectToSite() throws IOException {

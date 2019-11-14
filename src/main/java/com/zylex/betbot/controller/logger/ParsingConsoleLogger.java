@@ -41,7 +41,6 @@ public class ParsingConsoleLogger extends ConsoleLogger {
             writeLineSeparator();
             writeInLine("\nReading from file.");
             writeLineSeparator();
-            writeInLine("\nFinding leagues: ...");
         } else if (type == LogType.GAMES) {
             totalLeagues = arg;
             writeInLine(String.format("\nProcessing games: 0/%d (0.0%%)", arg));
