@@ -26,13 +26,13 @@ public class ParsingConsoleLogger extends ConsoleLogger {
         if (type == LogType.PARSING_SITE_START) {
             Day day = arg == 0 ? Day.TODAY : Day.TOMORROW;
             writeInLine(String.format("Start parsing %s games.", day));
+            writeInLine("\nFinding leagues: ...");
         } if (type == LogType.PARSING_FILE_START) {
             Day day = arg == 0 ? Day.TODAY : Day.TOMORROW;
             writeInLine(String.format("Start parsing %s games.", day));
             writeLineSeparator();
             writeInLine("\nReading from file.");
             writeLineSeparator();
-        } else if (type == LogType.LEAGUES) {
             writeInLine("\nFinding leagues: ...");
         } else if (type == LogType.GAMES) {
             totalLeagues = arg;

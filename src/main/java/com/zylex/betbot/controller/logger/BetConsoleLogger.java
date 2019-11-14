@@ -13,9 +13,6 @@ public class BetConsoleLogger extends ConsoleLogger{
         } else if (type == LogType.LOG_IN) {
             writeLineSeparator();
             writeInLine("\nLogging in: ...");
-        } else if (type == LogType.LOG_OUT) {
-            writeLineSeparator();
-            writeInLine("\nLogging out: ...");
         }
     }
 

@@ -42,23 +42,26 @@ public class LeagueParser {
 
     private List<String> parseLeagueLinks() throws IOException {
         List<String> leagueLinks = new ArrayList<>();
-        Document document = Jsoup.connect("https://1xstavka.ru/line/Football/")
-                .userAgent("Chrome/4.0.249.0 Safari/532.5")
-                .referrer("http://www.google.com")
-                .get();
+        Document document = connectToSite();
         Elements leagueLinksElements = document.select("ul.liga_menu > li > a.link");
         for (Element element : leagueLinksElements) {
             String link = element.attr("href");
             if (checkLeagueLink(link)) {
-                link = link.replace("line/Football/", "");
-                leagueLinks.add(link);
+                leagueLinks.add(link.replace("line/Football/", ""));
             }
         }
-        if (leaguesFromFile) {
-            leagueLinks = filterLinksFromFile(leagueLinks);
-        }
         logger.logLeague();
+        if (leaguesFromFile) {
+            return filterLinksFromFile(leagueLinks);
+        }
         return leagueLinks;
+    }
+
+    private Document connectToSite() throws IOException {
+        return Jsoup.connect("https://1xstavka.ru/line/Football/")
+                    .userAgent("Chrome/4.0.249.0 Safari/532.5")
+                    .referrer("http://www.google.com")
+                    .get();
     }
 
     private List<String> filterLinksFromFile(List<String> leagueLinks) throws IOException {
@@ -67,8 +70,7 @@ public class LeagueParser {
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             reader.lines().forEach(leagueLinksFromFile::add);
         }
-        leagueLinks = leagueLinks.stream().filter(leagueLinksFromFile::contains).collect(Collectors.toList());
-        return leagueLinks;
+        return leagueLinks.stream().filter(leagueLinksFromFile::contains).collect(Collectors.toList());
     }
 
     private boolean checkLeagueLink(String link) {

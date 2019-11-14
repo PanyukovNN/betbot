@@ -32,16 +32,9 @@ public class StatisticsAnalyser {
         try {
             logger.startLogMessage(startDate, endDate);
             for (RuleNumber ruleNumber : RuleNumber.values()) {
-                List<Game> games = repository.readTotalRuleResultFile(ruleNumber);
-                repository.saveTotalRuleResultFile(ruleNumber,
-                    resultScanner.process(
-                        games,
-                        driverManager
-                    )
-                );
-
+                List<Game> games = processGames(driverManager, ruleNumber);
                 List<Game> gamesByDatePeriod = filterByDatePeriod(startDate, endDate, games);
-                List<Game> betMadeGamesByLeagues = getBetMadeGamesByLeagues(gamesByDatePeriod);
+                List<Game> betMadeGamesByLeagues = splitBetMadeGamesByLeagues(gamesByDatePeriod);
                 computeStatistics(ruleNumber, gamesByDatePeriod, betMadeGamesByLeagues);
             }
         } catch (IOException e) {
@@ -51,7 +44,18 @@ public class StatisticsAnalyser {
         }
     }
 
-    private List<Game> getBetMadeGamesByLeagues(List<Game> betMadeGames) throws IOException {
+    private List<Game> processGames(DriverManager driverManager, RuleNumber ruleNumber) throws IOException {
+        List<Game> games = repository.readTotalRuleResultFile(ruleNumber);
+        repository.saveTotalRuleResultFile(ruleNumber,
+            resultScanner.process(
+                games,
+                driverManager
+            )
+        );
+        return games;
+    }
+
+    private List<Game> splitBetMadeGamesByLeagues(List<Game> betMadeGames) throws IOException {
         List<String> leagueLinksFromFile = readLeagueLinksFromFile();
         return betMadeGames.stream()
                 .filter(game -> leagueLinksFromFile.contains(game.getLeagueLink())).collect(Collectors.toList());

@@ -77,8 +77,7 @@ public class BetProcessor {
 
     private void driverInit() {
         DriverManager driverManager = new DriverManager();
-        driverManager.initiateDriver(false);
-        driver = driverManager.getDriver();
+        driver = driverManager.initiateDriver(false);
         wait = new WebDriverWait(driver, 5);
         driver.navigate().to("https://1xstavka.ru/");
     }

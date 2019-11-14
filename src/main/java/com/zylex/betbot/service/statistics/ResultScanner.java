@@ -46,7 +46,7 @@ public class ResultScanner {
             logger.endMessage(LogType.NO_GAMES_TO_SCAN);
             return games;
         } else if (driver == null) {
-            initiateDriver(driverManager);
+            driverInit(driverManager);
         }
         logger.startLogMessage(betMadeNoResultGamesByDay.size());
         if (openFootballGamesResults()) {
@@ -57,9 +57,8 @@ public class ResultScanner {
 
     }
 
-    private void initiateDriver(DriverManager driverManager) {
-        driverManager.initiateDriver(true);
-        driver = driverManager.getDriver();
+    private void driverInit(DriverManager driverManager) {
+        driver = driverManager.initiateDriver(true);
         wait = new WebDriverWait(driver, 20);
         driver.navigate().to("https://1xstavka.ru/results/");
     }
