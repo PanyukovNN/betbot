@@ -11,7 +11,7 @@ import java.time.LocalDate;
 public class StatisticsApplication {
 
     public static void main(String[] args) {
-        LocalDate startDate = LocalDate.of(2019, 11, 5);
+        LocalDate startDate = LocalDate.of(2019, 11, 11);
         LocalDate endDate = LocalDate.now().minusDays(1);
 
         new StatisticsAnalyser(

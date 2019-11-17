@@ -1,7 +1,6 @@
 package com.zylex.betbot.service;
 
 import com.zylex.betbot.controller.logger.DriverConsoleLogger;
-import com.zylex.betbot.controller.logger.LogType;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;

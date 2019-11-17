@@ -80,7 +80,6 @@ public class RuleProcessor {
     private Map<RuleNumber, List<Game>> splitGamesByRules(List<Game> games) throws IOException {
         Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
         eligibleGames.put(RuleNumber.RULE_ONE, new FirstRule().filter(games));
-        eligibleGames.put(RuleNumber.RULE_TWO, new SecondRule().filter(games));
         return eligibleGames;
     }
 }

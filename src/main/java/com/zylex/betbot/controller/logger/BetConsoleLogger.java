@@ -64,7 +64,7 @@ public class BetConsoleLogger extends ConsoleLogger{
         } else if (type == LogType.VERIFY) {
             String output = "Logging in: need to verify";
             writeInLine(StringUtils.repeat("\b", output.length()) + output);
-            writeInLine("\nPlease, finish the verify in browser, after that press Enter to continue...");
+            writeInLine("\nPlease, finish the verification in browser, after that press Enter to continue...");
             pressEnter();
         }
         writeLineSeparator();
