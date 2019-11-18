@@ -7,6 +7,7 @@ import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 import com.zylex.betbot.service.bet.rule.RuleProcessor;
@@ -35,15 +36,12 @@ public class BetProcessor {
 
     private RuleProcessor ruleProcessor;
 
-    private Repository repository;
-
     private boolean mock;
 
     private boolean doBet;
 
     public BetProcessor(RuleProcessor ruleProcessor, RuleNumber ruleNumber, boolean mock, boolean doBet) {
         this.ruleProcessor = ruleProcessor;
-        repository = ruleProcessor.getRepository();
         this.ruleNumber = ruleNumber;
         this.mock = mock;
         this.doBet = doBet;
@@ -54,18 +52,22 @@ public class BetProcessor {
      * logs in and makes bets.
      */
     public void process() {
-        GameContainer gameContainer = ruleProcessor.process();
+        Map<Day, GameContainer> dayGameContainer = ruleProcessor.process();
+        Map<Day, Repository> dayRepository = ruleProcessor.getDayRepository();
         try {
-            if (!doBet || gameContainer.getEligibleGames().get(ruleNumber).isEmpty()) {
-                logger.betMade(LogType.ERROR);
-                return;
+            for (Day day : dayGameContainer.keySet()) {
+                GameContainer gameContainer = dayGameContainer.get(day);
+                if (!doBet || gameContainer.getEligibleGames().get(ruleNumber).isEmpty()) {
+                    logger.betMade(LogType.ERROR);
+                    return;
+                }
+                driverInit();
+                logger.logRule(ruleNumber);
+                logger.startLogMessage(LogType.LOG_IN);
+                logIn();
+                logger.startLogMessage(LogType.BET);
+                processBets(dayRepository.get(day), gameContainer);
             }
-            driverInit();
-            logger.logRule(ruleNumber);
-            logger.startLogMessage(LogType.LOG_IN);
-            logIn();
-            logger.startLogMessage(LogType.BET);
-            processBets(gameContainer);
         } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         } finally {
@@ -76,10 +78,12 @@ public class BetProcessor {
     }
 
     private void driverInit() {
-        DriverManager driverManager = new DriverManager();
-        driver = driverManager.initiateDriver(false);
-        wait = new WebDriverWait(driver, 5);
-        driver.navigate().to("https://1xstavka.ru/");
+        if (driver == null) {
+            DriverManager driverManager = new DriverManager();
+            driver = driverManager.initiateDriver(false);
+            wait = new WebDriverWait(driver, 5);
+            driver.navigate().to("https://1xstavka.ru/");
+        }
     }
 
     private void logIn() throws IOException {
@@ -109,7 +113,7 @@ public class BetProcessor {
         }
     }
 
-    private void processBets(GameContainer gameContainer) {
+    private void processBets(Repository repository, GameContainer gameContainer) {
         List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());

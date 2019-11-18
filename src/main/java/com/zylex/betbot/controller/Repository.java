@@ -36,15 +36,8 @@ public class Repository {
 
     private Map<RuleNumber, File> totalRuleFile = new HashMap<>();
 
-    private Day day;
-
     public Repository(Day day, RuleNumber ruleNumber) {
-        this.day = day;
         createFiles(day, ruleNumber);
-    }
-
-    public Day getDay() {
-        return day;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

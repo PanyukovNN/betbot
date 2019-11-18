@@ -9,6 +9,7 @@ import com.zylex.betbot.service.Day;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,13 +39,13 @@ public class ParseProcessor {
      * @param day - specified day.
      * @return - list of games.
      */
-    public List<Game> process(Day day) {
+    public List<Game> process() {
         try {
-            logger.startLogMessage(LogType.PARSING_SITE_START, day == Day.TODAY ? 0 : 1);
+            logger.startLogMessage(LogType.PARSING_SITE_START, 0);
             List<String> leagueLinks = new LeagueParser(logger, leaguesFromFile)
                     .processLeagueParsing();
             logger.startLogMessage(LogType.GAMES, leagueLinks.size());
-            List<Game> games = processGameParsing(service, leagueLinks, day);
+            List<Game> games = processGameParsing(service, leagueLinks);
             logger.addTotalGames(games.size());
             return games;
         } catch (InterruptedException | ExecutionException e) {
@@ -56,11 +57,10 @@ public class ParseProcessor {
     }
 
     private List<Game> processGameParsing(ExecutorService service,
-                                          List<String> leagueLinks,
-                                          Day day) throws InterruptedException, ExecutionException {
+                                          List<String> leagueLinks) throws InterruptedException, ExecutionException {
         List<CallableGameParser> callableGameParsers = new ArrayList<>();
         for (String leagueLink : leagueLinks) {
-            callableGameParsers.add(new CallableGameParser(logger, leagueLink, day, parsingTime));
+            callableGameParsers.add(new CallableGameParser(logger, leagueLink, parsingTime));
         }
         List<Future<List<Game>>> futureGameParsers = service.invokeAll(callableGameParsers);
         List<Game> games = new ArrayList<>();

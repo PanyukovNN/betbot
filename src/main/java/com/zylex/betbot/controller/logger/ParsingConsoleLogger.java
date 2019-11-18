@@ -32,12 +32,10 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      */
     public synchronized void startLogMessage(LogType type, Integer arg) {
         if (type == LogType.PARSING_SITE_START) {
-            Day day = arg == 0 ? Day.TODAY : Day.TOMORROW;
-            writeInLine(String.format("Start parsing %s games.", day));
+            writeInLine("Start parsing.");
             writeInLine("\nFinding leagues: ...");
         } if (type == LogType.PARSING_FILE_START) {
-            Day day = arg == 0 ? Day.TODAY : Day.TOMORROW;
-            writeInLine(String.format("Start parsing %s games.", day));
+            writeInLine("Start parsing.");
             writeLineSeparator();
             writeInLine("\nReading from file.");
             writeLineSeparator();
@@ -82,9 +80,11 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      * Log number of eligible games for every rule.
      * @param eligibleGames - map of eligible games.
      */
-    public void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {
-        for (RuleNumber ruleNumber : RuleNumber.values()) {
-            writeInLine(String.format("\nEligible games for %s: %d", ruleNumber, eligibleGames.get(ruleNumber).size()));
+    public void writeEligibleGamesNumber(Map<Day, Map<RuleNumber, List<Game>>> eligibleGames) {
+        for (Day day : eligibleGames.keySet()) {
+            for (RuleNumber ruleNumber : RuleNumber.values()) {
+                writeInLine(String.format("\nEligible %s games for %s: %d", day, ruleNumber, eligibleGames.get(day).get(ruleNumber).size()));
+            }
         }
         writeLineSeparator();
     }

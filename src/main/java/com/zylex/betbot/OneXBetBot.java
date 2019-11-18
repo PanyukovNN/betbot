@@ -9,20 +9,27 @@ import com.zylex.betbot.service.bet.rule.RuleNumber;
 import com.zylex.betbot.service.bet.rule.RuleProcessor;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class OneXBetBot {
 
     public static void main(String[] args) {
-        Day day = Day.TOMORROW;
+//        Day day = Day.TOMORROW;
         RuleNumber ruleNumber = RuleNumber.RULE_ONE;
         boolean mock = true;
-        boolean doBets = true;
+        boolean doBets = false;
         boolean leaguesFromFile = false;
-        boolean refresh = false;
+        boolean refresh = false;//args.length > 0 && args[0].equals("true");
+
+        Map<Day, Repository> dayRepository = new HashMap<>();
+        dayRepository.put(Day.TODAY, new Repository(Day.TODAY, ruleNumber));
+        dayRepository.put(Day.TOMORROW, new Repository(Day.TOMORROW, ruleNumber));
 
         try {
             new BetProcessor(
                 new RuleProcessor(
-                    new Repository(day, ruleNumber),
+                    dayRepository,
                     new ParseProcessor(leaguesFromFile),
                     refresh),
                 ruleNumber,

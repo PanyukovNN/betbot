@@ -30,14 +30,11 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private String leagueLink;
 
-    private Day day;
-
     private LocalDateTime parsingTime;
 
-    public CallableGameParser(ParsingConsoleLogger logger, String leagueLink, Day day, LocalDateTime parsingTime) {
+    public CallableGameParser(ParsingConsoleLogger logger, String leagueLink, LocalDateTime parsingTime) {
         this.logger = logger;
         this.leagueLink = leagueLink;
-        this.day = day;
         this.parsingTime = parsingTime;
     }
 
@@ -69,12 +66,13 @@ public class CallableGameParser implements Callable<List<Game>> {
         List<Game> games = new ArrayList<>();
         String leagueName = document.select("span.c-events__liga").text();
         Elements gameElements = document.select("div.c-events__item_game");
-        LocalDate nextDay = LocalDate.now().plusDays(day.INDEX);
+        LocalDate today = LocalDate.now().plusDays(Day.TODAY.INDEX);
+        LocalDate tomorrow = LocalDate.now().plusDays(Day.TOMORROW.INDEX);
         for (Element gameElement : gameElements) {
             LocalDateTime dateTime = processDate(gameElement).plusHours(3);
-            if (dateTime.toLocalDate().isBefore(nextDay)) {
+            if (dateTime.toLocalDate().isBefore(today)) {
                 continue;
-            } else if (dateTime.toLocalDate().isAfter(nextDay)) {
+            } else if (dateTime.toLocalDate().isAfter(tomorrow)) {
                 break;
             }
             Elements teams = gameElement.select("span.c-events__team");
