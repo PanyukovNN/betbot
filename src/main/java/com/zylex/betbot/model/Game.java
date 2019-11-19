@@ -38,7 +38,9 @@ public class Game {
 
     private LocalDateTime parsingTime;
 
-    public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie, LocalDateTime parsingTime) {
+    public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie,
+                GameResult gameResult,
+                LocalDateTime parsingTime) {
         this.league = league;
         this.leagueLink = leagueLink;
         this.dateTime = dateTime;
@@ -49,16 +51,10 @@ public class Game {
         this.secondWin = secondWin;
         this.firstWinOrTie = firstWinOrTie;
         this.secondWinOrTie = secondWinOrTie;
-        this.parsingTime = parsingTime;
-    }
 
-    public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, GameResult gameResult) {
-        this.league = league;
-        this.leagueLink = leagueLink;
-        this.dateTime = dateTime;
-        this.firstTeam = firstTeam;
-        this.secondTeam = secondTeam;
         this.gameResult = gameResult;
+
+        this.parsingTime = parsingTime;
     }
 
     public String getLeague() {

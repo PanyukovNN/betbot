@@ -10,12 +10,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Process saving games into files.
@@ -63,13 +63,77 @@ public class Repository {
      * @return - list of games from file.
      */
     public List<Game> readAllMatchesFile() {
-        return processReadGames(allMatchesFile);
+        return readFromFile(allMatchesFile);
     }
 
-    private List<Game> processReadGames(File file) {
+    /**
+     * Saves all lists of games from GameContainer into separate files.
+     */
+    public void processGameSaving(GameContainer gameContainer, LocalDateTime startBetTime) {
+        writeToFile(allMatchesFile, gameContainer.getAllGames());
+        for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
+            writeToFile(ruleFile.get(entry.getKey()), entry.getValue());
+
+            if (entry.getValue().stream().noneMatch(game -> game.getParsingTime().isBefore(startBetTime))) {
+                saveResultGamesToFile(totalRuleFile.get(entry.getKey()), entry.getValue());
+            }
+        }
+    }
+
+    /**
+     * Read games from bet_made file.
+     * @return - list of games.
+     */
+    public List<Game> readBetMadeFile() {
+        return readFromFile(betMadeFile);
+    }
+
+    /**
+     * Read games from total_rule file
+     * @param ruleNumber - number of rule.
+     * @return - list of games.
+     */
+    public List<Game> readTotalRuleResultFile(RuleNumber ruleNumber) {
+        return readFromFile(totalRuleFile.get(ruleNumber));
+    }
+
+    /**
+     * Save games to bet_made file.
+     * @param games - list of games.
+     */
+    public void saveBetMadeGamesToFile(List<Game> games) {
+        writeToFile(betMadeFile, games);
+    }
+
+    /**
+     * Save games to total_bet_made file.
+     * @param games - list of games.
+     */
+    public void saveTotalBetMadeGamesToFile(List<Game> games) {
+        saveResultGamesToFile(totalBetMadeFile, games);
+    }
+
+    /**
+     * Save games to total_rule file.
+     * @param ruleNumber - number of rule.
+     * @param games - list of games.
+     */
+    public void saveTotalRuleResultFile(RuleNumber ruleNumber, List<Game> games) {
+        saveResultGamesToFile(totalRuleFile.get(ruleNumber), games);
+    }
+
+    private void saveResultGamesToFile(File file, List<Game> games) {
+        List<Game> totalResultGames = readFromFile(file);
+        totalResultGames.removeAll(games);
+        totalResultGames.addAll(games);
+        totalResultGames.sort(Comparator.comparing(Game::getDateTime));
+        writeToFile(file, totalResultGames);
+    }
+
+    private List<Game> readFromFile(File file) {
         try {
             List<Game> games = new ArrayList<>();
-            if (file.createNewFile()) {
+            if (!file.exists()) {
                 return games;
             }
             List<String> lines = new ArrayList<>();
@@ -81,7 +145,15 @@ public class Repository {
                 String[] fields = line.replace(",", ".").split(";");
                 Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
                         fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10],
-                        LocalDateTime.parse(fields[11] + ";" + fields[12], DATE_FORMATTER));
+                        GameResult.valueOf(fields[12]),
+                        LocalDateTime.parse(fields[13] + ";" + fields[14], DATE_FORMATTER));
+                if (!fields[11].equals("-")) {
+                    String[] rules = fields[11].split("__");
+                    //TODO check correct
+                    game.getRuleNumberSet().addAll(
+                            Arrays.stream(rules).map(RuleNumber::valueOf)
+                                    .collect(Collectors.toList()));
+                }
                 games.add(game);
             }
             return games;
@@ -90,29 +162,9 @@ public class Repository {
         }
     }
 
-    /**
-     * Saves all lists of games from GameContainer into separate files.
-     */
-    public void saveGamesToFiles(GameContainer gameContainer, LocalDateTime startBetTime) {
-        try {
-            writeParsedGamesToFile(allMatchesFile, gameContainer.getAllGames());
-            for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
-                writeParsedGamesToFile(ruleFile.get(entry.getKey()), entry.getValue());
-
-                if (entry.getValue().stream().noneMatch(game -> game.getParsingTime().isBefore(startBetTime))) {
-                    saveResultGamesToFile(totalRuleFile.get(entry.getKey()), entry.getValue());
-                }
-            }
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
-        }
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void writeParsedGamesToFile(File file, List<Game> games) throws IOException {
-        file.createNewFile();
+    private void writeToFile(File file, List<Game> games) {
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-            final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
+            final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
             for (Game game : games) {
                 String line = String.format(GAME_FORMAT,
                         game.getLeague(),
@@ -125,9 +177,15 @@ public class Repository {
                         formatDouble(game.getSecondWin()),
                         formatDouble(game.getFirstWinOrTie()),
                         formatDouble(game.getSecondWinOrTie()),
+                        game.getRuleNumberSet().isEmpty()
+                                ? "-"
+                                : StringUtils.join(game.getRuleNumberSet(), "__"),
+                        game.getGameResult(),
                         DATE_FORMATTER.format(game.getParsingTime())) + "\n";
                 writer.write(line);
             }
+        } catch (IOException e) {
+            throw new RepositoryException(e.getMessage(), e);
         }
     }
 
@@ -137,111 +195,6 @@ public class Repository {
                     .replace('.', ',');
         } catch (NumberFormatException e) {
             return value;
-        }
-    }
-
-    /**
-     * Read games from bet_made file.
-     * @return - list of games.
-     */
-    public List<Game> readBetMadeFile() {
-        return processReadResultFile(betMadeFile);
-    }
-
-    /**
-     * Read games from total_rule file
-     * @param ruleNumber - number of rule.
-     * @return - list of games.
-     */
-    public List<Game> readTotalRuleResultFile(RuleNumber ruleNumber) {
-        return processReadResultFile(totalRuleFile.get(ruleNumber));
-    }
-
-    private List<Game> processReadResultFile(File file) {
-        try {
-            List<Game> betMadeGames = new ArrayList<>();
-            if (file.createNewFile()) {
-                return betMadeGames;
-            }
-            List<String> lines = Files.readAllLines(file.toPath());
-            for (String line : lines) {
-                String[] fields = line.split(";");
-                Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
-                        fields[4], fields[5], GameResult.valueOf(fields[7]));
-                String[] rules = fields[6].split("__");
-                Set<RuleNumber> ruleNumberSet = game.getRuleNumberSet();
-                for (String rule : rules) {
-                    ruleNumberSet.add(RuleNumber.valueOf(rule));
-                }
-                betMadeGames.add(game);
-            }
-            return betMadeGames;
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Save games to bet_made file.
-     * @param games - list of games.
-     */
-    public void saveBetMadeGamesToFile(List<Game> games) {
-        try {
-            writeResultGamesToFile(betMadeFile, games);
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Save games to total_bet_made file.
-     * @param games - list of games.
-     */
-    public void saveTotalBetMadeGamesToFile(List<Game> games) {
-        try {
-            saveResultGamesToFile(totalBetMadeFile, games);
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Save games to total_rule file.
-     * @param ruleNumber - number of rule.
-     * @param games - list of games.
-     */
-    public void saveTotalRuleResultFile(RuleNumber ruleNumber, List<Game> games) {
-        try {
-            saveResultGamesToFile(totalRuleFile.get(ruleNumber), games);
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
-        }
-    }
-
-    private void saveResultGamesToFile(File file, List<Game> games) throws IOException {
-        List<Game> totalResultGames = processReadResultFile(file);
-        totalResultGames.removeAll(games);
-        totalResultGames.addAll(games);
-        totalResultGames.sort(Comparator.comparing(Game::getDateTime));
-        writeResultGamesToFile(file, totalResultGames);
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void writeResultGamesToFile(File file, List<Game> betMadeGames) throws IOException {
-        file.createNewFile();
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-            String MADE_BET_GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s\n";
-            for (Game game : betMadeGames) {
-                String line = String.format(MADE_BET_GAME_FORMAT,
-                        game.getLeague(),
-                        game.getLeagueLink(),
-                        DATE_FORMATTER.format(game.getDateTime()),
-                        game.getFirstTeam(),
-                        game.getSecondTeam(),
-                        StringUtils.join(game.getRuleNumberSet(), "__"),
-                        game.getGameResult());
-                writer.write(line);
-            }
         }
     }
 }

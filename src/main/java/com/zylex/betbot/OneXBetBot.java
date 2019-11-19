@@ -15,10 +15,9 @@ import java.util.Map;
 public class OneXBetBot {
 
     public static void main(String[] args) {
-//        Day day = Day.TOMORROW;
         RuleNumber ruleNumber = RuleNumber.RULE_ONE;
         boolean mock = true;
-        boolean doBets = false;
+        boolean doBets = true;
         boolean leaguesFromFile = false;
         boolean refresh = false;//args.length > 0 && args[0].equals("true");
 

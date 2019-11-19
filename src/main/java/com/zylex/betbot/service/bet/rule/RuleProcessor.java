@@ -61,11 +61,11 @@ public class RuleProcessor {
             logger.writeEligibleGamesNumber(eligibleGamesMap);
             GameContainer todayGameContainer = new GameContainer(dayGames.get(Day.TODAY),
                     eligibleGamesMap.get(Day.TODAY));
-            dayRepository.get(Day.TODAY).saveGamesToFiles(todayGameContainer, startTodayBetTime);
+            dayRepository.get(Day.TODAY).processGameSaving(todayGameContainer, startTodayBetTime);
 
             GameContainer tomorrowGameContainer = new GameContainer(dayGames.get(Day.TOMORROW),
                     eligibleGamesMap.get(Day.TOMORROW));
-            dayRepository.get(Day.TOMORROW).saveGamesToFiles(todayGameContainer, startTomorrowBetTime);
+            dayRepository.get(Day.TOMORROW).processGameSaving(tomorrowGameContainer, startTomorrowBetTime);
 
             Map<Day, GameContainer> gameContainerMap = new HashMap<>();
             gameContainerMap.put(Day.TODAY, todayGameContainer);
@@ -94,9 +94,11 @@ public class RuleProcessor {
             List<Game> games = parseProcessor.process();
             if (refreshTodayGames || dayGames.get(Day.TODAY).isEmpty() || refresh) {
                 dayGames.put(Day.TODAY, games.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TODAY.INDEX))).collect(Collectors.toList()));
+                System.out.print("\nПовторно отсканированы сегодняшние игры");
             }
             if (refreshTomorrowGames || dayGames.get(Day.TOMORROW).isEmpty() || refresh) {
                 dayGames.put(Day.TOMORROW, games.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TOMORROW.INDEX))).collect(Collectors.toList()));
+                System.out.print("\nПовторно отсканированы завтрашние игры");
             }
         } else {
             logger.startLogMessage(LogType.PARSING_FILE_START, 0);

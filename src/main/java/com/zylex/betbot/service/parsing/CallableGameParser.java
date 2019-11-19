@@ -3,6 +3,7 @@ package com.zylex.betbot.service.parsing;
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.GameBotException;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.Day;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -88,7 +89,7 @@ public class CallableGameParser implements Callable<List<Game>> {
             String firstWinOrTie = coefficients.get(3).text();
             String secondWinOrTie = coefficients.get(5).text();
             Game game = new Game(leagueName, leagueLink, dateTime, firstTeam, secondTeam,
-                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, parsingTime);
+                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT, parsingTime);
             games.add(game);
         }
         return games;
