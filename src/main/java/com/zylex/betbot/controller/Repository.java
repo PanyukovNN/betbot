@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Process saving games into files.
+ * Process saving and reading games from files.
  */
 public class Repository {
 
@@ -67,20 +67,6 @@ public class Repository {
     }
 
     /**
-     * Saves all lists of games from GameContainer into separate files.
-     */
-    public void processGameSaving(GameContainer gameContainer, LocalDateTime startBetTime) {
-        writeToFile(allMatchesFile, gameContainer.getAllGames());
-        for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
-            writeToFile(ruleFile.get(entry.getKey()), entry.getValue());
-
-            if (entry.getValue().stream().noneMatch(game -> game.getParsingTime().isBefore(startBetTime))) {
-                saveResultGamesToFile(totalRuleFile.get(entry.getKey()), entry.getValue());
-            }
-        }
-    }
-
-    /**
      * Read games from bet_made file.
      * @return - list of games.
      */
@@ -120,6 +106,20 @@ public class Repository {
      */
     public void saveTotalRuleResultFile(RuleNumber ruleNumber, List<Game> games) {
         saveResultGamesToFile(totalRuleFile.get(ruleNumber), games);
+    }
+
+    /**
+     * Saves all lists of games from GameContainer into separate files.
+     */
+    public void processGameSaving(GameContainer gameContainer, LocalDateTime startBetTime) {
+        writeToFile(allMatchesFile, gameContainer.getAllGames());
+        for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
+            writeToFile(ruleFile.get(entry.getKey()), entry.getValue());
+
+            if (entry.getValue().stream().noneMatch(game -> game.getParsingTime().isBefore(startBetTime))) {
+                saveResultGamesToFile(totalRuleFile.get(entry.getKey()), entry.getValue());
+            }
+        }
     }
 
     private void saveResultGamesToFile(File file, List<Game> games) {

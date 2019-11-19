@@ -1,7 +1,6 @@
 package com.zylex.betbot.service.bet.rule;
 
-import com.zylex.betbot.controller.Repository;
-import com.zylex.betbot.controller.logger.LogType;
+import com.zylex.betbot.controller.RepositoryFactory;
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.RuleProcessorException;
 import com.zylex.betbot.model.GameContainer;
@@ -30,16 +29,16 @@ public class RuleProcessor {
 
     private boolean refresh;
 
-    private Map<Day, Repository> dayRepository;
+    private RepositoryFactory repositoryFactory;
 
-    public RuleProcessor(Map<Day, Repository> dayRepository, ParseProcessor parseProcessor, boolean refresh) {
-        this.dayRepository = dayRepository;
+    public RuleProcessor(RepositoryFactory repositoryFactory, ParseProcessor parseProcessor, boolean refresh) {
+        this.repositoryFactory = repositoryFactory;
         this.parseProcessor = parseProcessor;
         this.refresh = refresh;
     }
 
-    public Map<Day, Repository> getDayRepository() {
-        return dayRepository;
+    public RepositoryFactory getRepositoryFactory() {
+        return repositoryFactory;
     }
 
     /**
@@ -59,13 +58,11 @@ public class RuleProcessor {
             }
 
             logger.writeEligibleGamesNumber(eligibleGamesMap);
-            GameContainer todayGameContainer = new GameContainer(dayGames.get(Day.TODAY),
-                    eligibleGamesMap.get(Day.TODAY));
-            dayRepository.get(Day.TODAY).processGameSaving(todayGameContainer, startTodayBetTime);
+            GameContainer todayGameContainer = new GameContainer(dayGames.get(Day.TODAY), eligibleGamesMap.get(Day.TODAY));
+            repositoryFactory.getRepository(Day.TODAY).processGameSaving(todayGameContainer, startTodayBetTime);
 
-            GameContainer tomorrowGameContainer = new GameContainer(dayGames.get(Day.TOMORROW),
-                    eligibleGamesMap.get(Day.TOMORROW));
-            dayRepository.get(Day.TOMORROW).processGameSaving(tomorrowGameContainer, startTomorrowBetTime);
+            GameContainer tomorrowGameContainer = new GameContainer(dayGames.get(Day.TOMORROW), eligibleGamesMap.get(Day.TOMORROW));
+            repositoryFactory.getRepository(Day.TOMORROW).processGameSaving(tomorrowGameContainer, startTomorrowBetTime);
 
             Map<Day, GameContainer> gameContainerMap = new HashMap<>();
             gameContainerMap.put(Day.TODAY, todayGameContainer);
@@ -79,29 +76,22 @@ public class RuleProcessor {
 
     private Map<Day, List<Game>> processDayGames(LocalDateTime startTomorrowBetTime, LocalDateTime startTodayBetTime) {
         Map<Day, List<Game>> dayGames = new HashMap<>();
-        for (Day day : Day.values()) {
-            dayGames.put(day, dayRepository.get(day).readAllMatchesFile());
-        }
+        dayGames.put(Day.TODAY, repositoryFactory.getRepository(Day.TODAY).readAllMatchesFile());
+        dayGames.put(Day.TOMORROW, repositoryFactory.getRepository(Day.TOMORROW).readAllMatchesFile());
 
         boolean refreshTodayGames = dayGames.get(Day.TODAY).stream().anyMatch(game -> game.getParsingTime().isBefore(startTodayBetTime));
         boolean refreshTomorrowGames = dayGames.get(Day.TOMORROW).stream().anyMatch(game -> game.getParsingTime().isBefore(startTomorrowBetTime));
 
+        List<Game> games = parseProcessor.process();
         if (refreshTodayGames
-                || refreshTomorrowGames
                 || dayGames.get(Day.TODAY).isEmpty()
+                || refresh) {
+            dayGames.put(Day.TODAY, games.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TODAY.INDEX))).collect(Collectors.toList()));
+        }
+        if (refreshTomorrowGames
                 || dayGames.get(Day.TOMORROW).isEmpty()
                 || refresh) {
-            List<Game> games = parseProcessor.process();
-            if (refreshTodayGames || dayGames.get(Day.TODAY).isEmpty() || refresh) {
-                dayGames.put(Day.TODAY, games.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TODAY.INDEX))).collect(Collectors.toList()));
-                System.out.print("\nПовторно отсканированы сегодняшние игры");
-            }
-            if (refreshTomorrowGames || dayGames.get(Day.TOMORROW).isEmpty() || refresh) {
-                dayGames.put(Day.TOMORROW, games.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TOMORROW.INDEX))).collect(Collectors.toList()));
-                System.out.print("\nПовторно отсканированы завтрашние игры");
-            }
-        } else {
-            logger.startLogMessage(LogType.PARSING_FILE_START, 0);
+            dayGames.put(Day.TOMORROW, games.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TOMORROW.INDEX))).collect(Collectors.toList()));
         }
         return dayGames;
     }

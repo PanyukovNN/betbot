@@ -1,5 +1,6 @@
 package com.zylex.betbot.service.bet;
 
+import com.zylex.betbot.controller.RepositoryFactory;
 import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
@@ -18,6 +19,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -40,11 +42,10 @@ public class BetProcessor {
 
     private boolean doBet;
 
-    public BetProcessor(RuleProcessor ruleProcessor, RuleNumber ruleNumber, boolean mock, boolean doBet) {
+    public BetProcessor(RuleProcessor ruleProcessor, RuleNumber ruleNumber, boolean mock) {
         this.ruleProcessor = ruleProcessor;
         this.ruleNumber = ruleNumber;
         this.mock = mock;
-        this.doBet = doBet;
     }
 
     /**
@@ -53,10 +54,15 @@ public class BetProcessor {
      */
     public void process() {
         Map<Day, GameContainer> dayGameContainer = ruleProcessor.process();
-        Map<Day, Repository> dayRepository = ruleProcessor.getDayRepository();
+        RepositoryFactory repositoryFactory = ruleProcessor.getRepositoryFactory();
         try {
             for (Day day : dayGameContainer.keySet()) {
                 GameContainer gameContainer = dayGameContainer.get(day);
+
+                LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
+
+                doBet = gameContainer.getEligibleGames().get(ruleNumber).stream().noneMatch(game -> game.getParsingTime().isBefore(startBetTime));
+
                 if (!doBet || gameContainer.getEligibleGames().get(ruleNumber).isEmpty()) {
                     logger.betMade(LogType.ERROR);
                     return;
@@ -66,7 +72,7 @@ public class BetProcessor {
                 logger.startLogMessage(LogType.LOG_IN);
                 logIn();
                 logger.startLogMessage(LogType.BET);
-                processBets(dayRepository.get(day), gameContainer);
+                processBets(repositoryFactory.getRepository(day), gameContainer);
             }
         } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
