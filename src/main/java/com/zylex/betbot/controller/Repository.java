@@ -26,7 +26,9 @@ public class Repository {
 
     private final DateTimeFormatter DIR_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    private File allMatchesFile;
+//    private File allMatchesFile;
+
+    private File infoFile;
 
     private File betMadeFile;
 
@@ -46,7 +48,8 @@ public class Repository {
         String monthDirName = date.getMonth().name();
         String dirName = DIR_DATE_FORMATTER.format(date);
         new File(String.format("results/%s/%s", monthDirName, dirName)).mkdirs();
-        allMatchesFile = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "all_matches_" + dirName));
+//        allMatchesFile = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "all_matches_" + dirName));
+        infoFile = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "info_" + dirName));
         betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s_%s.csv", monthDirName, dirName, ruleNumber, dirName));
         totalBetMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
         for (RuleNumber rule : RuleNumber.values()) {
@@ -62,9 +65,9 @@ public class Repository {
      * Get games from all_matches file.
      * @return - list of games from file.
      */
-    public List<Game> readAllMatchesFile() {
-        return readFromFile(allMatchesFile);
-    }
+//    public List<Game> readAllMatchesFile() {
+//        return readFromFile(allMatchesFile);
+//    }
 
     /**
      * Read games from bet_made file.
@@ -81,6 +84,10 @@ public class Repository {
      */
     public List<Game> readTotalRuleResultFile(RuleNumber ruleNumber) {
         return readFromFile(totalRuleFile.get(ruleNumber));
+    }
+
+    public List<Game> readRuleFile(RuleNumber ruleNumber) {
+        return readFromFile(ruleFile.get(ruleNumber));
     }
 
     /**
@@ -112,7 +119,7 @@ public class Repository {
      * Saves all lists of games from GameContainer into separate files.
      */
     public void processGameSaving(GameContainer gameContainer, LocalDateTime startBetTime) {
-        writeToFile(allMatchesFile, gameContainer.getAllGames());
+//        writeToFile(allMatchesFile, gameContainer.getAllGames());
         for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
             writeToFile(ruleFile.get(entry.getKey()), entry.getValue());
 
@@ -132,15 +139,15 @@ public class Repository {
 
     private List<Game> readFromFile(File file) {
         try {
-            List<Game> games = new ArrayList<>();
             if (!file.exists()) {
-                return games;
+                return Collections.emptyList();
             }
             List<String> lines = new ArrayList<>();
             try (InputStream inputStream = new FileInputStream(file);
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
                 reader.lines().forEach(lines::add);
             }
+            List<Game> games = new ArrayList<>();
             for (String line : lines) {
                 String[] fields = line.replace(",", ".").split(";");
                 Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
@@ -162,7 +169,13 @@ public class Repository {
         }
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void writeToFile(File file, List<Game> games) {
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            throw new RepositoryException(e.getMessage(), e);
+        }
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
             for (Game game : games) {
@@ -195,6 +208,29 @@ public class Repository {
                     .replace('.', ',');
         } catch (NumberFormatException e) {
             return value;
+        }
+    }
+
+    public LocalDateTime readInfoFile() {
+        try (InputStream inputStream = new FileInputStream(infoFile);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            return LocalDateTime.parse(reader.readLine(), DATE_FORMATTER);
+        } catch (IOException e) {
+            throw new RepositoryException(e.getMessage(), e);
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void writeToInfoFile(LocalDateTime parsingTime) {
+        try {
+            infoFile.createNewFile();
+        } catch (IOException e) {
+            throw new RepositoryException(e.getMessage(), e);
+        }
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(infoFile), StandardCharsets.UTF_8))) {
+            writer.write(DATE_FORMATTER.format(parsingTime));
+        } catch (IOException e) {
+            throw new RepositoryException(e.getMessage(), e);
         }
     }
 }

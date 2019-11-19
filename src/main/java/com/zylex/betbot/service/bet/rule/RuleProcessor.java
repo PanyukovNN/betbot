@@ -57,12 +57,18 @@ public class RuleProcessor {
                 eligibleGamesMap.get(day).forEach((ruleNumber, gameList) -> gameList.sort(Comparator.comparing(Game::getDateTime)));
             }
 
-            logger.writeEligibleGamesNumber(eligibleGamesMap);
-            GameContainer todayGameContainer = new GameContainer(dayGames.get(Day.TODAY), eligibleGamesMap.get(Day.TODAY));
-            repositoryFactory.getRepository(Day.TODAY).processGameSaving(todayGameContainer, startTodayBetTime);
+            LocalDateTime parsingTime = LocalDateTime.now();
 
-            GameContainer tomorrowGameContainer = new GameContainer(dayGames.get(Day.TOMORROW), eligibleGamesMap.get(Day.TOMORROW));
+            logger.writeEligibleGamesNumber(eligibleGamesMap);
+            GameContainer todayGameContainer = new GameContainer(eligibleGamesMap.get(Day.TODAY));
+            repositoryFactory.getRepository(Day.TODAY).processGameSaving(todayGameContainer, startTodayBetTime);
+            repositoryFactory.getRepository(Day.TODAY).writeToInfoFile(parsingTime);
+
+            GameContainer tomorrowGameContainer = new GameContainer(eligibleGamesMap.get(Day.TOMORROW));
             repositoryFactory.getRepository(Day.TOMORROW).processGameSaving(tomorrowGameContainer, startTomorrowBetTime);
+            repositoryFactory.getRepository(Day.TOMORROW).writeToInfoFile(parsingTime);
+
+
 
             Map<Day, GameContainer> gameContainerMap = new HashMap<>();
             gameContainerMap.put(Day.TODAY, todayGameContainer);
@@ -76,22 +82,28 @@ public class RuleProcessor {
 
     private Map<Day, List<Game>> processDayGames(LocalDateTime startTomorrowBetTime, LocalDateTime startTodayBetTime) {
         Map<Day, List<Game>> dayGames = new HashMap<>();
-        dayGames.put(Day.TODAY, repositoryFactory.getRepository(Day.TODAY).readAllMatchesFile());
-        dayGames.put(Day.TOMORROW, repositoryFactory.getRepository(Day.TOMORROW).readAllMatchesFile());
-
-        boolean refreshTodayGames = dayGames.get(Day.TODAY).stream().anyMatch(game -> game.getParsingTime().isBefore(startTodayBetTime));
-        boolean refreshTomorrowGames = dayGames.get(Day.TOMORROW).stream().anyMatch(game -> game.getParsingTime().isBefore(startTomorrowBetTime));
+        //TODO
+        dayGames.put(Day.TODAY, repositoryFactory.getRepository(Day.TODAY).readRuleFile(RuleNumber.RULE_ONE));
+        dayGames.put(Day.TOMORROW, repositoryFactory.getRepository(Day.TOMORROW).readRuleFile(RuleNumber.RULE_ONE));
 
         List<Game> games = parseProcessor.process();
+
+        boolean refreshTodayGames = repositoryFactory.getRepository(Day.TODAY).readInfoFile().isBefore(startTodayBetTime);
+        boolean refreshTomorrowGames = repositoryFactory.getRepository(Day.TOMORROW).readInfoFile().isBefore(startTomorrowBetTime);
+
         if (refreshTodayGames
-                || dayGames.get(Day.TODAY).isEmpty()
                 || refresh) {
-            dayGames.put(Day.TODAY, games.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TODAY.INDEX))).collect(Collectors.toList()));
+            dayGames.put(Day.TODAY, games.stream()
+                    .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TODAY.INDEX)))
+                    .collect(Collectors.toList()));
+            System.out.print("\nОбновлены сегодняшние игры");
         }
         if (refreshTomorrowGames
-                || dayGames.get(Day.TOMORROW).isEmpty()
                 || refresh) {
-            dayGames.put(Day.TOMORROW, games.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TOMORROW.INDEX))).collect(Collectors.toList()));
+            dayGames.put(Day.TOMORROW, games.stream()
+                    .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TOMORROW.INDEX)))
+                    .collect(Collectors.toList()));
+            System.out.print("\nОбновлены завтрашние игры");
         }
         return dayGames;
     }

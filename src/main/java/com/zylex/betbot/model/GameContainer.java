@@ -10,18 +10,20 @@ import java.util.Map;
  */
 public class GameContainer {
 
-    private List<Game> allGames;
+//    private List<Game> allGames;
+
+//    private LocalDateTime parseTime;
 
     private Map<RuleNumber, List<Game>> eligibleGames;
 
-    public GameContainer(List<Game> allGames, Map<RuleNumber, List<Game>> eligibleGames) {
-        this.allGames = allGames;
+    public GameContainer(Map<RuleNumber, List<Game>> eligibleGames) {
+//        this.allGames = allGames;
         this.eligibleGames = eligibleGames;
     }
 
-    public List<Game> getAllGames() {
-        return allGames;
-    }
+//    public List<Game> getAllGames() {
+//        return allGames;
+//    }
 
     public Map<RuleNumber, List<Game>> getEligibleGames() {
         return eligibleGames;
