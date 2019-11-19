@@ -51,7 +51,6 @@ public class Game {
         this.secondWin = secondWin;
         this.firstWinOrTie = firstWinOrTie;
         this.secondWinOrTie = secondWinOrTie;
-
         this.gameResult = gameResult;
 
         this.parsingTime = parsingTime;

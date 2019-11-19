@@ -4,12 +4,10 @@ import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.ParseProcessorException;
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.Day;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,10 +31,8 @@ public class ParseProcessor {
     }
 
     /**
-     * Get links on leagues which include football matches for a specified day,
-     * then pull information about matches from every link, put matches into list,
-     * and return it.
-     * @param day - specified day.
+     * Get links on leagues which include football matches, then pull information about matches from every link,
+     * put matches into list, and return it.
      * @return - list of games.
      */
     public List<Game> process() {

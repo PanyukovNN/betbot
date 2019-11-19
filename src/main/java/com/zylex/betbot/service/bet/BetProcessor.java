@@ -40,8 +40,6 @@ public class BetProcessor {
 
     private boolean mock;
 
-//    private boolean doBet;
-
     public BetProcessor(RuleProcessor ruleProcessor, RuleNumber ruleNumber, boolean mock) {
         this.ruleProcessor = ruleProcessor;
         this.ruleNumber = ruleNumber;

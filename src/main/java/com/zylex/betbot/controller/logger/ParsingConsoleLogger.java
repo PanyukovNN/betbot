@@ -6,6 +6,7 @@ import com.zylex.betbot.service.bet.rule.RuleNumber;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -75,11 +76,17 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      * Log number of eligible games for every rule.
      * @param eligibleGames - map of eligible games.
      */
-    public void writeEligibleGamesNumber(Map<Day, Map<RuleNumber, List<Game>>> eligibleGames) {
-        for (Day day : eligibleGames.keySet()) {
-            for (RuleNumber ruleNumber : RuleNumber.values()) {
-                writeInLine(String.format("\nEligible %s games for %s: %d", day, ruleNumber, eligibleGames.get(day).get(ruleNumber).size()));
-            }
+    public void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {
+        for (RuleNumber ruleNumber : RuleNumber.values()) {
+//            writeInLine(String.format("\nEligible TODAY games for %s: %d", ruleNumber,
+//                    (int) eligibleGames.get(ruleNumber).stream()
+//                            .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now())).count()));
+            writeInLine(String.format("\nEligible TODAY games for %s: %d", ruleNumber,
+                    (int) eligibleGames.get(ruleNumber).stream()
+                            .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now())).count()));
+            writeInLine(String.format("\nEligible TOMORROW games for %s: %d", ruleNumber,
+                    (int) eligibleGames.get(ruleNumber).stream()
+                            .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TOMORROW.INDEX))).count()));
         }
         writeLineSeparator();
     }
