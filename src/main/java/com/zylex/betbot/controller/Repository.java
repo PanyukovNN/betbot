@@ -26,8 +26,6 @@ public class Repository {
 
     private final DateTimeFormatter DIR_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-//    private File allMatchesFile;
-
     private File infoFile;
 
     private File betMadeFile;
@@ -48,7 +46,6 @@ public class Repository {
         String monthDirName = date.getMonth().name();
         String dirName = DIR_DATE_FORMATTER.format(date);
         new File(String.format("results/%s/%s", monthDirName, dirName)).mkdirs();
-//        allMatchesFile = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "all_matches_" + dirName));
         infoFile = new File(String.format("results/%s/%s/%s.csv", monthDirName, dirName, "info_" + dirName));
         betMadeFile = new File(String.format("results/%s/%s/BET_MADE_%s_%s.csv", monthDirName, dirName, ruleNumber, dirName));
         totalBetMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
@@ -60,14 +57,6 @@ public class Repository {
             ruleFile.put(rule, ruleResultFile);
         }
     }
-
-    /**
-     * Get games from all_matches file.
-     * @return - list of games from file.
-     */
-//    public List<Game> readAllMatchesFile() {
-//        return readFromFile(allMatchesFile);
-//    }
 
     /**
      * Read games from bet_made file.
@@ -119,7 +108,7 @@ public class Repository {
      * Saves all lists of games from GameContainer into separate files.
      */
     public void processGameSaving(GameContainer gameContainer, LocalDateTime startBetTime) {
-//        writeToFile(allMatchesFile, gameContainer.getAllGames());
+        writeToInfoFile(gameContainer.getParsingTime());
         for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
             writeToFile(ruleFile.get(entry.getKey()), entry.getValue());
 
@@ -171,6 +160,9 @@ public class Repository {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void writeToFile(File file, List<Game> games) {
+        if (games.isEmpty()) {
+            return;
+        }
         try {
             file.createNewFile();
         } catch (IOException e) {
@@ -221,7 +213,7 @@ public class Repository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void writeToInfoFile(LocalDateTime parsingTime) {
+    private void writeToInfoFile(LocalDateTime parsingTime) {
         try {
             infoFile.createNewFile();
         } catch (IOException e) {

@@ -47,63 +47,44 @@ public class RuleProcessor {
      */
     public Map<Day, GameContainer> process() {
         try {
-            LocalDateTime startTodayBetTime = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.of(23, 0));
-            LocalDateTime startTomorrowBetTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 0));
-
-            Map<Day, List<Game>> dayGames = processDayGames(startTomorrowBetTime, startTodayBetTime);
-
+            Map<Day, List<Game>> dayGames = processDayGames();
             Map<Day, Map<RuleNumber, List<Game>>> eligibleGamesMap = splitGamesByRules(dayGames);
             for (Day day : eligibleGamesMap.keySet()) {
                 eligibleGamesMap.get(day).forEach((ruleNumber, gameList) -> gameList.sort(Comparator.comparing(Game::getDateTime)));
             }
-
-            LocalDateTime parsingTime = LocalDateTime.now();
-
-            logger.writeEligibleGamesNumber(eligibleGamesMap);
-            GameContainer todayGameContainer = new GameContainer(eligibleGamesMap.get(Day.TODAY));
-            repositoryFactory.getRepository(Day.TODAY).processGameSaving(todayGameContainer, startTodayBetTime);
-            repositoryFactory.getRepository(Day.TODAY).writeToInfoFile(parsingTime);
-
-            GameContainer tomorrowGameContainer = new GameContainer(eligibleGamesMap.get(Day.TOMORROW));
-            repositoryFactory.getRepository(Day.TOMORROW).processGameSaving(tomorrowGameContainer, startTomorrowBetTime);
-            repositoryFactory.getRepository(Day.TOMORROW).writeToInfoFile(parsingTime);
-
-
-
-            Map<Day, GameContainer> gameContainerMap = new HashMap<>();
-            gameContainerMap.put(Day.TODAY, todayGameContainer);
-            gameContainerMap.put(Day.TOMORROW, tomorrowGameContainer);
-
-            return gameContainerMap;
+            return processGameContainerMap(eligibleGamesMap);
         } catch (IOException e) {
             throw new RuleProcessorException(e.getMessage(), e);
         }
     }
 
-    private Map<Day, List<Game>> processDayGames(LocalDateTime startTomorrowBetTime, LocalDateTime startTodayBetTime) {
-        Map<Day, List<Game>> dayGames = new HashMap<>();
-        //TODO
-        dayGames.put(Day.TODAY, repositoryFactory.getRepository(Day.TODAY).readRuleFile(RuleNumber.RULE_ONE));
-        dayGames.put(Day.TOMORROW, repositoryFactory.getRepository(Day.TOMORROW).readRuleFile(RuleNumber.RULE_ONE));
-
-        List<Game> games = parseProcessor.process();
-
-        boolean refreshTodayGames = repositoryFactory.getRepository(Day.TODAY).readInfoFile().isBefore(startTodayBetTime);
-        boolean refreshTomorrowGames = repositoryFactory.getRepository(Day.TOMORROW).readInfoFile().isBefore(startTomorrowBetTime);
-
-        if (refreshTodayGames
-                || refresh) {
-            dayGames.put(Day.TODAY, games.stream()
-                    .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TODAY.INDEX)))
-                    .collect(Collectors.toList()));
-            System.out.print("\nОбновлены сегодняшние игры");
+    private Map<Day, GameContainer> processGameContainerMap(Map<Day, Map<RuleNumber, List<Game>>> eligibleGamesMap) {
+        LocalDateTime parsingTime = LocalDateTime.now();
+        logger.writeEligibleGamesNumber(eligibleGamesMap);
+        Map<Day, GameContainer> gameContainerMap = new HashMap<>();
+        for (Day day : Day.values()) {
+            LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
+            GameContainer gameContainer = new GameContainer(parsingTime, eligibleGamesMap.get(day));
+            repositoryFactory.getRepository(day).processGameSaving(gameContainer, startBetTime);
+            gameContainerMap.put(day, gameContainer);
         }
-        if (refreshTomorrowGames
-                || refresh) {
-            dayGames.put(Day.TOMORROW, games.stream()
-                    .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TOMORROW.INDEX)))
-                    .collect(Collectors.toList()));
-            System.out.print("\nОбновлены завтрашние игры");
+        return gameContainerMap;
+    }
+
+    private Map<Day, List<Game>> processDayGames() {
+        List<Game> games = parseProcessor.process();
+        Map<Day, List<Game>> dayGames = new HashMap<>();
+        for (Day day : Day.values()) {
+            //TODO fix ruleNumber
+            dayGames.put(day, repositoryFactory.getRepository(day).readRuleFile(RuleNumber.RULE_ONE));
+            LocalDateTime parsingTime = repositoryFactory.getRepository(day).readInfoFile();
+            LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
+            if (parsingTime.isBefore(startBetTime) || refresh) {
+                dayGames.put(day, games.stream()
+                        .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
+                        .collect(Collectors.toList()));
+                System.out.print("\n" + Day.TODAY + " games updated.");
+            }
         }
         return dayGames;
     }

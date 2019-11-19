@@ -40,7 +40,7 @@ public class BetProcessor {
 
     private boolean mock;
 
-    private boolean doBet;
+//    private boolean doBet;
 
     public BetProcessor(RuleProcessor ruleProcessor, RuleNumber ruleNumber, boolean mock) {
         this.ruleProcessor = ruleProcessor;
@@ -58,10 +58,8 @@ public class BetProcessor {
         try {
             for (Day day : dayGameContainer.keySet()) {
                 GameContainer gameContainer = dayGameContainer.get(day);
-
                 LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
-
-                doBet = gameContainer.getEligibleGames().get(ruleNumber).stream().noneMatch(game -> game.getParsingTime().isBefore(startBetTime));
+                boolean doBet = gameContainer.getEligibleGames().get(ruleNumber).stream().noneMatch(game -> game.getParsingTime().isBefore(startBetTime));
 
                 if (!doBet || gameContainer.getEligibleGames().get(ruleNumber).isEmpty()) {
                     logger.betMade(LogType.ERROR);
@@ -72,7 +70,7 @@ public class BetProcessor {
                 logger.startLogMessage(LogType.LOG_IN);
                 logIn();
                 logger.startLogMessage(LogType.BET);
-                processBets(repositoryFactory.getRepository(day), gameContainer);
+                processBets(repositoryFactory.getRepository(day), gameContainer, doBet);
             }
         } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
@@ -119,7 +117,7 @@ public class BetProcessor {
         }
     }
 
-    private void processBets(Repository repository, GameContainer gameContainer) {
+    private void processBets(Repository repository, GameContainer gameContainer, boolean doBet) {
         List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());

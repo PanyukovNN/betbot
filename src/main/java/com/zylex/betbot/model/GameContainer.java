@@ -2,6 +2,7 @@ package com.zylex.betbot.model;
 
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -10,20 +11,18 @@ import java.util.Map;
  */
 public class GameContainer {
 
-//    private List<Game> allGames;
-
-//    private LocalDateTime parseTime;
+    private LocalDateTime parsingTime;
 
     private Map<RuleNumber, List<Game>> eligibleGames;
 
-    public GameContainer(Map<RuleNumber, List<Game>> eligibleGames) {
-//        this.allGames = allGames;
+    public GameContainer(LocalDateTime parsingTime, Map<RuleNumber, List<Game>> eligibleGames) {
+        this.parsingTime = parsingTime;
         this.eligibleGames = eligibleGames;
     }
 
-//    public List<Game> getAllGames() {
-//        return allGames;
-//    }
+    public LocalDateTime getParsingTime() {
+        return parsingTime;
+    }
 
     public Map<RuleNumber, List<Game>> getEligibleGames() {
         return eligibleGames;
