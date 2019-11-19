@@ -37,11 +37,11 @@ public class Repository {
     private Map<RuleNumber, File> totalRuleFile = new HashMap<>();
 
     public Repository(Day day, RuleNumber ruleNumber) {
-        createFiles(day, ruleNumber);
+        initializeFiles(day, ruleNumber);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void createFiles(Day day, RuleNumber ruleNumber) {
+    private void initializeFiles(Day day, RuleNumber ruleNumber) {
         LocalDate date = LocalDate.now().plusDays(day.INDEX);
         String monthDirName = date.getMonth().name();
         String dirName = DIR_DATE_FORMATTER.format(date);
@@ -127,15 +127,13 @@ public class Repository {
     }
 
     private List<Game> readFromFile(File file) {
-        try {
-            if (!file.exists()) {
-                return Collections.emptyList();
-            }
-            List<String> lines = new ArrayList<>();
-            try (InputStream inputStream = new FileInputStream(file);
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                reader.lines().forEach(lines::add);
-            }
+        if (!file.exists()) {
+            return Collections.emptyList();
+        }
+        List<String> lines = new ArrayList<>();
+        try (InputStream inputStream = new FileInputStream(file);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            reader.lines().forEach(lines::add);
             List<Game> games = new ArrayList<>();
             for (String line : lines) {
                 String[] fields = line.replace(",", ".").split(";");
@@ -145,7 +143,6 @@ public class Repository {
                         LocalDateTime.parse(fields[13] + ";" + fields[14], DATE_FORMATTER));
                 if (!fields[11].equals("-")) {
                     String[] rules = fields[11].split("__");
-                    //TODO check correct
                     game.getRuleNumberSet().addAll(
                             Arrays.stream(rules).map(RuleNumber::valueOf)
                                     .collect(Collectors.toList()));
@@ -158,16 +155,11 @@ public class Repository {
         }
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void writeToFile(File file, List<Game> games) {
         if (games.isEmpty()) {
             return;
         }
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
-        }
+        createFile(file);
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
             for (Game game : games) {
@@ -212,15 +204,19 @@ public class Repository {
         }
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void writeToInfoFile(LocalDateTime parsingTime) {
-        try {
-            infoFile.createNewFile();
+        createFile(infoFile);
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(infoFile), StandardCharsets.UTF_8))) {
+            writer.write(DATE_FORMATTER.format(parsingTime));
         } catch (IOException e) {
             throw new RepositoryException(e.getMessage(), e);
         }
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(infoFile), StandardCharsets.UTF_8))) {
-            writer.write(DATE_FORMATTER.format(parsingTime));
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private void createFile(File file) {
+        try {
+            file.createNewFile();
         } catch (IOException e) {
             throw new RepositoryException(e.getMessage(), e);
         }

@@ -78,9 +78,6 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      */
     public void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {
         for (RuleNumber ruleNumber : RuleNumber.values()) {
-//            writeInLine(String.format("\nEligible TODAY games for %s: %d", ruleNumber,
-//                    (int) eligibleGames.get(ruleNumber).stream()
-//                            .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now())).count()));
             writeInLine(String.format("\nEligible TODAY games for %s: %d", ruleNumber,
                     (int) eligibleGames.get(ruleNumber).stream()
                             .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now())).count()));
