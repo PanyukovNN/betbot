@@ -1,6 +1,6 @@
 package com.zylex.betbot;
 
-import com.zylex.betbot.controller.RepositoryFactory;
+import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.service.bet.*;
 
@@ -19,8 +19,9 @@ public class OneXBetBot {
         try {
             new BetProcessor(
                 new RuleProcessor(
-                    new RepositoryFactory(ruleNumber),
+                    new Repository(ruleNumber),
                     new ParseProcessor(leaguesFromFile),
+                    ruleNumber,
                     refresh
                 ),
                 ruleNumber,

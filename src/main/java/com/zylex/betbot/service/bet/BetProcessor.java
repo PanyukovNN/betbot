@@ -51,19 +51,22 @@ public class BetProcessor {
      * logs in and makes bets.
      */
     public void process() {
-        GameContainer gameContainer = ruleProcessor.process();
-        RepositoryFactory repositoryFactory = ruleProcessor.getRepositoryFactory();
+        List<Game> betGames = ruleProcessor.process();
+        Repository repository = ruleProcessor.getRepository();
         try {
+            Map<Day, LocalDateTime> dayParsingTime = repository.readInfoFile();
             for (Day day : Day.values()) {
-                LocalDateTime parsingTime = repositoryFactory.getRepository(day).readInfoFile();
+                LocalDateTime parsingTime = dayParsingTime.get(day);
                 LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
                 boolean doBet = !parsingTime.isBefore(startBetTime);
-                if (!doBet || gameContainer.getEligibleGames().get(ruleNumber).isEmpty()) {
+
+                if (!doBet || betGames.isEmpty()) {
                     logger.betMade(LogType.ERROR);
                     return;
                 }
                 driverInit();
-                if (!processBets(repositoryFactory.getRepository(day), gameContainer, day)) {
+
+                if (!processBets(repository, betGames)) {
                     break;
                 }
             }
