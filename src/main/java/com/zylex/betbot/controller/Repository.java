@@ -108,11 +108,12 @@ public class Repository {
      * Saves all lists of games from GameContainer into separate files.
      */
     public void processGameSaving(GameContainer gameContainer, LocalDateTime startBetTime) {
+        LocalDateTime parsingTime = readInfoFile();
         writeToInfoFile(gameContainer.getParsingTime());
         for (Map.Entry<RuleNumber, List<Game>> entry : gameContainer.getEligibleGames().entrySet()) {
             writeToFile(ruleFile.get(entry.getKey()), entry.getValue());
 
-            if (entry.getValue().stream().noneMatch(game -> game.getParsingTime().isBefore(startBetTime))) {
+            if (!parsingTime.isBefore(startBetTime)) {
                 saveResultGamesToFile(totalRuleFile.get(entry.getKey()), entry.getValue());
             }
         }
@@ -139,8 +140,7 @@ public class Repository {
                 String[] fields = line.replace(",", ".").split(";");
                 Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
                         fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10],
-                        GameResult.valueOf(fields[12]),
-                        LocalDateTime.parse(fields[13] + ";" + fields[14], DATE_FORMATTER));
+                        GameResult.valueOf(fields[12]));
                 if (!fields[11].equals("-")) {
                     String[] rules = fields[11].split("__");
                     game.getRuleNumberSet().addAll(
@@ -161,7 +161,7 @@ public class Repository {
         }
         createFile(file);
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-            final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
+            final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
             for (Game game : games) {
                 String line = String.format(GAME_FORMAT,
                         game.getLeague(),
@@ -177,8 +177,7 @@ public class Repository {
                         game.getRuleNumberSet().isEmpty()
                                 ? "-"
                                 : StringUtils.join(game.getRuleNumberSet(), "__"),
-                        game.getGameResult(),
-                        DATE_FORMATTER.format(game.getParsingTime())) + "\n";
+                        game.getGameResult()) + "\n";
                 writer.write(line);
             }
         } catch (IOException e) {
@@ -196,6 +195,9 @@ public class Repository {
     }
 
     public LocalDateTime readInfoFile() {
+        if (!infoFile.exists()) {
+            return LocalDateTime.now();
+        }
         try (InputStream inputStream = new FileInputStream(infoFile);
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             return LocalDateTime.parse(reader.readLine(), DATE_FORMATTER);

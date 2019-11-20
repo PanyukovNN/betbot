@@ -56,9 +56,9 @@ public class BetProcessor {
         try {
             for (Day day : dayGameContainer.keySet()) {
                 GameContainer gameContainer = dayGameContainer.get(day);
+                LocalDateTime parsingTime = repositoryFactory.getRepository(day).readInfoFile();
                 LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
-                boolean doBet = gameContainer.getEligibleGames().get(ruleNumber).stream().noneMatch(game -> game.getParsingTime().isBefore(startBetTime));
-
+                boolean doBet = !parsingTime.isBefore(startBetTime);
                 if (!doBet || gameContainer.getEligibleGames().get(ruleNumber).isEmpty()) {
                     logger.betMade(LogType.ERROR);
                     return;
