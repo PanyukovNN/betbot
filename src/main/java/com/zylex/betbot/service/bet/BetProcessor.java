@@ -51,11 +51,10 @@ public class BetProcessor {
      * logs in and makes bets.
      */
     public void process() {
-        Map<Day, GameContainer> dayGameContainer = ruleProcessor.process();
+        GameContainer gameContainer = ruleProcessor.process();
         RepositoryFactory repositoryFactory = ruleProcessor.getRepositoryFactory();
         try {
-            for (Day day : dayGameContainer.keySet()) {
-                GameContainer gameContainer = dayGameContainer.get(day);
+            for (Day day : Day.values()) {
                 LocalDateTime parsingTime = repositoryFactory.getRepository(day).readInfoFile();
                 LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
                 boolean doBet = !parsingTime.isBefore(startBetTime);
@@ -64,12 +63,11 @@ public class BetProcessor {
                     return;
                 }
                 driverInit();
-                logger.logRule(ruleNumber);
-                logger.startLogMessage(LogType.LOG_IN);
-                logIn();
-                logger.startLogMessage(LogType.BET);
-                processBets(repositoryFactory.getRepository(day), gameContainer, doBet);
+                if (!processBets(repositoryFactory.getRepository(day), gameContainer, day)) {
+                    break;
+                }
             }
+            logger.betMade(LogType.OK);
         } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         } finally {
@@ -79,12 +77,16 @@ public class BetProcessor {
         }
     }
 
-    private void driverInit() {
+    private void driverInit() throws IOException {
         if (driver == null) {
             DriverManager driverManager = new DriverManager();
             driver = driverManager.initiateDriver(false);
             wait = new WebDriverWait(driver, 5);
             driver.navigate().to("https://1xstavka.ru/");
+            logger.logRule(ruleNumber);
+            logger.startLogMessage(LogType.LOG_IN);
+            logIn();
+            logger.startLogMessage(LogType.BET);
         }
     }
 
@@ -115,7 +117,7 @@ public class BetProcessor {
         }
     }
 
-    private void processBets(Repository repository, GameContainer gameContainer, boolean doBet) {
+    private boolean processBets(Repository repository, GameContainer gameContainer, Day day) {
         List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
@@ -124,6 +126,10 @@ public class BetProcessor {
         List<Game> betMadeGames = repository.readBetMadeFile();
         int i = 0;
         for (Game game : eligibleGames) {
+            //TODO
+            if (!game.getDateTime().toLocalDate().isEqual(LocalDateTime.now().plusDays(day.INDEX).toLocalDate())) {
+                continue;
+            }
             if (betMadeGames.contains(game)) {
                 continue;
             }
@@ -141,11 +147,12 @@ public class BetProcessor {
                 }
             }
         }
-        logger.betMade(LogType.OK);
         repository.saveBetMadeGamesToFile(betMadeGames);
-        if (!mock && doBet) {
+        if (!mock) {
             repository.saveTotalBetMadeGamesToFile(betMadeGames);
         }
+        //TODO
+        return !(availableBalance < singleBetAmount);
     }
 
     private int calculateAmount(double totalMoney) {

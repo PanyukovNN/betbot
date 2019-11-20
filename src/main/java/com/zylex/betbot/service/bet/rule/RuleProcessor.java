@@ -42,7 +42,7 @@ public class RuleProcessor {
      * Filters games by rules, puts in GameContainer and returns it.
      * @return - container of all lists of games.
      */
-    public Map<Day, GameContainer> process() {
+    public GameContainer process() {
         try {
             List<Game> games = processDayGames();
             Map<RuleNumber, List<Game>> eligibleGames = splitGamesByRules(games);
@@ -53,10 +53,10 @@ public class RuleProcessor {
         }
     }
 
-    private Map<Day, GameContainer> processGameContainerMap(Map<RuleNumber, List<Game>> eligibleGames) {
+    private GameContainer processGameContainerMap(Map<RuleNumber, List<Game>> eligibleGames) {
         LocalDateTime parsingTime = LocalDateTime.now();
         logger.writeEligibleGamesNumber(eligibleGames);
-        Map<Day, GameContainer> gameContainerMap = new HashMap<>();
+        //TODO
         for (Day day : Day.values()) {
             LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
             Map<RuleNumber, List<Game>> dayEligibleGames = processDayEligibleGames(eligibleGames, day);
@@ -64,9 +64,8 @@ public class RuleProcessor {
                     parsingTime,
                     dayEligibleGames);
             repositoryFactory.getRepository(day).processGameSaving(gameContainer, startBetTime);
-            gameContainerMap.put(day, gameContainer);
         }
-        return gameContainerMap;
+        return new GameContainer(parsingTime, eligibleGames);
     }
 
     private Map<RuleNumber, List<Game>> processDayEligibleGames(Map<RuleNumber, List<Game>> eligibleGames, Day day) {
