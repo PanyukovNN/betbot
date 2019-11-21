@@ -47,34 +47,47 @@ public class RuleProcessor {
     public List<Game> process() {
         try {
             List<Game> games = parseProcessor.process();
-            List<Game> eligibleGames = new FirstRule().filter(games);
-            List<Game> fileBetGames = repository.readTotalRuleResultFile(ruleNumber);
-            List<Game> betGames = new ArrayList<>();
-            for (Day day : Day.values()) {
-                LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX),
-                        LocalTime.of(23, 0));
-                if (LocalDateTime.now().isBefore(startBetTime) || refresh) {
-                    List<Game> dayBetGames = filterGamesByDay(eligibleGames, day);
-                    betGames.addAll(dayBetGames);
-                    fileBetGames = removeDayGames(fileBetGames, day);
-                    fileBetGames.addAll(dayBetGames);
-                } else {
-                    betGames.addAll(filterGamesByDay(fileBetGames, day));
-                }
-            }
-            logger.writeEligibleGamesNumber(fileBetGames, ruleNumber);
-            repository.saveTotalRuleResultFile(ruleNumber, fileBetGames);
-            return betGames;
+            List<Game> eligibleGames = findEligibleGames(games);
+            return refreshGamesByParsingTime(eligibleGames);
         } catch (IOException e) {
             throw new RuleProcessorException(e.getMessage(), e);
         }
     }
 
+    private List<Game> findEligibleGames(List<Game> games) throws IOException {
+        Rule rule;
+        if (ruleNumber == RuleNumber.RULE_ONE) {
+            rule = new FirstRule();
+        } else {
+            return null;
+        }
+        return rule.filter(games);
+    }
+
+    private List<Game> refreshGamesByParsingTime(List<Game> eligibleGames) {
+        List<Game> betGames = new ArrayList<>();
+        List<Game> fileBetGames = repository.readTotalRuleResultFile(ruleNumber);
+        for (Day day : Day.values()) {
+            LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX),
+                    LocalTime.of(23, 0));
+            if (LocalDateTime.now().isBefore(startBetTime) || refresh) {
+                List<Game> dayBetGames = filterGamesByDay(eligibleGames, day);
+                betGames.addAll(dayBetGames);
+                fileBetGames = removeDayGames(fileBetGames, day);
+                fileBetGames.addAll(dayBetGames);
+            } else {
+                betGames.addAll(filterGamesByDay(fileBetGames, day));
+            }
+        }
+        logger.writeEligibleGamesNumber(fileBetGames, ruleNumber);
+        repository.saveTotalRuleResultFile(ruleNumber, fileBetGames);
+        return betGames;
+    }
+
     private List<Game> removeDayGames(List<Game> fileBetGames, Day day) {
-        fileBetGames = fileBetGames.stream()
+        return fileBetGames.stream()
                 .filter(game -> !game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
                 .collect(Collectors.toList());
-        return fileBetGames;
     }
 
     private List<Game> filterGamesByDay(List<Game> eligibleGames, Day day) {
