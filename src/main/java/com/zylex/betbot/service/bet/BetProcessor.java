@@ -40,11 +40,11 @@ public class BetProcessor {
 
     private boolean mock;
 
-    public BetProcessor(RuleProcessor ruleProcessor, RuleNumber ruleNumber, boolean mock) {
+    public BetProcessor(RuleProcessor ruleProcessor, boolean mock) {
         this.ruleProcessor = ruleProcessor;
-        this.ruleNumber = ruleNumber;
         this.mock = mock;
         this.repository = ruleProcessor.getRepository();
+        this.ruleNumber = repository.getRuleNumber();
     }
 
     /**
@@ -61,7 +61,7 @@ public class BetProcessor {
             openSite();
             List<Game> betMadeGames = processBets(betGames);
             if (!mock) {
-                repository.saveTotalBetMadeGamesToFile(betMadeGames);
+                repository.saveTotalBetMade(betMadeGames);
             }
             logger.betMade(LogType.OK);
         } catch (IOException | ElementNotInteractableException e) {
@@ -78,7 +78,7 @@ public class BetProcessor {
     }
 
     private List<Game> filterByBetMade(List<Game> filteredBetGames) {
-        List<Game> betMadeGames = repository.readTotalBetMadeFile();
+        List<Game> betMadeGames = repository.readTotalBetMade();
         return filteredBetGames.stream().filter(game -> !betMadeGames.contains(game)).collect(Collectors.toList());
     }
 

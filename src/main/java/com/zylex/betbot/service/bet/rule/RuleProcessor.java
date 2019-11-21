@@ -29,10 +29,10 @@ public class RuleProcessor {
 
     private RuleNumber ruleNumber;
 
-    public RuleProcessor(Repository repository, ParseProcessor parseProcessor, RuleNumber ruleNumber, boolean refresh) {
+    public RuleProcessor(Repository repository, ParseProcessor parseProcessor, boolean refresh) {
         this.repository = repository;
         this.parseProcessor = parseProcessor;
-        this.ruleNumber = ruleNumber;
+        this.ruleNumber = repository.getRuleNumber();
         this.refresh = refresh;
     }
 
@@ -80,7 +80,7 @@ public class RuleProcessor {
             }
         }
         logger.writeEligibleGamesNumber(fileBetGames, ruleNumber);
-        repository.saveTotalRuleResultFile(ruleNumber, fileBetGames);
+        repository.saveRuleFile(ruleNumber, fileBetGames);
         return betGames;
     }
 

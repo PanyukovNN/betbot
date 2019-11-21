@@ -14,17 +14,15 @@ public class OneXBetBot {
         RuleNumber ruleNumber = RuleNumber.RULE_ONE;
         boolean mock = true;
         boolean leaguesFromFile = false;
-        boolean refresh = false;//args.length > 0 && args[0].equals("true");
+        boolean refresh = true;//args.length > 0 && args[0].equals("true");
 
         try {
             new BetProcessor(
                 new RuleProcessor(
                     new Repository(ruleNumber),
                     new ParseProcessor(leaguesFromFile),
-                    ruleNumber,
                     refresh
                 ),
-                ruleNumber,
                 mock
             ).process();
         } finally {

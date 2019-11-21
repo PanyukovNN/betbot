@@ -23,26 +23,33 @@ public class Repository {
 
     private final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
-    private File totalBetMadeFile;
+    private File betMadeFile;
 
-    private Map<RuleNumber, File> totalRuleFile = new HashMap<>();
+    private Map<RuleNumber, File> ruleFileMap = new HashMap<>();
+
+    private RuleNumber ruleNumber;
 
     public Repository(RuleNumber ruleNumber) {
-        initializeFiles(ruleNumber);
+        this.ruleNumber = ruleNumber;
+        initializeFiles();
     }
 
-    private void initializeFiles(RuleNumber ruleNumber) {
+    public RuleNumber getRuleNumber() {
+        return ruleNumber;
+    }
+
+    private void initializeFiles() {
         LocalDate date = LocalDate.now().plusDays(Day.TOMORROW.INDEX);
         String monthDirName = date.getMonth().name();
-        totalBetMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
+        betMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
         for (RuleNumber rule : RuleNumber.values()) {
             File totalRuleResultFile = new File(String.format("results/%s/%s.csv", monthDirName, "MATCHES_" + rule + "_" + monthDirName));
-            totalRuleFile.put(rule, totalRuleResultFile);
+            ruleFileMap.put(rule, totalRuleResultFile);
         }
     }
 
-    public List<Game> readTotalBetMadeFile() {
-        return readFromFile(totalBetMadeFile);
+    public List<Game> readTotalBetMade() {
+        return readFromFile(betMadeFile);
     }
 
     /**
@@ -51,15 +58,15 @@ public class Repository {
      * @return - list of games.
      */
     public List<Game> readTotalRuleResultFile(RuleNumber ruleNumber) {
-        return readFromFile(totalRuleFile.get(ruleNumber));
+        return readFromFile(ruleFileMap.get(ruleNumber));
     }
 
     /**
      * Save games to total_bet_made file.
      * @param games - list of games.
      */
-    public void saveTotalBetMadeGamesToFile(List<Game> games) {
-        saveResultGamesToFile(totalBetMadeFile, games);
+    public void saveTotalBetMade(List<Game> games) {
+        saveTotalGames(betMadeFile, games);
     }
 
     /**
@@ -67,11 +74,11 @@ public class Repository {
      * @param ruleNumber - number of rule.
      * @param games - list of games.
      */
-    public void saveTotalRuleResultFile(RuleNumber ruleNumber, List<Game> games) {
-        writeToFile(totalRuleFile.get(ruleNumber), games);
+    public void saveRuleFile(RuleNumber ruleNumber, List<Game> games) {
+        writeToFile(ruleFileMap.get(ruleNumber), games);
     }
 
-    private void saveResultGamesToFile(File file, List<Game> games) {
+    private void saveTotalGames(File file, List<Game> games) {
         List<Game> totalResultGames = readFromFile(file);
         totalResultGames.removeAll(games);
         totalResultGames.addAll(games);
