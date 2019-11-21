@@ -70,7 +70,6 @@ public class Repository {
      * @param games - list of games.
      */
     public void saveTotalRuleResultFile(RuleNumber ruleNumber, List<Game> games) {
-        //TODO check correction
         writeToFile(totalRuleFile.get(ruleNumber), games);
     }
 

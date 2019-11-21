@@ -15,14 +15,20 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ParsingConsoleLogger extends ConsoleLogger {
 
-    private AtomicInteger totalGames = new AtomicInteger(0);
+    private AtomicInteger totalTodayGames = new AtomicInteger(0);
+
+    private AtomicInteger totalTomorrowGames = new AtomicInteger(0);
 
     private int totalLeagues = 0;
 
     private AtomicInteger processedLeagues = new AtomicInteger(0);
 
-    public void addTotalGames(int number) {
-        totalGames.addAndGet(number);
+    public void addTotalTodayGames(int number) {
+        totalTodayGames.addAndGet(number);
+    }
+
+    public void addTotalTomorrowGames(int number) {
+        totalTomorrowGames.addAndGet(number);
     }
 
     /**
@@ -66,7 +72,8 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      * Log summarizing of parsing.
      */
     public void parsingSummarizing() {
-        writeInLine(String.format("\nTotal games: %d", totalGames.get()));
+        writeInLine(String.format("\nTotal TODAY games: %d", totalTodayGames.get()));
+        writeInLine(String.format("\nTotal TOMORROW games: %d", totalTomorrowGames.get()));
         writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
         writeLineSeparator();
     }
@@ -75,14 +82,12 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      * Log number of eligible games for every rule.
      * @param eligibleGames - map of eligible games.
      */
-    public void writeEligibleGamesNumber(List<Game> eligibleGames) {
-        //TODO rule definition
-        writeInLine(String.format("\nEligible TODAY games for %s: %d", RuleNumber.RULE_ONE,
-                (int) eligibleGames.stream()
-                        .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now())).count()));
-        writeInLine(String.format("\nEligible TOMORROW games for %s: %d", RuleNumber.RULE_ONE,
-                (int) eligibleGames.stream()
-                        .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TOMORROW.INDEX))).count()));
+    public void writeEligibleGamesNumber(List<Game> eligibleGames, RuleNumber ruleNumber) {
+        for (Day day: Day.values()) {
+            writeInLine(String.format("\nEligible %s games for %s: %d", day, ruleNumber,
+                    (int) eligibleGames.stream()
+                            .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX))).count()));
+        }
         writeLineSeparator();
     }
 }

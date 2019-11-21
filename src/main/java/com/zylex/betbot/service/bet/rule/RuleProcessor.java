@@ -48,7 +48,6 @@ public class RuleProcessor {
         try {
             List<Game> games = parseProcessor.process();
             List<Game> eligibleGames = new FirstRule().filter(games);
-            logger.writeEligibleGamesNumber(eligibleGames);
             List<Game> fileBetGames = repository.readTotalRuleResultFile(ruleNumber);
             List<Game> betGames = new ArrayList<>();
             for (Day day : Day.values()) {
@@ -59,11 +58,11 @@ public class RuleProcessor {
                     betGames.addAll(dayBetGames);
                     fileBetGames = removeDayGames(fileBetGames, day);
                     fileBetGames.addAll(dayBetGames);
-                    System.out.print("\n" + day + " games updated.");
                 } else {
                     betGames.addAll(filterGamesByDay(fileBetGames, day));
                 }
             }
+            logger.writeEligibleGamesNumber(fileBetGames, ruleNumber);
             repository.saveTotalRuleResultFile(ruleNumber, fileBetGames);
             return betGames;
         } catch (IOException e) {
