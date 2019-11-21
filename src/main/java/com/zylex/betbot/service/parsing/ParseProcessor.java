@@ -5,6 +5,7 @@ import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.ParseProcessorException;
 import com.zylex.betbot.model.Game;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -22,6 +23,8 @@ public class ParseProcessor {
     private ExecutorService service = Executors.newFixedThreadPool(8);
 
     private boolean leaguesFromFile;
+
+    private LocalDateTime parsingTime = LocalDateTime.now();
 
     public ParseProcessor(boolean leaguesFromFile) {
         this.leaguesFromFile = leaguesFromFile;
@@ -53,7 +56,7 @@ public class ParseProcessor {
                                           List<String> leagueLinks) throws InterruptedException, ExecutionException {
         List<CallableGameParser> callableGameParsers = new ArrayList<>();
         for (String leagueLink : leagueLinks) {
-            callableGameParsers.add(new CallableGameParser(logger, leagueLink));
+            callableGameParsers.add(new CallableGameParser(logger, leagueLink, parsingTime));
         }
         List<Future<List<Game>>> futureGameParsers = service.invokeAll(callableGameParsers);
         List<Game> games = new ArrayList<>();

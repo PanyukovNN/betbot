@@ -1,14 +1,11 @@
 package com.zylex.betbot.service.bet;
 
-import com.zylex.betbot.controller.RepositoryFactory;
 import com.zylex.betbot.controller.Repository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.BetCoefficient;
-import com.zylex.betbot.model.GameContainer;
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 import com.zylex.betbot.service.bet.rule.RuleProcessor;
@@ -22,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Making bets.
@@ -38,12 +36,15 @@ public class BetProcessor {
 
     private RuleProcessor ruleProcessor;
 
+    private Repository repository;
+
     private boolean mock;
 
     public BetProcessor(RuleProcessor ruleProcessor, RuleNumber ruleNumber, boolean mock) {
         this.ruleProcessor = ruleProcessor;
         this.ruleNumber = ruleNumber;
         this.mock = mock;
+        this.repository = ruleProcessor.getRepository();
     }
 
     /**
@@ -51,24 +52,16 @@ public class BetProcessor {
      * logs in and makes bets.
      */
     public void process() {
-        List<Game> betGames = ruleProcessor.process();
-        Repository repository = ruleProcessor.getRepository();
+        List<Game> betGames = findAppropriateGames(ruleProcessor.process());
         try {
-            Map<Day, LocalDateTime> dayParsingTime = repository.readInfoFile();
-            for (Day day : Day.values()) {
-                LocalDateTime parsingTime = dayParsingTime.get(day);
-                LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
-                boolean doBet = !parsingTime.isBefore(startBetTime);
-
-                if (!doBet || betGames.isEmpty()) {
-                    logger.betMade(LogType.ERROR);
-                    return;
-                }
-                driverInit();
-
-                if (!processBets(repository, betGames)) {
-                    break;
-                }
+            if (betGames.isEmpty()) {
+                logger.betMade(LogType.ERROR);
+                return;
+            }
+            openSite();
+            List<Game> betMadeGames = processBets(betGames);
+            if (!mock) {
+                repository.saveTotalBetMadeGamesToFile(betMadeGames);
             }
             logger.betMade(LogType.OK);
         } catch (IOException | ElementNotInteractableException e) {
@@ -80,16 +73,35 @@ public class BetProcessor {
         }
     }
 
-    private void driverInit() throws IOException {
+    private List<Game> findAppropriateGames(List<Game> betGames) {
+        return filterByBetMade(filterByParsingTime(betGames));
+    }
+
+    private List<Game> filterByBetMade(List<Game> filteredBetGames) {
+        List<Game> betMadeGames = repository.readTotalBetMadeFile();
+        return filteredBetGames.stream().filter(game -> !betMadeGames.contains(game)).collect(Collectors.toList());
+    }
+
+    private List<Game> filterByParsingTime(List<Game> betGames) {
+        return betGames.stream()
+                .filter(game -> game.getParsingTime().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), LocalTime.of(22,59))))
+                .collect(Collectors.toList());
+    }
+
+    private void openSite() throws IOException {
+        driverInit();
+        logger.logRule(ruleNumber);
+        logger.startLogMessage(LogType.LOG_IN);
+        logIn();
+        logger.startLogMessage(LogType.BET);
+    }
+
+    private void driverInit() {
         if (driver == null) {
             DriverManager driverManager = new DriverManager();
             driver = driverManager.initiateDriver(false);
             wait = new WebDriverWait(driver, 5);
             driver.navigate().to("https://1xstavka.ru/");
-            logger.logRule(ruleNumber);
-            logger.startLogMessage(LogType.LOG_IN);
-            logIn();
-            logger.startLogMessage(LogType.BET);
         }
     }
 
@@ -120,22 +132,14 @@ public class BetProcessor {
         }
     }
 
-    private boolean processBets(Repository repository, GameContainer gameContainer, Day day) {
-        List<Game> eligibleGames = gameContainer.getEligibleGames().get(ruleNumber);
+    private List<Game> processBets(List<Game> betGames) {
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
         int singleBetAmount = calculateAmount(totalMoney);
         double availableBalance = totalMoney;
-        List<Game> betMadeGames = repository.readBetMadeFile();
+        List<Game> betMadeGames = new ArrayList<>();
         int i = 0;
-        for (Game game : eligibleGames) {
-            //TODO
-            if (!game.getDateTime().toLocalDate().isEqual(LocalDateTime.now().plusDays(day.INDEX).toLocalDate())) {
-                continue;
-            }
-            if (betMadeGames.contains(game)) {
-                continue;
-            }
+        for (Game game : betGames) {
             if (availableBalance < singleBetAmount) {
                 logger.noMoney();
                 break;
@@ -150,12 +154,7 @@ public class BetProcessor {
                 }
             }
         }
-        repository.saveBetMadeGamesToFile(betMadeGames);
-        if (!mock) {
-            repository.saveTotalBetMadeGamesToFile(betMadeGames);
-        }
-        //TODO
-        return !(availableBalance < singleBetAmount);
+        return betMadeGames;
     }
 
     private int calculateAmount(double totalMoney) {

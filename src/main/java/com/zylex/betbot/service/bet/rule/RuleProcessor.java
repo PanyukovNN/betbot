@@ -46,18 +46,15 @@ public class RuleProcessor {
      */
     public List<Game> process() {
         try {
-            List<Game> games = parseProcessor.process(); // сегодняшние и завтрашние игры с сайта
+            List<Game> games = parseProcessor.process();
             List<Game> eligibleGames = new FirstRule().filter(games);
-
+            logger.writeEligibleGamesNumber(eligibleGames);
             List<Game> fileBetGames = repository.readTotalRuleResultFile(ruleNumber);
-            Map<Day, LocalDateTime> dayParsingTime = repository.readInfoFile();
-
             List<Game> betGames = new ArrayList<>();
             for (Day day : Day.values()) {
                 LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX),
                         LocalTime.of(23, 0));
-                LocalDateTime parsingTime = dayParsingTime.get(day);
-                if (parsingTime.isBefore(startBetTime) || refresh) {
+                if (LocalDateTime.now().isBefore(startBetTime) || refresh) {
                     List<Game> dayBetGames = filterGamesByDay(eligibleGames, day);
                     betGames.addAll(dayBetGames);
                     fileBetGames = removeDayGames(fileBetGames, day);
@@ -86,63 +83,4 @@ public class RuleProcessor {
                 .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
                 .collect(Collectors.toList());
     }
-
-    /*private List<Game> processDayGames() {
-        List<Game> games = parseProcessor.process();
-        List<Game> betGames = new ArrayList<>();
-        //TODO if no games found for day
-        for (Day day : Day.values()) {
-            LocalDateTime parsingTime = games.stream()
-                    .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
-                    .findAny()
-                    .get()
-                    .getParsingTime();
-            LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
-            if (parsingTime.isBefore(startBetTime) || refresh) {
-                betGames.addAll(games.stream()
-                        .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
-                        .collect(Collectors.toList()));
-                System.out.print("\n" + day + " games updated.");
-            } else {
-                //TODO fix ruleNumber
-                betGames.addAll(repositoryFactory.getRepository(day).readRuleFile(RuleNumber.RULE_ONE));
-            }
-        }
-        return betGames;
-    }*/
-
-    /*private GameContainer processGameContainerMap(Map<RuleNumber, List<Game>> eligibleGames) {
-        LocalDateTime parsingTime = LocalDateTime.now();
-        logger.writeEligibleGamesNumber(eligibleGames);
-        //TODO
-        for (Day day : Day.values()) {
-            LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX), LocalTime.of(23, 0));
-            Map<RuleNumber, List<Game>> dayEligibleGames = processDayEligibleGames(eligibleGames, day);
-            GameContainer gameContainer = new GameContainer(
-                    parsingTime,
-                    dayEligibleGames);
-            repositoryFactory.getRepository(day).processGameSaving(gameContainer, startBetTime);
-        }
-        return new GameContainer(parsingTime, eligibleGames);
-    }*/
-
-/*
-    private Map<RuleNumber, List<Game>> processDayEligibleGames(Map<RuleNumber, List<Game>> eligibleGames, Day day) {
-        Map<RuleNumber, List<Game>> dayEligibleGames = new HashMap<>();
-        for (RuleNumber ruleNumber : eligibleGames.keySet()) {
-            dayEligibleGames.put(ruleNumber,
-                    eligibleGames.get(ruleNumber).stream()
-                            .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
-                            .collect(Collectors.toList()));
-        }
-        return dayEligibleGames;
-    }
-*/
-
-
-/*    private Map<RuleNumber, List<Game>> splitGamesByRules(List<Game> games) throws IOException {
-        Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
-        eligibleGames.put(RuleNumber.RULE_ONE, new FirstRule().filter(games));
-        return eligibleGames;
-    }*/
 }

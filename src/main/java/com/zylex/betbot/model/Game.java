@@ -139,7 +139,9 @@ public class Game {
                 ", secondWin='" + secondWin + '\'' +
                 ", firstWinOrTie='" + firstWinOrTie + '\'' +
                 ", secondWinOrTie='" + secondWinOrTie + '\'' +
+                ", ruleNumberSet=" + ruleNumberSet +
                 ", gameResult=" + gameResult +
+                ", parsingTime=" + parsingTime +
                 '}';
     }
 }

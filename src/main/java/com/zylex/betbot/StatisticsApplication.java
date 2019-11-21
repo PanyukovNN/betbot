@@ -14,13 +14,13 @@ public class StatisticsApplication {
         LocalDate startDate = LocalDate.of(2019, 11, 11);
         LocalDate endDate = LocalDate.now().minusDays(1);
 
-        new StatisticsAnalyser(
-            new ResultScanner(
-                new Repository(
-                    Day.TODAY,
-                    RuleNumber.RULE_ONE
-                )
-            )
-        ).analyse(startDate, endDate);
+//        new StatisticsAnalyser(
+//            new ResultScanner(
+//                new Repository(
+//                    Day.TODAY,
+//                    RuleNumber.RULE_ONE
+//                )
+//            )
+//        ).analyse(startDate, endDate);
     }
 }

@@ -31,9 +31,12 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private String leagueLink;
 
-    public CallableGameParser(ParsingConsoleLogger logger, String leagueLink) {
+    private LocalDateTime parsingTime;
+
+    public CallableGameParser(ParsingConsoleLogger logger, String leagueLink, LocalDateTime parsingTime) {
         this.logger = logger;
         this.leagueLink = leagueLink;
+        this.parsingTime = parsingTime;
     }
 
     /**
@@ -74,6 +77,9 @@ public class CallableGameParser implements Callable<List<Game>> {
                 break;
             }
             Elements teams = gameElement.select("span.c-events__team");
+            if (teams.isEmpty()) {
+                continue;
+            }
             String firstTeam = teams.get(0).text();
             String secondTeam = teams.get(1).text();
             if (firstTeam.contains("(голы)")) {
@@ -86,7 +92,7 @@ public class CallableGameParser implements Callable<List<Game>> {
             String firstWinOrTie = coefficients.get(3).text();
             String secondWinOrTie = coefficients.get(5).text();
             Game game = new Game(leagueName, leagueLink, dateTime, firstTeam, secondTeam,
-                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT);
+                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT, parsingTime);
             games.add(game);
         }
         return games;

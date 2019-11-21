@@ -25,8 +25,6 @@ public class Repository {
 
 //    private final DateTimeFormatter DIR_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    private File infoFile;
-
     private File totalBetMadeFile;
 
     private Map<RuleNumber, File> totalRuleFile = new HashMap<>();
@@ -38,12 +36,15 @@ public class Repository {
     private void initializeFiles(RuleNumber ruleNumber) {
         LocalDate date = LocalDate.now().plusDays(Day.TOMORROW.INDEX);
         String monthDirName = date.getMonth().name();
-        infoFile = new File(String.format("results/%s/%s.csv", monthDirName, "info"));
         totalBetMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
         for (RuleNumber rule : RuleNumber.values()) {
             File totalRuleResultFile = new File(String.format("results/%s/%s.csv", monthDirName, "MATCHES_" + rule + "_" + monthDirName));
             totalRuleFile.put(rule, totalRuleResultFile);
         }
+    }
+
+    public List<Game> readTotalBetMadeFile() {
+        return readFromFile(totalBetMadeFile);
     }
 
     /**
@@ -71,15 +72,6 @@ public class Repository {
     public void saveTotalRuleResultFile(RuleNumber ruleNumber, List<Game> games) {
         //TODO check correction
         writeToFile(totalRuleFile.get(ruleNumber), games);
-    }
-
-    /**
-     * Saves all lists of games from GameContainer into separate files.
-     */
-    public void processGameSaving(Map<RuleNumber, List<Game>> ruleGames) {
-        for (Map.Entry<RuleNumber, List<Game>> entry : ruleGames.entrySet()) {
-            saveResultGamesToFile(totalRuleFile.get(entry.getKey()), entry.getValue());
-        }
     }
 
     private void saveResultGamesToFile(File file, List<Game> games) {
@@ -155,33 +147,6 @@ public class Repository {
                     .replace('.', ',');
         } catch (NumberFormatException e) {
             return value;
-        }
-    }
-
-    public Map<Day, LocalDateTime> readInfoFile() {
-        Map<Day, LocalDateTime> dayParsingTime = new HashMap<>();
-        if (!infoFile.exists()) {
-            dayParsingTime.put(Day.TODAY, LocalDateTime.now());
-            dayParsingTime.put(Day.TOMORROW, LocalDateTime.now());
-            return dayParsingTime;
-        }
-        try (InputStream inputStream = new FileInputStream(infoFile);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            dayParsingTime.put(Day.TODAY, LocalDateTime.parse(reader.readLine(), DATE_FORMATTER));
-            dayParsingTime.put(Day.TOMORROW, LocalDateTime.parse(reader.readLine(), DATE_FORMATTER));
-            return dayParsingTime;
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
-        }
-    }
-
-    public void writeToInfoFile(LocalDateTime todayParsingTime, LocalDateTime tomorrowParsingTime) {
-        createFile(infoFile);
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(infoFile), StandardCharsets.UTF_8))) {
-            writer.write(DATE_FORMATTER.format(todayParsingTime));
-            writer.write(DATE_FORMATTER.format(tomorrowParsingTime));
-        } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
         }
     }
 
