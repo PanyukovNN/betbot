@@ -31,12 +31,9 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private String leagueLink;
 
-    private LocalDateTime parsingTime;
-
-    public CallableGameParser(ParsingConsoleLogger logger, String leagueLink, LocalDateTime parsingTime) {
+    public CallableGameParser(ParsingConsoleLogger logger, String leagueLink) {
         this.logger = logger;
         this.leagueLink = leagueLink;
-        this.parsingTime = parsingTime;
     }
 
     /**
@@ -92,7 +89,7 @@ public class CallableGameParser implements Callable<List<Game>> {
             String firstWinOrTie = coefficients.get(3).text();
             String secondWinOrTie = coefficients.get(5).text();
             Game game = new Game(leagueName, leagueLink, dateTime, firstTeam, secondTeam,
-                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT, parsingTime);
+                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT);
             games.add(game);
         }
         return games;

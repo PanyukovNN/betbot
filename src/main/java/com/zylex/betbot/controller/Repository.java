@@ -23,8 +23,6 @@ public class Repository {
 
     private final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
-//    private final DateTimeFormatter DIR_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
     private File totalBetMadeFile;
 
     private Map<RuleNumber, File> totalRuleFile = new HashMap<>();
@@ -94,7 +92,7 @@ public class Repository {
                 String[] fields = line.replace(",", ".").split(";");
                 Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
                         fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10],
-                        GameResult.valueOf(fields[12]), LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER));
+                        GameResult.valueOf(fields[12]));
                 if (!fields[11].equals("-")) {
                     String[] rules = fields[11].split("__");
                     game.getRuleNumberSet().addAll(
@@ -115,7 +113,7 @@ public class Repository {
         }
         createFile(file);
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-            final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
+            final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
             for (Game game : games) {
                 String line = String.format(GAME_FORMAT,
                         game.getLeague(),
@@ -131,8 +129,7 @@ public class Repository {
                         game.getRuleNumberSet().isEmpty()
                                 ? "-"
                                 : StringUtils.join(game.getRuleNumberSet(), "__"),
-                        game.getGameResult(),
-                        DATE_FORMATTER.format(game.getParsingTime())) + "\n";
+                        game.getGameResult()) + "\n";
                 writer.write(line);
             }
         } catch (IOException e) {

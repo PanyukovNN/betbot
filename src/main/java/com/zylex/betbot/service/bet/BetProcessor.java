@@ -84,7 +84,7 @@ public class BetProcessor {
 
     private List<Game> filterByParsingTime(List<Game> betGames) {
         return betGames.stream()
-                .filter(game -> game.getParsingTime().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), LocalTime.of(22,59))))
+                .filter(game -> LocalDateTime.now().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), LocalTime.of(22,59))))
                 .collect(Collectors.toList());
     }
 
