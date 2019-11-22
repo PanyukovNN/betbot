@@ -47,9 +47,7 @@ public class CallableGameParser implements Callable<List<Game>> {
         } catch (HttpStatusException e) {
             return new ArrayList<>();
         } catch (IOException e) {
-            System.out.println("Problem with league: " + leagueLink);
-            return new ArrayList<>();
-//            throw new GameBotException(e.getMessage(), e);
+            throw new GameBotException(e.getMessage(), e);
         }
     }
 
