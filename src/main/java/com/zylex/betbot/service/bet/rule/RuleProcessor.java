@@ -58,6 +58,8 @@ public class RuleProcessor {
         Rule rule;
         if (ruleNumber == RuleNumber.RULE_ONE) {
             rule = new FirstRule();
+        } else if (ruleNumber == RuleNumber.RULE_TEST) {
+            rule = new TestRule();
         } else {
             return null;
         }

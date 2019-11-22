@@ -11,10 +11,10 @@ import com.zylex.betbot.service.parsing.ParseProcessor;
 public class OneXBetBot {
 
     public static void main(String[] args) {
-        RuleNumber ruleNumber = RuleNumber.RULE_ONE;
+        RuleNumber ruleNumber = RuleNumber.RULE_TEST;
         boolean mock = true;
         boolean leaguesFromFile = false;
-        boolean refresh = true;//args.length > 0 && args[0].equals("true");
+        boolean refresh = false;//args.length > 0 && args[0].equals("true");
 
         try {
             new BetProcessor(
