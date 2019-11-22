@@ -58,6 +58,7 @@ public class BetProcessor {
                 logger.betMade(LogType.ERROR);
                 return;
             }
+            betGames.sort(Comparator.comparing(Game::getDateTime));
             openSite();
             List<Game> betMadeGames = processBets(betGames);
             if (!mock) {
