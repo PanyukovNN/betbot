@@ -23,40 +23,29 @@ public class GameRepository {
 
     private final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
-    private File betMadeFile;
+    private Map<RuleNumber, File> betMadeFileMap = new HashMap<>();
 
     private Map<RuleNumber, File> ruleFileMap = new HashMap<>();
-
-    private RuleNumber ruleNumber;
 
     {
         LocalDate date = LocalDate.now().plusDays(Day.TOMORROW.INDEX);
         String monthDirName = date.getMonth().name();
-        betMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
         for (RuleNumber rule : RuleNumber.values()) {
-            File ruleFIle = new File(String.format("results/%s/%s.csv", monthDirName, "MATCHES_" + rule + "_" + monthDirName));
-            ruleFileMap.put(rule, ruleFIle);
+            betMadeFileMap.put(rule, new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, rule, monthDirName)));
+            ruleFileMap.put(rule, new File(String.format("results/%s/MATCHES_%s_%s.csv", monthDirName, rule, monthDirName)));
         }
     }
 
-    public GameRepository(RuleNumber ruleNumber) {
-        this.ruleNumber = ruleNumber;
-    }
-
-    public RuleNumber getRuleNumber() {
-        return ruleNumber;
-    }
-
     /**
-     * Read games from BET_MADE file
+     * Read games from BET_MADE file.
      * @return list of games.
      */
-    public List<Game> readBetMade() {
-        return readFromFile(betMadeFile);
+    public List<Game> readBetMade(RuleNumber ruleNumber) {
+        return readFromFile(betMadeFileMap.get(ruleNumber));
     }
 
     /**
-     * Read games from RULE file
+     * Read games from RULE file.
      * @param ruleNumber - number of rule.
      * @return - list of games.
      */
@@ -68,8 +57,8 @@ public class GameRepository {
      * Save games to BET_MADE file.
      * @param games - list of games.
      */
-    public void saveBetMade(List<Game> games) {
-        appendSave(betMadeFile, games);
+    public void saveBetMade(RuleNumber ruleNumber, List<Game> games) {
+        appendSave(betMadeFileMap.get(ruleNumber), games);
     }
 
     /**

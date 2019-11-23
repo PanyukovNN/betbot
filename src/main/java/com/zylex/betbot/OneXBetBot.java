@@ -12,7 +12,7 @@ import com.zylex.betbot.service.parsing.ParseProcessor;
 public class OneXBetBot {
 
     public static void main(String[] args) {
-        RuleNumber ruleNumber = RuleNumber.RULE_TEST;
+        RuleNumber ruleNumber = RuleNumber.RULE_ONE;
         boolean mock = true;//args.length > 0 && Arrays.asList(args).contains("-m");
         boolean leaguesFromFile = false;//args.length > 0 && Arrays.asList(args).contains("-f");
         boolean refresh = false;//args.length > 0 && Arrays.asList(args).contains("-r");
@@ -20,9 +20,10 @@ public class OneXBetBot {
         try {
             new BetProcessor(
                 new RuleProcessor(
-                    new GameRepository(ruleNumber),
+                    new GameRepository(),
                     new LeagueRepository(),
                     new ParseProcessor(leaguesFromFile),
+                    ruleNumber,
                     refresh
                 ),
                 mock

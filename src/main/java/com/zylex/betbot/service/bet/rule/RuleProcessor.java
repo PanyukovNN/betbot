@@ -30,16 +30,20 @@ public class RuleProcessor {
 
     private RuleNumber ruleNumber;
 
-    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor, boolean refresh) {
+    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor, RuleNumber ruleNumber, boolean refresh) {
         this.gameRepository = gameRepository;
         this.leagueRepository = leagueRepository;
         this.parseProcessor = parseProcessor;
-        this.ruleNumber = gameRepository.getRuleNumber();
+        this.ruleNumber = ruleNumber;
         this.refresh = refresh;
     }
 
     public GameRepository getGameRepository() {
         return gameRepository;
+    }
+
+    public RuleNumber getRuleNumber() {
+        return ruleNumber;
     }
 
     /**
