@@ -1,6 +1,7 @@
 package com.zylex.betbot;
 
-import com.zylex.betbot.controller.Repository;
+import com.zylex.betbot.controller.GameRepository;
+import com.zylex.betbot.controller.LeagueRepository;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 import com.zylex.betbot.service.statistics.ResultScanner;
 import com.zylex.betbot.service.statistics.StatisticsAnalyser;
@@ -17,10 +18,9 @@ public class StatisticsApplication {
 
         new StatisticsAnalyser(
             new ResultScanner(
-                new Repository(
-                    ruleNumber
-                )
-            )
+                new GameRepository(ruleNumber)
+            ),
+            new LeagueRepository()
         ).analyse(startDate, endDate);
     }
 }

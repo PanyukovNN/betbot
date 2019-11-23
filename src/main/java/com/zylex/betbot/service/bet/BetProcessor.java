@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.bet;
 
-import com.zylex.betbot.controller.Repository;
+import com.zylex.betbot.controller.GameRepository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
@@ -36,15 +36,15 @@ public class BetProcessor {
 
     private RuleProcessor ruleProcessor;
 
-    private Repository repository;
+    private GameRepository gameRepository;
 
     private boolean mock;
 
     public BetProcessor(RuleProcessor ruleProcessor, boolean mock) {
         this.ruleProcessor = ruleProcessor;
         this.mock = mock;
-        this.repository = ruleProcessor.getRepository();
-        this.ruleNumber = repository.getRuleNumber();
+        this.gameRepository = ruleProcessor.getGameRepository();
+        this.ruleNumber = gameRepository.getRuleNumber();
     }
 
     /**
@@ -61,7 +61,7 @@ public class BetProcessor {
             openSite();
             List<Game> betMadeGames = processBets(betGames);
             if (!mock) {
-                repository.saveBetMadeGames(betMadeGames);
+                gameRepository.saveBetMadeGames(betMadeGames);
             }
             logger.betMade(LogType.OK);
         } catch (IOException | ElementNotInteractableException e) {
@@ -78,7 +78,7 @@ public class BetProcessor {
     }
 
     private List<Game> filterByBetMade(List<Game> filteredBetGames) {
-        List<Game> betMadeGames = repository.readBetMadeGames();
+        List<Game> betMadeGames = gameRepository.readBetMadeGames();
         return filteredBetGames.stream().filter(game -> !betMadeGames.contains(game)).collect(Collectors.toList());
     }
 

@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 /**
  * Process saving and reading games from files.
  */
-public class Repository {
+public class GameRepository {
 
     private final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
@@ -29,7 +29,7 @@ public class Repository {
 
     private RuleNumber ruleNumber;
 
-    public Repository(RuleNumber ruleNumber) {
+    public GameRepository(RuleNumber ruleNumber) {
         this.ruleNumber = ruleNumber;
         initializeFiles();
     }

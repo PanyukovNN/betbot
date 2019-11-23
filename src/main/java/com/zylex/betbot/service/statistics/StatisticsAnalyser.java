@@ -1,16 +1,14 @@
 package com.zylex.betbot.service.statistics;
 
-import com.zylex.betbot.controller.Repository;
+import com.zylex.betbot.controller.GameRepository;
+import com.zylex.betbot.controller.LeagueRepository;
 import com.zylex.betbot.controller.logger.StatisticsConsoleLogger;
-import com.zylex.betbot.exception.StatisticsAnalyserException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 
-import java.io.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,13 +19,16 @@ public class StatisticsAnalyser {
 
     private StatisticsConsoleLogger logger = new StatisticsConsoleLogger();
 
-    private Repository repository;
+    private GameRepository gameRepository;
+
+    private LeagueRepository leagueRepository;
 
     private ResultScanner resultScanner;
 
-    public StatisticsAnalyser(ResultScanner resultScanner) {
+    public StatisticsAnalyser(ResultScanner resultScanner, LeagueRepository leagueRepository) {
         this.resultScanner = resultScanner;
-        this.repository = resultScanner.getRepository();
+        this.leagueRepository = leagueRepository;
+        this.gameRepository = resultScanner.getGameRepository();
     }
 
     /**
@@ -45,33 +46,22 @@ public class StatisticsAnalyser {
                 List<Game> betMadeGamesByLeagues = splitBetMadeGamesByLeagues(gamesByDatePeriod);
                 computeStatistics(ruleNumber, gamesByDatePeriod, betMadeGamesByLeagues);
             }
-        } catch (IOException e) {
-            throw new StatisticsAnalyserException(e.getMessage(), e);
         } finally {
             driverManager.quitDriver();
         }
     }
 
     private List<Game> processGames(DriverManager driverManager, RuleNumber ruleNumber) {
-        List<Game> games = repository.readRuleGames(ruleNumber);
+        List<Game> games = gameRepository.readRuleGames(ruleNumber);
         resultScanner.process(games, driverManager);
-        repository.saveRuleGames(ruleNumber, games);
+        gameRepository.saveRuleGames(ruleNumber, games);
         return games;
     }
 
-    private List<Game> splitBetMadeGamesByLeagues(List<Game> betMadeGames) throws IOException {
-        List<String> leagueLinksFromFile = readLeagueLinksFromFile();
+    private List<Game> splitBetMadeGamesByLeagues(List<Game> betMadeGames) {
+        List<String> leagueLinksFromFile = leagueRepository.readLinks();
         return betMadeGames.stream()
                 .filter(game -> leagueLinksFromFile.contains(game.getLeagueLink())).collect(Collectors.toList());
-    }
-
-    private List<String> readLeagueLinksFromFile() throws IOException {
-        List<String> leagueLinksFromFile = new ArrayList<>();
-        try (InputStream inputStream = new FileInputStream("external-resources/leagues_list.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            reader.lines().forEach(leagueLinksFromFile::add);
-        }
-        return leagueLinksFromFile;
     }
 
     private List<Game> filterByDatePeriod(LocalDate startDate, LocalDate endDate, List<Game> betMadeGames) {
