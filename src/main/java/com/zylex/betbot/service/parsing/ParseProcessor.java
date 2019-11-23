@@ -7,7 +7,6 @@ import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -16,7 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * Parsing football games for a next day from 1xStavka.ru
+ * Parsing football games from the site.
  */
 public class ParseProcessor {
 
@@ -31,8 +30,8 @@ public class ParseProcessor {
     }
 
     /**
-     * Get links on leagues which include football matches, then pull information about matches from every link,
-     * put matches into list, and return it.
+     * Gets links on leagues which include football matches, then pulls information about matches from every link,
+     * puts matches into list, and return it.
      * @return - list of games.
      */
     public List<Game> process() {

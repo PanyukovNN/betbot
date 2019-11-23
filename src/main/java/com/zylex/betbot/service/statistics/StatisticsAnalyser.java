@@ -32,7 +32,7 @@ public class StatisticsAnalyser {
     }
 
     /**
-     * Get results of games and compute them statistics for specified period.
+     * Gets results of games and compute them statistics for specified period.
      * @param startDate - start date of period.
      * @param endDate - end date of period.
      */
@@ -52,9 +52,9 @@ public class StatisticsAnalyser {
     }
 
     private List<Game> processGames(DriverManager driverManager, RuleNumber ruleNumber) {
-        List<Game> games = gameRepository.readRuleGames(ruleNumber);
+        List<Game> games = gameRepository.readByRule(ruleNumber);
         resultScanner.process(games, driverManager);
-        gameRepository.saveRuleGames(ruleNumber, games);
+        gameRepository.saveByRule(ruleNumber, games);
         return games;
     }
 

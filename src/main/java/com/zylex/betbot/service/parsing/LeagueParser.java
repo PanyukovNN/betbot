@@ -13,26 +13,25 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Parsing football leagues links from site.
+ * Parsing football leagues links from the site.
  */
-@SuppressWarnings("WeakerAccess")
-public class LeagueParser {
+class LeagueParser {
 
     private ParsingConsoleLogger logger;
 
     private boolean leaguesFromFile;
 
-    public LeagueParser(ParsingConsoleLogger logger, boolean leaguesFromFile) {
+    LeagueParser(ParsingConsoleLogger logger, boolean leaguesFromFile) {
         this.logger = logger;
         this.leaguesFromFile = leaguesFromFile;
     }
 
     /**
-     * Gets links on leagues which include football matches from site,
+     * Gets links on leagues which include football matches from the site,
      * puts them into list and return.
      * @return - list of links.
      */
-    public List<String> processLeagueParsing() {
+    List<String> processLeagueParsing() {
         try {
             return parseLeagueLinks();
         } catch (IOException e) {

@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Filters games by rules.
+ * Filter games by rules.
  */
 public class RuleProcessor {
 
@@ -43,7 +43,9 @@ public class RuleProcessor {
     }
 
     /**
-     * Filters games by rules, puts in GameContainer and returns it.
+     * Filters games by specified rule, takes list of games from site or from file,
+     * which depends on current time, sort games by time, then save eligible games to file,
+     * and return games list.
      * @return - container of all lists of games.
      */
     public List<Game> process() {
@@ -68,7 +70,7 @@ public class RuleProcessor {
 
     private List<Game> refreshGamesByParsingTime(List<Game> eligibleGames) {
         List<Game> betGames = new ArrayList<>();
-        List<Game> fileBetGames = gameRepository.readRuleGames(ruleNumber);
+        List<Game> fileBetGames = gameRepository.readByRule(ruleNumber);
         for (Day day : Day.values()) {
             LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX),
                     LocalTime.of(23, 0));
@@ -82,7 +84,7 @@ public class RuleProcessor {
             }
         }
         logger.writeEligibleGamesNumber(fileBetGames, ruleNumber);
-        gameRepository.saveRuleGames(ruleNumber, fileBetGames);
+        gameRepository.saveByRule(ruleNumber, fileBetGames);
         return betGames;
     }
 

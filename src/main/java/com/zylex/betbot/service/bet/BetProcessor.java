@@ -48,8 +48,8 @@ public class BetProcessor {
     }
 
     /**
-     * Initiates one non-headless chrome driver, navigates to site,
-     * logs in and makes bets.
+     * Initiates non-headless chrome driver, opens the site, logs in,
+     * makes bets, and saves bet made games to file.
      */
     public void process() {
         List<Game> betGames = findAppropriateGames(ruleProcessor.process());
@@ -61,7 +61,7 @@ public class BetProcessor {
             openSite();
             List<Game> betMadeGames = processBets(betGames);
             if (!mock) {
-                gameRepository.saveBetMadeGames(betMadeGames);
+                gameRepository.saveBetMade(betMadeGames);
             }
             logger.betMade(LogType.OK);
         } catch (IOException | ElementNotInteractableException e) {
@@ -78,7 +78,7 @@ public class BetProcessor {
     }
 
     private List<Game> filterByBetMade(List<Game> filteredBetGames) {
-        List<Game> betMadeGames = gameRepository.readBetMadeGames();
+        List<Game> betMadeGames = gameRepository.readBetMade();
         return filteredBetGames.stream().filter(game -> !betMadeGames.contains(game)).collect(Collectors.toList());
     }
 

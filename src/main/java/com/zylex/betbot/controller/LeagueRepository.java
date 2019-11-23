@@ -11,11 +11,12 @@ import java.util.*;
  */
 public class LeagueRepository {
 
-    private File leagues = new File("external-resources/leagues_list.txt");
+    private File leagues;
 
     private Map<RuleNumber, File> ruleLeaguesFile = new HashMap<>();
 
     {
+        leagues = new File("external-resources/leagues_list.txt");
         ruleLeaguesFile.put(RuleNumber.RULE_TEST, new File("external-resources/exclude_leagues_FIRST_RULE.txt"));
         ruleLeaguesFile.put(RuleNumber.RULE_ONE, new File("external-resources/exclude_leagues_FIRST_RULE.txt"));
     }

@@ -29,16 +29,7 @@ public class GameRepository {
 
     private RuleNumber ruleNumber;
 
-    public GameRepository(RuleNumber ruleNumber) {
-        this.ruleNumber = ruleNumber;
-        initializeFiles();
-    }
-
-    public RuleNumber getRuleNumber() {
-        return ruleNumber;
-    }
-
-    private void initializeFiles() {
+    {
         LocalDate date = LocalDate.now().plusDays(Day.TOMORROW.INDEX);
         String monthDirName = date.getMonth().name();
         betMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
@@ -48,11 +39,19 @@ public class GameRepository {
         }
     }
 
+    public GameRepository(RuleNumber ruleNumber) {
+        this.ruleNumber = ruleNumber;
+    }
+
+    public RuleNumber getRuleNumber() {
+        return ruleNumber;
+    }
+
     /**
      * Read games from BET_MADE file
      * @return list of games.
      */
-    public List<Game> readBetMadeGames() {
+    public List<Game> readBetMade() {
         return readFromFile(betMadeFile);
     }
 
@@ -61,7 +60,7 @@ public class GameRepository {
      * @param ruleNumber - number of rule.
      * @return - list of games.
      */
-    public List<Game> readRuleGames(RuleNumber ruleNumber) {
+    public List<Game> readByRule(RuleNumber ruleNumber) {
         return readFromFile(ruleFileMap.get(ruleNumber));
     }
 
@@ -69,8 +68,8 @@ public class GameRepository {
      * Save games to BET_MADE file.
      * @param games - list of games.
      */
-    public void saveBetMadeGames(List<Game> games) {
-        appendGamesSave(betMadeFile, games);
+    public void saveBetMade(List<Game> games) {
+        appendSave(betMadeFile, games);
     }
 
     /**
@@ -78,11 +77,11 @@ public class GameRepository {
      * @param ruleNumber - number of rule.
      * @param games - list of games.
      */
-    public void saveRuleGames(RuleNumber ruleNumber, List<Game> games) {
+    public void saveByRule(RuleNumber ruleNumber, List<Game> games) {
         writeToFile(ruleFileMap.get(ruleNumber), games);
     }
 
-    private void appendGamesSave(File file, List<Game> games) {
+    private void appendSave(File file, List<Game> games) {
         List<Game> resultGames = readFromFile(file);
         resultGames.removeAll(games);
         resultGames.addAll(games);
