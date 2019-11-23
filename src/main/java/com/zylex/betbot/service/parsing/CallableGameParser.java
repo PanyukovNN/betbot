@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,7 +45,7 @@ public class CallableGameParser implements Callable<List<Game>> {
     public List<Game> call() {
         try {
             return processGameParsing();
-        } catch (HttpStatusException e) {
+        } catch (HttpStatusException | SocketTimeoutException e) {
             return new ArrayList<>();
         } catch (IOException e) {
             throw new GameBotException(e.getMessage(), e);

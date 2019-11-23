@@ -43,47 +43,50 @@ public class Repository {
         String monthDirName = date.getMonth().name();
         betMadeFile = new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, ruleNumber, monthDirName));
         for (RuleNumber rule : RuleNumber.values()) {
-            File totalRuleResultFile = new File(String.format("results/%s/%s.csv", monthDirName, "MATCHES_" + rule + "_" + monthDirName));
-            ruleFileMap.put(rule, totalRuleResultFile);
+            File ruleFIle = new File(String.format("results/%s/%s.csv", monthDirName, "MATCHES_" + rule + "_" + monthDirName));
+            ruleFileMap.put(rule, ruleFIle);
         }
     }
 
-    public List<Game> readTotalBetMade() {
+    /**
+     * Read games from BET_MADE file
+     * @return list of games.
+     */
+    public List<Game> readBetMadeGames() {
         return readFromFile(betMadeFile);
     }
 
     /**
-     * Read games from total_rule file
+     * Read games from RULE file
      * @param ruleNumber - number of rule.
      * @return - list of games.
      */
-    public List<Game> readTotalRuleResultFile(RuleNumber ruleNumber) {
+    public List<Game> readRuleGames(RuleNumber ruleNumber) {
         return readFromFile(ruleFileMap.get(ruleNumber));
     }
 
     /**
-     * Save games to total_bet_made file.
+     * Save games to BET_MADE file.
      * @param games - list of games.
      */
-    public void saveTotalBetMade(List<Game> games) {
-        saveTotalGames(betMadeFile, games);
+    public void saveBetMadeGames(List<Game> games) {
+        appendGamesSave(betMadeFile, games);
     }
 
     /**
-     * Save games to total_rule file.
+     * Save games to RULE file.
      * @param ruleNumber - number of rule.
      * @param games - list of games.
      */
-    public void saveRuleFile(RuleNumber ruleNumber, List<Game> games) {
+    public void saveRuleGames(RuleNumber ruleNumber, List<Game> games) {
         writeToFile(ruleFileMap.get(ruleNumber), games);
     }
 
-    private void saveTotalGames(File file, List<Game> games) {
-        List<Game> totalResultGames = readFromFile(file);
-        totalResultGames.removeAll(games);
-        totalResultGames.addAll(games);
-        totalResultGames.sort(Comparator.comparing(Game::getDateTime));
-        writeToFile(file, totalResultGames);
+    private void appendGamesSave(File file, List<Game> games) {
+        List<Game> resultGames = readFromFile(file);
+        resultGames.removeAll(games);
+        resultGames.addAll(games);
+        writeToFile(file, resultGames);
     }
 
     private List<Game> readFromFile(File file) {
@@ -119,6 +122,7 @@ public class Repository {
             return;
         }
         createFile(file);
+        games.sort(Comparator.comparing(Game::getDateTime));
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";
             for (Game game : games) {

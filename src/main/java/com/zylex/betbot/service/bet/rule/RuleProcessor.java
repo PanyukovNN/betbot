@@ -48,7 +48,9 @@ public class RuleProcessor {
         try {
             List<Game> games = parseProcessor.process();
             List<Game> eligibleGames = findEligibleGames(games);
-            return refreshGamesByParsingTime(eligibleGames);
+            List<Game> betGames = refreshGamesByParsingTime(eligibleGames);
+            betGames.sort(Comparator.comparing(Game::getDateTime));
+            return betGames;
         } catch (IOException e) {
             throw new RuleProcessorException(e.getMessage(), e);
         }
@@ -68,7 +70,7 @@ public class RuleProcessor {
 
     private List<Game> refreshGamesByParsingTime(List<Game> eligibleGames) {
         List<Game> betGames = new ArrayList<>();
-        List<Game> fileBetGames = repository.readTotalRuleResultFile(ruleNumber);
+        List<Game> fileBetGames = repository.readRuleGames(ruleNumber);
         for (Day day : Day.values()) {
             LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX),
                     LocalTime.of(23, 0));
@@ -82,7 +84,7 @@ public class RuleProcessor {
             }
         }
         logger.writeEligibleGamesNumber(fileBetGames, ruleNumber);
-        repository.saveRuleFile(ruleNumber, fileBetGames);
+        repository.saveRuleGames(ruleNumber, fileBetGames);
         return betGames;
     }
 

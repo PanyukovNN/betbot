@@ -58,11 +58,10 @@ public class BetProcessor {
                 logger.betMade(LogType.ERROR);
                 return;
             }
-            betGames.sort(Comparator.comparing(Game::getDateTime));
             openSite();
             List<Game> betMadeGames = processBets(betGames);
             if (!mock) {
-                repository.saveTotalBetMade(betMadeGames);
+                repository.saveBetMadeGames(betMadeGames);
             }
             logger.betMade(LogType.OK);
         } catch (IOException | ElementNotInteractableException e) {
@@ -79,7 +78,7 @@ public class BetProcessor {
     }
 
     private List<Game> filterByBetMade(List<Game> filteredBetGames) {
-        List<Game> betMadeGames = repository.readTotalBetMade();
+        List<Game> betMadeGames = repository.readBetMadeGames();
         return filteredBetGames.stream().filter(game -> !betMadeGames.contains(game)).collect(Collectors.toList());
     }
 

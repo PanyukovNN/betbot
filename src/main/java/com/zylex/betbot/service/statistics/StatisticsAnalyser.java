@@ -53,9 +53,9 @@ public class StatisticsAnalyser {
     }
 
     private List<Game> processGames(DriverManager driverManager, RuleNumber ruleNumber) {
-        List<Game> games = repository.readTotalRuleResultFile(ruleNumber);
+        List<Game> games = repository.readRuleGames(ruleNumber);
         resultScanner.process(games, driverManager);
-        repository.saveRuleFile(ruleNumber, games);
+        repository.saveRuleGames(ruleNumber, games);
         return games;
     }
 

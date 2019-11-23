@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public class StatisticsApplication {
 
     public static void main(String[] args) {
-        RuleNumber ruleNumber = RuleNumber.RULE_ONE;
+        RuleNumber ruleNumber = RuleNumber.RULE_TEST;
 
         LocalDate startDate = LocalDate.of(2019, 11, 11);
         LocalDate endDate = LocalDate.now().minusDays(1);
