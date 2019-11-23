@@ -83,10 +83,10 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      * @param eligibleGames - map of eligible games.
      */
     public void writeEligibleGamesNumber(List<Game> eligibleGames, RuleNumber ruleNumber) {
+        writeInLine(String.format("\nEligible games for %s: ", ruleNumber));
         for (Day day: Day.values()) {
-            writeInLine(String.format("\nEligible %s games for %s: %d", day, ruleNumber,
-                    (int) eligibleGames.stream()
-                            .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX))).count()));
+            writeInLine(String.format("%d (%s) ", (int) eligibleGames.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX))).count(),
+                    day));
         }
         writeLineSeparator();
     }

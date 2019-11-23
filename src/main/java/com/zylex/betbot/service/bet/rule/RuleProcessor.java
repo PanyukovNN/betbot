@@ -43,7 +43,7 @@ public class RuleProcessor {
      * Filters games by specified rule, takes list of games from site or from file,
      * which depends on current time, sort games by time, then save eligible games to file,
      * and return games list.
-     * @return - container of all lists of games.
+     * @return - map of games lists by ruleNumbers.
      */
     public Map<RuleNumber, List<Game>> process() {
         List<Game> games = parseProcessor.process();
