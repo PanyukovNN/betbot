@@ -28,22 +28,15 @@ public class RuleProcessor {
 
     private LeagueRepository leagueRepository;
 
-    private RuleNumber ruleNumber;
-
-    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor, RuleNumber ruleNumber, boolean refresh) {
+    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor, boolean refresh) {
         this.gameRepository = gameRepository;
         this.leagueRepository = leagueRepository;
         this.parseProcessor = parseProcessor;
-        this.ruleNumber = ruleNumber;
         this.refresh = refresh;
     }
 
     public GameRepository getGameRepository() {
         return gameRepository;
-    }
-
-    public RuleNumber getRuleNumber() {
-        return ruleNumber;
     }
 
     /**
@@ -52,43 +45,41 @@ public class RuleProcessor {
      * and return games list.
      * @return - container of all lists of games.
      */
-    public List<Game> process() {
+    public Map<RuleNumber, List<Game>> process() {
         List<Game> games = parseProcessor.process();
-        List<Game> eligibleGames = findEligibleGames(games);
-        List<Game> betGames = refreshGamesByParsingTime(eligibleGames);
-        betGames.sort(Comparator.comparing(Game::getDateTime));
+        Map<RuleNumber, List<Game>> eligibleGames = findEligibleGames(games);
+        Map<RuleNumber, List<Game>> betGames = refreshGamesByParsingTime(eligibleGames);
+        betGames.forEach((ruleNumber, gameList) -> gameList.sort(Comparator.comparing(Game::getDateTime)));
         return betGames;
     }
 
-    private List<Game> findEligibleGames(List<Game> games) {
-        Rule rule;
-        if (ruleNumber == RuleNumber.RULE_ONE) {
-            rule = new FirstRule();
-        } else if (ruleNumber == RuleNumber.RULE_TEST) {
-            rule = new TestRule();
-        } else {
-            return null;
-        }
-        return rule.filter(leagueRepository, games);
+    private Map<RuleNumber, List<Game>> findEligibleGames(List<Game> games) {
+        Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
+        eligibleGames.put(RuleNumber.RULE_ONE, new FirstRule().filter(leagueRepository, games));
+        eligibleGames.put(RuleNumber.RULE_TEST, new TestRule().filter(leagueRepository, games));
+        return eligibleGames;
     }
 
-    private List<Game> refreshGamesByParsingTime(List<Game> eligibleGames) {
-        List<Game> betGames = new ArrayList<>();
-        List<Game> fileBetGames = gameRepository.readByRule(ruleNumber);
-        for (Day day : Day.values()) {
-            LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX),
-                    LocalTime.of(23, 0));
-            if (LocalDateTime.now().isBefore(startBetTime) || refresh) {
-                List<Game> dayBetGames = filterGamesByDay(eligibleGames, day);
-                betGames.addAll(dayBetGames);
-                fileBetGames = removeDayGames(fileBetGames, day);
-                fileBetGames.addAll(dayBetGames);
-            } else {
-                betGames.addAll(filterGamesByDay(fileBetGames, day));
+    private Map<RuleNumber, List<Game>> refreshGamesByParsingTime(Map<RuleNumber, List<Game>> eligibleGames) {
+        Map<RuleNumber, List<Game>> betGames = new HashMap<>();
+        for (RuleNumber ruleNumber : RuleNumber.values()) {
+            betGames.put(ruleNumber, new ArrayList<>());
+            List<Game> fileBetGames = gameRepository.readByRule(ruleNumber);
+            for (Day day : Day.values()) {
+                LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX),
+                        LocalTime.of(23, 0));
+                if (LocalDateTime.now().isBefore(startBetTime) || refresh) {
+                    List<Game> dayBetGames = filterGamesByDay(eligibleGames.get(ruleNumber), day);
+                    betGames.get(ruleNumber).addAll(dayBetGames);
+                    fileBetGames = removeDayGames(fileBetGames, day);
+                    fileBetGames.addAll(dayBetGames);
+                } else {
+                    betGames.get(ruleNumber).addAll(filterGamesByDay(fileBetGames, day));
+                }
             }
+            logger.writeEligibleGamesNumber(fileBetGames, ruleNumber);
+            gameRepository.saveByRule(ruleNumber, fileBetGames);
         }
-        logger.writeEligibleGamesNumber(fileBetGames, ruleNumber);
-        gameRepository.saveByRule(ruleNumber, fileBetGames);
         return betGames;
     }
 

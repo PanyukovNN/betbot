@@ -23,9 +23,9 @@ public class OneXBetBot {
                     new GameRepository(),
                     new LeagueRepository(),
                     new ParseProcessor(leaguesFromFile),
-                    ruleNumber,
                     refresh
                 ),
+                ruleNumber,
                 mock
             ).process();
         } finally {

@@ -40,11 +40,11 @@ public class BetProcessor {
 
     private boolean mock;
 
-    public BetProcessor(RuleProcessor ruleProcessor, boolean mock) {
+    public BetProcessor(RuleProcessor ruleProcessor, RuleNumber ruleNumber, boolean mock) {
         this.ruleProcessor = ruleProcessor;
         this.mock = mock;
         this.gameRepository = ruleProcessor.getGameRepository();
-        this.ruleNumber = ruleProcessor.getRuleNumber();
+        this.ruleNumber = ruleNumber;
     }
 
     /**
@@ -52,7 +52,8 @@ public class BetProcessor {
      * makes bets, and saves bet made games to file.
      */
     public void process() {
-        List<Game> betGames = findAppropriateGames(ruleProcessor.process());
+        List<Game> games = ruleProcessor.process().get(ruleNumber);
+        List<Game> betGames = findAppropriateGames(games);
         try {
             if (betGames.isEmpty()) {
                 logger.betMade(LogType.ERROR);
