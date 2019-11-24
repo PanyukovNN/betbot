@@ -9,13 +9,14 @@ import com.zylex.betbot.service.bet.rule.RuleNumber;
 import com.zylex.betbot.service.bet.rule.RuleProcessor;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 
+import java.util.Arrays;
+
 public class OneXBetBot {
 
     public static void main(String[] args) {
-        RuleNumber ruleNumber = RuleNumber.RULE_TEST;
-        boolean mock = false;//args.length > 0 && Arrays.asList(args).contains("-m");
-        boolean leaguesFromFile = true;//args.length > 0 && Arrays.asList(args).contains("-f");
-        boolean refresh = false;//args.length > 0 && Arrays.asList(args).contains("-r");
+        RuleNumber ruleNumber = RuleNumber.RULE_ONE;
+        boolean mock = args.length > 0 && Arrays.asList(args).contains("-m");
+        boolean refresh = args.length > 0 && Arrays.asList(args).contains("-r");
 
         try {
             new BetProcessor(
@@ -23,7 +24,6 @@ public class OneXBetBot {
                     new GameRepository(),
                     new LeagueRepository(),
                     new ParseProcessor(),
-                    leaguesFromFile,
                     refresh
                 ),
                 ruleNumber,

@@ -26,15 +26,12 @@ public class RuleProcessor {
 
     private LeagueRepository leagueRepository;
 
-    private boolean leaguesFromFile;
-
     private boolean refresh;
 
-    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor, boolean leaguesFromFile, boolean refresh) {
+    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor, boolean refresh) {
         this.gameRepository = gameRepository;
         this.leagueRepository = leagueRepository;
         this.parseProcessor = parseProcessor;
-        this.leaguesFromFile = leaguesFromFile;
         this.refresh = refresh;
     }
 
@@ -58,8 +55,8 @@ public class RuleProcessor {
 
     private Map<RuleNumber, List<Game>> findEligibleGames(List<Game> games) {
         Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
-        eligibleGames.put(RuleNumber.RULE_ONE, new FirstRule().filter(leagueRepository, games, leaguesFromFile));
-        eligibleGames.put(RuleNumber.RULE_TEST, new TestRule().filter(leagueRepository, games, leaguesFromFile));
+        eligibleGames.put(RuleNumber.RULE_ONE, new FirstRule().filter(leagueRepository, games));
+        eligibleGames.put(RuleNumber.RULE_TEST, new TestRule().filter(leagueRepository, games));
         return eligibleGames;
     }
 
