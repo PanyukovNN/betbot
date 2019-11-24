@@ -10,7 +10,6 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Parsing football leagues links from the site.
@@ -19,11 +18,8 @@ class LeagueParser {
 
     private ParsingConsoleLogger logger;
 
-    private boolean leaguesFromFile;
-
-    LeagueParser(ParsingConsoleLogger logger, boolean leaguesFromFile) {
+    LeagueParser(ParsingConsoleLogger logger) {
         this.logger = logger;
-        this.leaguesFromFile = leaguesFromFile;
     }
 
     /**
@@ -50,9 +46,7 @@ class LeagueParser {
             }
         }
         logger.logLeague();
-        return leaguesFromFile
-                ? filterLinksFromFile(leagueLinks)
-                : leagueLinks;
+        return leagueLinks;
     }
 
     private Document connectToSite() throws IOException {
@@ -60,15 +54,6 @@ class LeagueParser {
                     .userAgent("Chrome/4.0.249.0 Safari/532.5")
                     .referrer("http://www.google.com")
                     .get();
-    }
-
-    private List<String> filterLinksFromFile(List<String> leagueLinks) throws IOException {
-        List<String> leagueLinksFromFile = new ArrayList<>();
-        try (InputStream inputStream = new FileInputStream("external-resources/leagues_list.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            reader.lines().forEach(leagueLinksFromFile::add);
-        }
-        return leagueLinks.stream().filter(leagueLinksFromFile::contains).collect(Collectors.toList());
     }
 
     private boolean checkLeagueLink(String link) {

@@ -23,12 +23,6 @@ public class ParseProcessor {
 
     private ExecutorService service = Executors.newFixedThreadPool(8);
 
-    private boolean leaguesFromFile;
-
-    public ParseProcessor(boolean leaguesFromFile) {
-        this.leaguesFromFile = leaguesFromFile;
-    }
-
     /**
      * Gets links on leagues which include football matches, then pulls information about matches from every link,
      * puts matches into list, and return it.
@@ -37,7 +31,7 @@ public class ParseProcessor {
     public List<Game> process() {
         try {
             logger.startLogMessage(LogType.PARSING_SITE_START, 0);
-            List<String> leagueLinks = new LeagueParser(logger, leaguesFromFile)
+            List<String> leagueLinks = new LeagueParser(logger)
                     .processLeagueParsing();
             logger.startLogMessage(LogType.GAMES, leagueLinks.size());
             List<Game> games = processGameParsing(service, leagueLinks);
