@@ -9,12 +9,22 @@ import com.zylex.betbot.service.bet.rule.RuleNumber;
 import com.zylex.betbot.service.bet.rule.RuleProcessor;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class BetBotApplication {
 
     public static void main(String[] args) {
-        RuleNumber ruleNumber = RuleNumber.RULE_TEST;
+        List<RuleNumber> ruleList = new ArrayList<>();
+        if (args.length > 0) {
+            if (Arrays.asList(args).contains("-1")) {
+                ruleList.add(RuleNumber.RULE_ONE);
+            }
+            if (Arrays.asList(args).contains("-2")) {
+                ruleList.add(RuleNumber.RULE_TEST);
+            }
+        }
         boolean mock = args.length > 0 && Arrays.asList(args).contains("-m");
         boolean refresh = args.length > 0 && Arrays.asList(args).contains("-r");
 
@@ -26,7 +36,7 @@ public class BetBotApplication {
                     new ParseProcessor(),
                     refresh
                 ),
-                ruleNumber,
+                ruleList,
                 mock
             ).process();
         } finally {

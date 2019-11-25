@@ -32,7 +32,7 @@ public class BetProcessor {
 
     private WebDriverWait wait;
 
-    private RuleNumber ruleNumber;
+    private List<RuleNumber> ruleList;
 
     private RuleProcessor ruleProcessor;
 
@@ -40,11 +40,11 @@ public class BetProcessor {
 
     private boolean mock;
 
-    public BetProcessor(RuleProcessor ruleProcessor, RuleNumber ruleNumber, boolean mock) {
+    public BetProcessor(RuleProcessor ruleProcessor, List<RuleNumber> ruleList, boolean mock) {
         this.ruleProcessor = ruleProcessor;
         this.mock = mock;
         this.gameRepository = ruleProcessor.getGameRepository();
-        this.ruleNumber = ruleNumber;
+        this.ruleList = ruleList;
     }
 
     /**
@@ -52,19 +52,21 @@ public class BetProcessor {
      * makes bets, and saves bet made games to file.
      */
     public void process() {
-        List<Game> games = ruleProcessor.process().get(ruleNumber);
-        List<Game> betGames = findAppropriateGames(games);
         try {
-            if (betGames.isEmpty()) {
-                logger.betMade(LogType.ERROR);
-                return;
+            for (RuleNumber ruleNumber : ruleList) {
+                List<Game> games = ruleProcessor.process().get(ruleNumber);
+                List<Game> betGames = findAppropriateGames(ruleNumber, games);
+                if (betGames.isEmpty()) {
+                    logger.betMade(LogType.ERROR);
+                    return;
+                }
+                openSite();
+                List<Game> betMadeGames = processBets(ruleNumber, betGames);
+                if (!mock) {
+                    gameRepository.saveBetMade(ruleNumber, betMadeGames);
+                }
+                logger.betMade(LogType.OK);
             }
-            openSite();
-            List<Game> betMadeGames = processBets(betGames);
-            if (!mock) {
-                gameRepository.saveBetMade(ruleNumber, betMadeGames);
-            }
-            logger.betMade(LogType.OK);
         } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         } finally {
@@ -74,11 +76,11 @@ public class BetProcessor {
         }
     }
 
-    private List<Game> findAppropriateGames(List<Game> betGames) {
-        return filterByBetMade(filterByParsingTime(betGames));
+    private List<Game> findAppropriateGames(RuleNumber ruleNumber, List<Game> betGames) {
+        return filterByBetMade(ruleNumber, filterByParsingTime(betGames));
     }
 
-    private List<Game> filterByBetMade(List<Game> filteredBetGames) {
+    private List<Game> filterByBetMade(RuleNumber ruleNumber, List<Game> filteredBetGames) {
         List<Game> betMadeGames = gameRepository.readBetMade(ruleNumber);
         return filteredBetGames.stream().filter(game -> !betMadeGames.contains(game)).collect(Collectors.toList());
     }
@@ -91,10 +93,8 @@ public class BetProcessor {
 
     private void openSite() throws IOException {
         driverInit();
-        logger.logRule(ruleNumber);
         logger.startLogMessage(LogType.LOG_IN);
         logIn();
-        logger.startLogMessage(LogType.BET);
     }
 
     private void driverInit() {
@@ -133,10 +133,12 @@ public class BetProcessor {
         }
     }
 
-    private List<Game> processBets(List<Game> betGames) {
+    private List<Game> processBets(RuleNumber ruleNumber, List<Game> betGames) {
+        logger.logRule(ruleNumber);
+        logger.startLogMessage(LogType.BET);
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
-        int singleBetAmount = calculateAmount(totalMoney);
+        int singleBetAmount = calculateAmount(ruleNumber, totalMoney);
         double availableBalance = totalMoney;
         List<Game> betMadeGames = new ArrayList<>();
         int i = 0;
@@ -158,7 +160,7 @@ public class BetProcessor {
         return betMadeGames;
     }
 
-    private int calculateAmount(double totalMoney) {
+    private int calculateAmount(RuleNumber ruleNumber, double totalMoney) {
         double singleBetMoney = totalMoney * ruleNumber.PERCENT;
         return (int) Math.max(singleBetMoney, 20);
     }
