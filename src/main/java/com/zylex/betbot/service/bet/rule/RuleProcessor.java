@@ -26,13 +26,10 @@ public class RuleProcessor {
 
     private LeagueRepository leagueRepository;
 
-    private boolean refresh;
-
-    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor, boolean refresh) {
+    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor) {
         this.gameRepository = gameRepository;
         this.leagueRepository = leagueRepository;
         this.parseProcessor = parseProcessor;
-        this.refresh = refresh;
     }
 
     public GameRepository getGameRepository() {
@@ -68,7 +65,7 @@ public class RuleProcessor {
             for (Day day : Day.values()) {
                 LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX),
                         LocalTime.of(23, 0));
-                if (LocalDateTime.now().isBefore(startBetTime) || refresh) {
+                if (LocalDateTime.now().isBefore(startBetTime)) {
                     List<Game> dayBetGames = filterGamesByDay(eligibleGames.get(ruleNumber), day);
                     betGames.get(ruleNumber).addAll(dayBetGames);
                     fileBetGames = removeDayGames(fileBetGames, day);

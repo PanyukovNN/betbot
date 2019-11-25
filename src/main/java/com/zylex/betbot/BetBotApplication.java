@@ -26,15 +26,13 @@ public class BetBotApplication {
             }
         }
         boolean mock = args.length > 0 && Arrays.asList(args).contains("-m");
-        boolean refresh = args.length > 0 && Arrays.asList(args).contains("-r");
 
         try {
             new BetProcessor(
                 new RuleProcessor(
                     new GameRepository(),
                     new LeagueRepository(),
-                    new ParseProcessor(),
-                    refresh
+                    new ParseProcessor()
                 ),
                 ruleList,
                 mock
