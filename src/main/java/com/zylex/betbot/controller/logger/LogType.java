@@ -6,6 +6,7 @@ package com.zylex.betbot.controller.logger;
 public enum LogType {
     PARSING_SITE_START,
     NO_GAMES_TO_SCAN,
+    NO_GAMES_TO_BET,
     GAMES,
     BET,
     LOG_IN,

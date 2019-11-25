@@ -76,8 +76,8 @@ public class BetConsoleLogger extends ConsoleLogger{
         if (type == LogType.OK) {
             writeLineSeparator();
             writeInLine("\nBets are made successfully.");
-        } else if (type == LogType.ERROR) {
-            writeInLine("\nBets aren't made.");
+        } else if (type == LogType.NO_GAMES_TO_BET) {
+            writeInLine("\nNo appropriate betting games.");
         }
         writeLineSeparator();
         writeInLine(String.format("\nBot work completed in %s", computeTime(programStartTime.get())));

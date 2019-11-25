@@ -51,11 +51,14 @@ public class BetProcessor {
     public void process() {
         try {
             Map<RuleNumber, List<Game>> ruleGames = ruleProcessor.process();
+            if (ruleList.isEmpty()) {
+                return;
+            }
             for (RuleNumber ruleNumber : ruleList) {
                 List<Game> games = ruleGames.get(ruleNumber);
                 List<Game> betGames = findAppropriateGames(ruleNumber, games);
                 if (betGames.isEmpty()) {
-                    logger.betMade(LogType.ERROR);
+                    logger.betMade(LogType.NO_GAMES_TO_BET);
                     return;
                 }
                 openSite();
