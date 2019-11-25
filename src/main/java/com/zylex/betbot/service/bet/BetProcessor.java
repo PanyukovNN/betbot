@@ -38,11 +38,8 @@ public class BetProcessor {
 
     private GameRepository gameRepository;
 
-    private boolean mock;
-
-    public BetProcessor(RuleProcessor ruleProcessor, List<RuleNumber> ruleList, boolean mock) {
+    public BetProcessor(RuleProcessor ruleProcessor, List<RuleNumber> ruleList) {
         this.ruleProcessor = ruleProcessor;
-        this.mock = mock;
         this.gameRepository = ruleProcessor.getGameRepository();
         this.ruleList = ruleList;
     }
@@ -62,9 +59,7 @@ public class BetProcessor {
                 }
                 openSite();
                 List<Game> betMadeGames = processBets(ruleNumber, betGames);
-                if (!mock) {
-                    gameRepository.saveBetMade(ruleNumber, betMadeGames);
-                }
+                gameRepository.saveBetMade(ruleNumber, betMadeGames);
                 logger.betMade(LogType.OK);
             }
         } catch (IOException | ElementNotInteractableException e) {
@@ -150,7 +145,7 @@ public class BetProcessor {
             List<WebElement> coefficients = getGameCoefficients(game);
             if (coefficients.size() > 0) {
                 coefficients.get(betCoefficient.INDEX).click();
-                if (makeBet(singleBetAmount, mock)) {
+                if (makeBet(singleBetAmount)) {
                     availableBalance -= singleBetAmount;
                     betMadeGames.add(game);
                     logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
@@ -165,16 +160,13 @@ public class BetProcessor {
         return (int) Math.max(singleBetMoney, 20);
     }
 
-    private boolean makeBet(double amount, boolean mock) {
+    private boolean makeBet(double amount) {
         driver.findElement(By.className("bet_sum_input")).sendKeys(String.valueOf(amount));
-        if (!mock) {
-            WebElement betButton = waitSingleElementAndGet("coupon-btn-group__item")
-                    .findElement(By.cssSelector("button"));
-            JavascriptExecutor executor = (JavascriptExecutor) driver;
-            executor.executeScript("arguments[0].click();", betButton);
-            return okButtonClick(executor);
-        }
-        return true;
+        WebElement betButton = waitSingleElementAndGet("coupon-btn-group__item")
+                .findElement(By.cssSelector("button"));
+        JavascriptExecutor executor = (JavascriptExecutor) driver;
+        executor.executeScript("arguments[0].click();", betButton);
+        return okButtonClick(executor);
     }
 
     private boolean okButtonClick(JavascriptExecutor executor) {

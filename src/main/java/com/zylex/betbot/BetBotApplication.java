@@ -16,9 +16,6 @@ import java.util.List;
 public class BetBotApplication {
 
     public static void main(String[] args) {
-        List<RuleNumber> ruleNumbers = defineRuleNumbers(args);
-        boolean mock = args.length > 0 && Arrays.asList(args).contains("-m");
-
         try {
             new BetProcessor(
                 new RuleProcessor(
@@ -26,8 +23,7 @@ public class BetBotApplication {
                     new LeagueRepository(),
                     new ParseProcessor()
                 ),
-                ruleNumbers,
-                mock
+                defineRuleNumbers(args)
             ).process();
         } finally {
             ConsoleLogger.writeToLogFile();
