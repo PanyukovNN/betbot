@@ -32,9 +32,9 @@ public class Game {
 
     private String secondWinOrTie;
 
-    private Set<RuleNumber> ruleNumberSet = new LinkedHashSet<>();
-
     private GameResult gameResult;
+
+    private Set<RuleNumber> betMadeRuleSet = new LinkedHashSet<>();
 
     public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie, GameResult gameResult) {
         this.league = league;
@@ -90,16 +90,16 @@ public class Game {
         return secondWinOrTie;
     }
 
-    public Set<RuleNumber> getRuleNumberSet() {
-        return ruleNumberSet;
-    }
-
     public GameResult getGameResult() {
         return gameResult;
     }
 
     public void setGameResult(GameResult gameResult) {
         this.gameResult = gameResult;
+    }
+
+    public Set<RuleNumber> getBetMadeRuleSet() {
+        return betMadeRuleSet;
     }
 
     @Override
@@ -132,7 +132,6 @@ public class Game {
                 ", secondWin='" + secondWin + '\'' +
                 ", firstWinOrTie='" + firstWinOrTie + '\'' +
                 ", secondWinOrTie='" + secondWinOrTie + '\'' +
-                ", ruleNumberSet=" + ruleNumberSet +
                 ", gameResult=" + gameResult +
                 '}';
     }

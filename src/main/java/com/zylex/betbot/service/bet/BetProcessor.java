@@ -147,6 +147,7 @@ public class BetProcessor {
                 if (makeBet(singleBetAmount)) {
                     availableBalance -= singleBetAmount;
                     betMadeGames.add(game);
+                    game.getBetMadeRuleSet().add(ruleNumber);
                     logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
                 }
             }

@@ -89,7 +89,7 @@ public class GameRepository {
                         GameResult.valueOf(fields[12]));
                 if (!fields[11].equals("-")) {
                     String[] rules = fields[11].split("__");
-                    game.getRuleNumberSet().addAll(
+                    game.getBetMadeRuleSet().addAll(
                             Arrays.stream(rules).map(RuleNumber::valueOf)
                                     .collect(Collectors.toList()));
                 }
@@ -121,9 +121,9 @@ public class GameRepository {
                         formatDouble(game.getSecondWin()),
                         formatDouble(game.getFirstWinOrTie()),
                         formatDouble(game.getSecondWinOrTie()),
-                        game.getRuleNumberSet().isEmpty()
+                        game.getBetMadeRuleSet().isEmpty()
                                 ? "-"
-                                : StringUtils.join(game.getRuleNumberSet(), "__"),
+                                : StringUtils.join(game.getBetMadeRuleSet(), "__"),
                         game.getGameResult()) + "\n";
                 writer.write(line);
             }
