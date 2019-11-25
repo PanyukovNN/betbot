@@ -16,15 +16,7 @@ import java.util.List;
 public class BetBotApplication {
 
     public static void main(String[] args) {
-        List<RuleNumber> ruleList = new ArrayList<>();
-        if (args.length > 0) {
-            if (Arrays.asList(args).contains("-1")) {
-                ruleList.add(RuleNumber.RULE_ONE);
-            }
-            if (Arrays.asList(args).contains("-2")) {
-                ruleList.add(RuleNumber.RULE_TEST);
-            }
-        }
+        List<RuleNumber> ruleNumbers = defineRuleNumbers(args);
         boolean mock = args.length > 0 && Arrays.asList(args).contains("-m");
 
         try {
@@ -34,11 +26,24 @@ public class BetBotApplication {
                     new LeagueRepository(),
                     new ParseProcessor()
                 ),
-                ruleList,
+                ruleNumbers,
                 mock
             ).process();
         } finally {
             ConsoleLogger.writeToLogFile();
         }
+    }
+
+    private static List<RuleNumber> defineRuleNumbers(String[] args) {
+        List<RuleNumber> ruleNumbers = new ArrayList<>();
+        if (args.length > 0) {
+            if (Arrays.asList(args).contains("-1")) {
+                ruleNumbers.add(RuleNumber.RULE_ONE);
+            }
+            if (Arrays.asList(args).contains("-2")) {
+                ruleNumbers.add(RuleNumber.RULE_TEST);
+            }
+        }
+        return ruleNumbers;
     }
 }
