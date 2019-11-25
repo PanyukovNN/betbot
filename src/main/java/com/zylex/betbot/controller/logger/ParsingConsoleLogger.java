@@ -7,8 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,21 +15,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ParsingConsoleLogger extends ConsoleLogger {
 
-    private AtomicInteger totalTodayGames = new AtomicInteger(0);
-
-    private AtomicInteger totalTomorrowGames = new AtomicInteger(0);
-
     private int totalLeagues = 0;
 
     private AtomicInteger processedLeagues = new AtomicInteger(0);
-
-    public void addTotalTodayGames(int number) {
-        totalTodayGames.addAndGet(number);
-    }
-
-    public void addTotalTomorrowGames(int number) {
-        totalTomorrowGames.addAndGet(number);
-    }
 
     /**
      * Log start messages.
@@ -73,9 +59,14 @@ public class ParsingConsoleLogger extends ConsoleLogger {
     /**
      * Log summarizing of parsing.
      */
-    public void parsingSummarizing() {
-        writeInLine(String.format("\nTotal TODAY games: %d", totalTodayGames.get()));
-        writeInLine(String.format("\nTotal TOMORROW games: %d", totalTomorrowGames.get()));
+    public void parsingSummarizing(List<Game> games) {
+        writeInLine("\nTotal games: ");
+        for (Day day : Day.values()) {
+            int gamesCount = (int) games.stream()
+                    .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
+                    .count();
+            writeInLine(String.format("%d (%s) ", gamesCount, day));
+        }
         writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
         writeLineSeparator();
     }
@@ -87,8 +78,10 @@ public class ParsingConsoleLogger extends ConsoleLogger {
     public void writeEligibleGamesNumber(List<Game> eligibleGames, RuleNumber ruleNumber) {
         writeInLine(String.format("\nEligible games for %s: ", ruleNumber));
         for (Day day: Day.values()) {
-            writeInLine(String.format("%d (%s) ", (int) eligibleGames.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX))).count(),
-                    day));
+            int eligibleGamesCount = (int) eligibleGames.stream()
+                    .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
+                    .count();
+            writeInLine(String.format("%d (%s)  ", eligibleGamesCount, day));
         }
         writeLineSeparator();
     }

@@ -35,14 +35,12 @@ public class ParseProcessor {
                     .processLeagueParsing();
             logger.startLogMessage(LogType.GAMES, leagueLinks.size());
             List<Game> games = processGameParsing(service, leagueLinks);
-            logger.addTotalTodayGames((int) games.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TODAY.INDEX))).count());
-            logger.addTotalTomorrowGames((int) games.stream().filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(Day.TOMORROW.INDEX))).count());
+            logger.parsingSummarizing(games);
             return games;
         } catch (InterruptedException | ExecutionException e) {
             throw new ParseProcessorException(e.getMessage(), e);
         } finally {
             service.shutdown();
-            logger.parsingSummarizing();
         }
     }
 
