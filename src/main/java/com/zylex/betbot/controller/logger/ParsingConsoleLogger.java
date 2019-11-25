@@ -27,7 +27,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      */
     public synchronized void startLogMessage(LogType type, Integer arg) {
         if (type == LogType.PARSING_SITE_START) {
-            writeInLine("Start parsing.");
+            writeInLine("Parsing started.");
             writeInLine("\nFinding leagues: ...");
         } else if (type == LogType.GAMES) {
             totalLeagues = arg;
@@ -62,14 +62,13 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      * Log summarizing of parsing.
      */
     public void writeTotalGames(List<Game> games) {
-        writeInLine("\nTotal games: ");
+        writeInLine("\nTotal games - ");
         for (Day day : Day.values()) {
             int gamesCount = (int) games.stream()
                     .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
                     .count();
-            writeInLine(String.format("%d (%s) ", gamesCount, day));
+            writeInLine(String.format("%3d (%s) ", gamesCount, day));
         }
-        writeLineSeparator();
     }
 
     /**
@@ -78,12 +77,12 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      */
     public void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {
         for (RuleNumber ruleNumber : RuleNumber.values()) {
-            writeInLine(String.format("\n%-10s- ", ruleNumber));
+            writeInLine(String.format("\n%13s ", ruleNumber + " -"));
             for (Day day : Day.values()) {
                 int eligibleGamesCount = (int) eligibleGames.get(ruleNumber).stream()
                         .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
                         .count();
-                writeInLine(String.format("%2d (%s) ", eligibleGamesCount, day));
+                writeInLine(String.format("%3d (%s) ", eligibleGamesCount, day));
             }
         }
         writeLineSeparator();
