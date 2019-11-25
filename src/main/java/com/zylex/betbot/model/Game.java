@@ -3,6 +3,7 @@ package com.zylex.betbot.model;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -121,18 +122,11 @@ public class Game {
 
     @Override
     public String toString() {
-        return "Game{" +
-                "league='" + league + '\'' +
-                ", leagueLink='" + leagueLink + '\'' +
-                ", dateTime=" + dateTime +
-                ", firstTeam='" + firstTeam + '\'' +
-                ", secondTeam='" + secondTeam + '\'' +
-                ", firstWin='" + firstWin + '\'' +
-                ", tie='" + tie + '\'' +
-                ", secondWin='" + secondWin + '\'' +
-                ", firstWinOrTie='" + firstWinOrTie + '\'' +
-                ", secondWinOrTie='" + secondWinOrTie + '\'' +
-                ", gameResult=" + gameResult +
-                '}';
+        DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
+        return DATE_FORMATTER.format(dateTime) +
+                " \"" + league +
+                "\" " + firstTeam +
+                " - " + secondTeam +
+                " (" + gameResult + ")";
     }
 }

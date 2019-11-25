@@ -74,9 +74,9 @@ public class RuleProcessor {
                     betGames.get(ruleNumber).addAll(filterGamesByDay(fileBetGames, day));
                 }
             }
-            logger.writeEligibleGamesNumber(fileBetGames, ruleNumber);
             gameRepository.saveByRule(ruleNumber, fileBetGames);
         }
+        logger.writeEligibleGamesNumber(betGames);
         return betGames;
     }
 

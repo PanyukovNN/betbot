@@ -4,9 +4,7 @@ import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.ParseProcessorException;
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.Day;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -35,7 +33,7 @@ public class ParseProcessor {
                     .processLeagueParsing();
             logger.startLogMessage(LogType.GAMES, leagueLinks.size());
             List<Game> games = processGameParsing(service, leagueLinks);
-            logger.parsingSummarizing(games);
+            logger.writeTotalGames(games);
             return games;
         } catch (InterruptedException | ExecutionException e) {
             throw new ParseProcessorException(e.getMessage(), e);

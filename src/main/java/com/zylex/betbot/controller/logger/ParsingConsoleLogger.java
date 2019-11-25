@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -52,6 +53,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
                 new DecimalFormat("#0.0").format(((double) processedLeagues.get() / (double) totalLeagues) * 100).replace(",", "."));
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
         if (processedLeagues.get() == totalLeagues) {
+            writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
             writeLineSeparator();
         }
     }
@@ -59,7 +61,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
     /**
      * Log summarizing of parsing.
      */
-    public void parsingSummarizing(List<Game> games) {
+    public void writeTotalGames(List<Game> games) {
         writeInLine("\nTotal games: ");
         for (Day day : Day.values()) {
             int gamesCount = (int) games.stream()
@@ -67,7 +69,6 @@ public class ParsingConsoleLogger extends ConsoleLogger {
                     .count();
             writeInLine(String.format("%d (%s) ", gamesCount, day));
         }
-        writeInLine(String.format("\nParsing completed in %s", computeTime(programStartTime.get())));
         writeLineSeparator();
     }
 
@@ -75,13 +76,15 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      * Log number of eligible games for every rule.
      * @param eligibleGames - map of eligible games.
      */
-    public void writeEligibleGamesNumber(List<Game> eligibleGames, RuleNumber ruleNumber) {
-        writeInLine(String.format("\nEligible games for %s: ", ruleNumber));
-        for (Day day: Day.values()) {
-            int eligibleGamesCount = (int) eligibleGames.stream()
-                    .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
-                    .count();
-            writeInLine(String.format("%d (%s)  ", eligibleGamesCount, day));
+    public void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {
+        for (RuleNumber ruleNumber : RuleNumber.values()) {
+            writeInLine(String.format("\n%-10s- ", ruleNumber));
+            for (Day day : Day.values()) {
+                int eligibleGamesCount = (int) eligibleGames.get(ruleNumber).stream()
+                        .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
+                        .count();
+                writeInLine(String.format("%2d (%s) ", eligibleGamesCount, day));
+            }
         }
         writeLineSeparator();
     }
