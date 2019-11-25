@@ -88,7 +88,7 @@ public class BetProcessor {
 
     private void openSite() throws IOException {
         driverInit();
-        logger.startLogMessage(LogType.LOG_IN);
+        logger.startLogMessage(LogType.LOG_IN, "");
         logIn();
     }
 
@@ -129,8 +129,7 @@ public class BetProcessor {
     }
 
     private List<Game> processBets(RuleNumber ruleNumber, List<Game> betGames) {
-        logger.logRule(ruleNumber);
-        logger.startLogMessage(LogType.BET);
+        logger.startLogMessage(LogType.BET, ruleNumber.toString());
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
         int singleBetAmount = calculateAmount(ruleNumber, totalMoney);

@@ -2,7 +2,6 @@ package com.zylex.betbot.controller.logger;
 
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.bet.rule.RuleNumber;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -13,22 +12,15 @@ public class BetConsoleLogger extends ConsoleLogger{
     /**
      * Log start message.
      * @param type - type of log.
+     * @param message - string message.
      */
-    public synchronized void startLogMessage(LogType type) {
+    public synchronized void startLogMessage(LogType type, String message) {
         if (type == LogType.BET) {
-            writeInLine("\nProcessing bets:");
+            writeInLine(String.format("\nProcessing bets for %s:", message));
         } else if (type == LogType.LOG_IN) {
             writeLineSeparator();
             writeInLine("\nLogging in: ...");
         }
-    }
-
-    /**
-     * Log rule.
-     * @param ruleNumber - number of rule.
-     */
-    public void logRule(RuleNumber ruleNumber) {
-        writeInLine("\nUsing: " + ruleNumber);
     }
 
     /**
