@@ -3,14 +3,12 @@ package com.zylex.betbot.controller;
 import com.zylex.betbot.exception.RepositoryException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
-import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -28,11 +26,9 @@ public class GameRepository {
     private Map<RuleNumber, File> ruleFileMap = new HashMap<>();
 
     {
-        LocalDate date = LocalDate.now().plusDays(Day.TOMORROW.INDEX);
-        String monthDirName = date.getMonth().name();
         for (RuleNumber rule : RuleNumber.values()) {
-            betMadeFileMap.put(rule, new File(String.format("results/%s/BET_MADE_%s_%s.csv", monthDirName, rule, monthDirName)));
-            ruleFileMap.put(rule, new File(String.format("results/%s/MATCHES_%s_%s.csv", monthDirName, rule, monthDirName)));
+            betMadeFileMap.put(rule, new File(String.format("results/BET_MADE_%s.csv", rule)));
+            ruleFileMap.put(rule, new File(String.format("results/MATCHES_%s.csv", rule)));
         }
     }
 
