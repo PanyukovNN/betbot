@@ -18,7 +18,6 @@ public class BetConsoleLogger extends ConsoleLogger{
         if (type == LogType.BET) {
             writeInLine(String.format("\nProcessing bets for %s:", message));
         } else if (type == LogType.LOG_IN) {
-            writeLineSeparator();
             writeInLine("\nLogging in: ...");
         }
     }

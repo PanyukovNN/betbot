@@ -46,12 +46,13 @@ public class BetProcessor {
 
     /**
      * Initiates non-headless chrome driver, opens the site, logs in,
-     * makes bets, and saves bet made games to file.
+     * makes bets, and saves bet made games to files.
      */
     public void process() {
         try {
+            Map<RuleNumber, List<Game>> ruleGames = ruleProcessor.process();
             for (RuleNumber ruleNumber : ruleList) {
-                List<Game> games = ruleProcessor.process().get(ruleNumber);
+                List<Game> games = ruleGames.get(ruleNumber);
                 List<Game> betGames = findAppropriateGames(ruleNumber, games);
                 if (betGames.isEmpty()) {
                     logger.betMade(LogType.ERROR);
@@ -60,8 +61,8 @@ public class BetProcessor {
                 openSite();
                 List<Game> betMadeGames = processBets(ruleNumber, betGames);
                 gameRepository.appendSaveByRule(ruleNumber, betMadeGames);
-                logger.betMade(LogType.OK);
             }
+            logger.betMade(LogType.OK);
         } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         } finally {
@@ -86,17 +87,13 @@ public class BetProcessor {
     }
 
     private void openSite() throws IOException {
-        driverInit();
-        logger.startLogMessage(LogType.LOG_IN, "");
-        logIn();
-    }
-
-    private void driverInit() {
         if (driver == null) {
             DriverManager driverManager = new DriverManager();
             driver = driverManager.initiateDriver(false);
             wait = new WebDriverWait(driver, 5);
             driver.navigate().to("https://1xstavka.ru/");
+            logger.startLogMessage(LogType.LOG_IN, "");
+            logIn();
         }
     }
 
