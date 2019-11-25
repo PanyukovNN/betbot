@@ -98,7 +98,7 @@ public class Game {
         this.gameResult = gameResult;
     }
 
-    public Set<RuleNumber> getBetMadeRuleSet() {
+    public Set<RuleNumber> getBetMadeRules() {
         return betMadeRuleSet;
     }
 

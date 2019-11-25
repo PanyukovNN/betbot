@@ -17,4 +17,5 @@ public enum RuleNumber {
         this.betCoefficient = betCoefficient;
         this.PERCENT = PERCENT;
     }
+
 }

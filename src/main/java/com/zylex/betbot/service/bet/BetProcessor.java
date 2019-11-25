@@ -59,7 +59,7 @@ public class BetProcessor {
                 }
                 openSite();
                 List<Game> betMadeGames = processBets(ruleNumber, betGames);
-                gameRepository.saveBetMade(ruleNumber, betMadeGames);
+                gameRepository.appendSaveByRule(ruleNumber, betMadeGames);
                 logger.betMade(LogType.OK);
             }
         } catch (IOException | ElementNotInteractableException e) {
@@ -76,8 +76,7 @@ public class BetProcessor {
     }
 
     private List<Game> filterByBetMade(RuleNumber ruleNumber, List<Game> filteredBetGames) {
-        List<Game> betMadeGames = gameRepository.readBetMade(ruleNumber);
-        return filteredBetGames.stream().filter(game -> !betMadeGames.contains(game)).collect(Collectors.toList());
+        return filteredBetGames.stream().filter(game -> !game.getBetMadeRules().contains(ruleNumber)).collect(Collectors.toList());
     }
 
     private List<Game> filterByParsingTime(List<Game> betGames) {
@@ -147,7 +146,7 @@ public class BetProcessor {
                 if (makeBet(singleBetAmount)) {
                     availableBalance -= singleBetAmount;
                     betMadeGames.add(game);
-                    game.getBetMadeRuleSet().add(ruleNumber);
+                    game.getBetMadeRules().add(ruleNumber);
                     logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
                 }
             }

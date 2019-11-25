@@ -21,23 +21,12 @@ public class GameRepository {
 
     private final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
-    private Map<RuleNumber, File> betMadeFileMap = new HashMap<>();
-
     private Map<RuleNumber, File> ruleFileMap = new HashMap<>();
 
     {
         for (RuleNumber rule : RuleNumber.values()) {
-            betMadeFileMap.put(rule, new File(String.format("results/BET_MADE_%s.csv", rule)));
             ruleFileMap.put(rule, new File(String.format("results/MATCHES_%s.csv", rule)));
         }
-    }
-
-    /**
-     * Read games from BET_MADE file.
-     * @return list of games.
-     */
-    public List<Game> readBetMade(RuleNumber ruleNumber) {
-        return readFromFile(betMadeFileMap.get(ruleNumber));
     }
 
     /**
@@ -49,13 +38,6 @@ public class GameRepository {
         return readFromFile(ruleFileMap.get(ruleNumber));
     }
 
-    /**
-     * Save games to BET_MADE file.
-     * @param games - list of games.
-     */
-    public void saveBetMade(RuleNumber ruleNumber, List<Game> games) {
-        appendSave(betMadeFileMap.get(ruleNumber), games);
-    }
 
     /**
      * Save games to RULE file.
@@ -66,11 +48,12 @@ public class GameRepository {
         writeToFile(ruleFileMap.get(ruleNumber), games);
     }
 
-    private void appendSave(File file, List<Game> games) {
-        List<Game> resultGames = readFromFile(file);
+    public void appendSaveByRule(RuleNumber ruleNumber, List<Game> games) {
+        File ruleFile = ruleFileMap.get(ruleNumber);
+        List<Game> resultGames = readFromFile(ruleFile);
         resultGames.removeAll(games);
         resultGames.addAll(games);
-        writeToFile(file, resultGames);
+        writeToFile(ruleFile, resultGames);
     }
 
     private List<Game> readFromFile(File file) {
@@ -89,7 +72,7 @@ public class GameRepository {
                         GameResult.valueOf(fields[12]));
                 if (!fields[11].equals("-")) {
                     String[] rules = fields[11].split("__");
-                    game.getBetMadeRuleSet().addAll(
+                    game.getBetMadeRules().addAll(
                             Arrays.stream(rules).map(RuleNumber::valueOf)
                                     .collect(Collectors.toList()));
                 }
@@ -121,9 +104,9 @@ public class GameRepository {
                         formatDouble(game.getSecondWin()),
                         formatDouble(game.getFirstWinOrTie()),
                         formatDouble(game.getSecondWinOrTie()),
-                        game.getBetMadeRuleSet().isEmpty()
+                        game.getBetMadeRules().isEmpty()
                                 ? "-"
-                                : StringUtils.join(game.getBetMadeRuleSet(), "__"),
+                                : StringUtils.join(game.getBetMadeRules(), "__"),
                         game.getGameResult()) + "\n";
                 writer.write(line);
             }
