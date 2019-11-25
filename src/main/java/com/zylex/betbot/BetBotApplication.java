@@ -11,10 +11,10 @@ import com.zylex.betbot.service.parsing.ParseProcessor;
 
 import java.util.Arrays;
 
-public class OneXBetBot {
+public class BetBotApplication {
 
     public static void main(String[] args) {
-        RuleNumber ruleNumber = RuleNumber.RULE_ONE;
+        RuleNumber ruleNumber = RuleNumber.RULE_TEST;
         boolean mock = args.length > 0 && Arrays.asList(args).contains("-m");
         boolean refresh = args.length > 0 && Arrays.asList(args).contains("-r");
 
