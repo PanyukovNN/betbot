@@ -38,6 +38,10 @@ public class BetProcessor {
 
     private GameRepository gameRepository;
 
+    private int totalBalance = -1;
+
+    private int availableBalance = -1;
+
     public BetProcessor(RuleProcessor ruleProcessor, List<RuleNumber> ruleList) {
         this.ruleProcessor = ruleProcessor;
         this.gameRepository = ruleProcessor.getGameRepository();
@@ -49,14 +53,14 @@ public class BetProcessor {
      * makes bets, and saves bet made games to files.
      */
     public void process() {
+        Map<RuleNumber, List<Game>> ruleGames = ruleProcessor.process();
+        if (ruleList.isEmpty()) {
+            return;
+        }
         try {
-            Map<RuleNumber, List<Game>> ruleGames = ruleProcessor.process();
-            if (ruleList.isEmpty()) {
-                return;
-            }
             for (RuleNumber ruleNumber : ruleList) {
                 List<Game> games = ruleGames.get(ruleNumber);
-                List<Game> betGames = findAppropriateGames(ruleNumber, games);
+                List<Game> betGames = findBetGames(ruleNumber, games);
                 if (betGames.isEmpty()) {
                     logger.betMade(LogType.NO_GAMES_TO_BET);
                     return;
@@ -75,7 +79,7 @@ public class BetProcessor {
         }
     }
 
-    private List<Game> findAppropriateGames(RuleNumber ruleNumber, List<Game> betGames) {
+    private List<Game> findBetGames(RuleNumber ruleNumber, List<Game> betGames) {
         return filterByBetMade(ruleNumber, filterByParsingTime(betGames));
     }
 
@@ -85,7 +89,7 @@ public class BetProcessor {
 
     private List<Game> filterByParsingTime(List<Game> betGames) {
         return betGames.stream()
-                .filter(game -> LocalDateTime.now().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), LocalTime.of(22,59))))
+                .filter(game -> LocalDateTime.now().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), LocalTime.of(8,59))))
                 .collect(Collectors.toList());
     }
 
@@ -115,6 +119,7 @@ public class BetProcessor {
 
     private void checkVerify() {
         try {
+            //TODO
             Thread.sleep(1500);
             String url = driver.getCurrentUrl();
             if (url.contains("accountverify")) {
@@ -130,9 +135,8 @@ public class BetProcessor {
     private List<Game> processBets(RuleNumber ruleNumber, List<Game> betGames) {
         logger.startLogMessage(LogType.BET, ruleNumber.toString());
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
-        double totalMoney = Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
-        int singleBetAmount = calculateAmount(ruleNumber, totalMoney);
-        double availableBalance = totalMoney;
+        updateBalance();
+        int singleBetAmount = calculateAmount(ruleNumber);
         List<Game> betMadeGames = new ArrayList<>();
         int i = 0;
         for (Game game : betGames) {
@@ -140,32 +144,37 @@ public class BetProcessor {
                 logger.noMoney();
                 break;
             }
-            List<WebElement> coefficients = getGameCoefficients(game);
-            if (coefficients.size() > 0) {
-                coefficients.get(betCoefficient.INDEX).click();
-                if (makeBet(singleBetAmount)) {
-                    availableBalance -= singleBetAmount;
-                    betMadeGames.add(game);
-                    game.getBetMadeRules().add(ruleNumber);
-                    logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
-                }
+            clickOnCoefficient(betCoefficient, game);
+            if (makeBet(singleBetAmount)) {
+                availableBalance -= singleBetAmount;
+                betMadeGames.add(game);
+                game.getBetMadeRules().add(ruleNumber);
+                logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
             }
         }
         return betMadeGames;
     }
 
-    private int calculateAmount(RuleNumber ruleNumber, double totalMoney) {
-        double singleBetMoney = totalMoney * ruleNumber.PERCENT;
+    private void updateBalance() {
+        if (totalBalance == -1) {
+            totalBalance = (int) Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
+            availableBalance = totalBalance;
+        }
+    }
+
+    private int calculateAmount(RuleNumber ruleNumber) {
+        double singleBetMoney = totalBalance * ruleNumber.PERCENT;
         return (int) Math.max(singleBetMoney, 20);
     }
 
-    private boolean makeBet(double amount) {
+    private boolean makeBet(int amount) {
         driver.findElement(By.className("bet_sum_input")).sendKeys(String.valueOf(amount));
-        WebElement betButton = waitSingleElementAndGet("coupon-btn-group__item")
-                .findElement(By.cssSelector("button"));
-        JavascriptExecutor executor = (JavascriptExecutor) driver;
-        executor.executeScript("arguments[0].click();", betButton);
-        return okButtonClick(executor);
+        return true;
+//        WebElement betButton = waitSingleElementAndGet("coupon-btn-group__item")
+//                .findElement(By.cssSelector("button"));
+//        JavascriptExecutor executor = (JavascriptExecutor) driver;
+//        executor.executeScript("arguments[0].click();", betButton);
+//        return okButtonClick(executor);
     }
 
     private boolean okButtonClick(JavascriptExecutor executor) {
@@ -184,7 +193,13 @@ public class BetProcessor {
         return true;
     }
 
-    private List<WebElement> getGameCoefficients(Game game) {
+    private void clickOnCoefficient(BetCoefficient betCoefficient, Game game) {
+        fetchGameCoefficients(game)
+                .get(betCoefficient.INDEX)
+                .click();
+    }
+
+    private List<WebElement> fetchGameCoefficients(Game game) {
         driver.navigate().to("https://1xstavka.ru/line/Football/" + game.getLeagueLink());
         List<WebElement> gameWebElements = waitElementsAndGet("c-events__item_game");
         for (WebElement gameWebElement : gameWebElements) {
