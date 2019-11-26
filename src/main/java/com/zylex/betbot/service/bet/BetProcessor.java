@@ -89,7 +89,7 @@ public class BetProcessor {
 
     private List<Game> filterByParsingTime(List<Game> betGames) {
         return betGames.stream()
-                .filter(game -> LocalDateTime.now().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), LocalTime.of(8,59))))
+                .filter(game -> LocalDateTime.now().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), LocalTime.of(23,59))))
                 .collect(Collectors.toList());
     }
 
@@ -169,12 +169,11 @@ public class BetProcessor {
 
     private boolean makeBet(int amount) {
         driver.findElement(By.className("bet_sum_input")).sendKeys(String.valueOf(amount));
-        return true;
-//        WebElement betButton = waitSingleElementAndGet("coupon-btn-group__item")
-//                .findElement(By.cssSelector("button"));
-//        JavascriptExecutor executor = (JavascriptExecutor) driver;
-//        executor.executeScript("arguments[0].click();", betButton);
-//        return okButtonClick(executor);
+        WebElement betButton = waitSingleElementAndGet("coupon-btn-group__item")
+                .findElement(By.cssSelector("button"));
+        JavascriptExecutor executor = (JavascriptExecutor) driver;
+        executor.executeScript("arguments[0].click();", betButton);
+        return okButtonClick(executor);
     }
 
     private boolean okButtonClick(JavascriptExecutor executor) {

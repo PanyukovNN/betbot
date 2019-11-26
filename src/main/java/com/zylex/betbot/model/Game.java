@@ -127,6 +127,8 @@ public class Game {
                 " \"" + league +
                 "\" " + firstTeam +
                 " - " + secondTeam +
-                " (" + gameResult + ")";
+                (gameResult == GameResult.NO_RESULT
+                        ? ""
+                        : " (" + gameResult + ")");
     }
 }
