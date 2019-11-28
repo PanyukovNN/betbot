@@ -62,14 +62,17 @@ public class BetProcessor {
                 List<Game> games = ruleGames.get(ruleNumber);
                 List<Game> betGames = findBetGames(ruleNumber, games);
                 if (betGames.isEmpty()) {
-                    logger.betMade(LogType.NO_GAMES_TO_BET);
                     continue;
                 }
                 openSite();
                 List<Game> betMadeGames = processBets(ruleNumber, betGames);
                 gameRepository.appendSaveByRule(ruleNumber, betMadeGames);
             }
-            logger.betMade(LogType.OK);
+            if (driver == null) {
+                logger.betMade(LogType.NO_GAMES_TO_BET);
+            } else {
+                logger.betMade(LogType.OK);
+            }
         } catch (IOException | ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         } finally {

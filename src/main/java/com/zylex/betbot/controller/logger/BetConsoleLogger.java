@@ -2,6 +2,7 @@ package com.zylex.betbot.controller.logger;
 
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.service.bet.rule.RuleNumber;
 import org.apache.commons.lang3.StringUtils;
 
 /**
