@@ -52,8 +52,9 @@ public class RuleProcessor {
 
     private Map<RuleNumber, List<Game>> findEligibleGames(List<Game> games) {
         Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
-        eligibleGames.put(RuleNumber.RULE_ONE, new FirstRule().filter(leagueRepository, games));
-        eligibleGames.put(RuleNumber.RULE_TEST, new TestRule().filter(leagueRepository, games));
+        for (RuleNumber ruleNumber : RuleNumber.values()) {
+            eligibleGames.put(ruleNumber, ruleNumber.rule.filter(leagueRepository, games));
+        }
         return eligibleGames;
     }
 
