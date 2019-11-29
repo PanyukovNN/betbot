@@ -60,7 +60,7 @@ public class BetProcessor {
         try {
             for (RuleNumber ruleNumber : ruleList) {
                 List<Game> games = ruleGames.get(ruleNumber);
-                List<Game> betGames = findBetGames(ruleNumber, games);
+                List<Game> betGames = findBetGames(games);
                 if (betGames.isEmpty()) {
                     continue;
                 }
@@ -82,12 +82,12 @@ public class BetProcessor {
         }
     }
 
-    private List<Game> findBetGames(RuleNumber ruleNumber, List<Game> betGames) {
-        return filterByBetMade(ruleNumber, filterByParsingTime(betGames));
+    private List<Game> findBetGames(List<Game> betGames) {
+        return filterByBetMade(filterByParsingTime(betGames));
     }
 
-    private List<Game> filterByBetMade(RuleNumber ruleNumber, List<Game> filteredBetGames) {
-        return filteredBetGames.stream().filter(game -> !game.getBetMadeRules().contains(ruleNumber)).collect(Collectors.toList());
+    private List<Game> filterByBetMade(List<Game> filteredBetGames) {
+        return filteredBetGames.stream().filter(game -> !game.isBetMade()).collect(Collectors.toList());
     }
 
     private List<Game> filterByParsingTime(List<Game> betGames) {
@@ -151,7 +151,7 @@ public class BetProcessor {
             if (makeBet(singleBetAmount)) {
                 availableBalance -= singleBetAmount;
                 betMadeGames.add(game);
-                game.getBetMadeRules().add(ruleNumber);
+                game.setBetMade(true);
                 logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
             }
         }

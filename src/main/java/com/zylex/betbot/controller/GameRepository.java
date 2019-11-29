@@ -4,7 +4,6 @@ import com.zylex.betbot.exception.RepositoryException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -12,7 +11,6 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Process saving and reading games from files.
@@ -70,11 +68,8 @@ public class GameRepository {
                 Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
                         fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10],
                         GameResult.valueOf(fields[12]));
-                if (!fields[11].equals("-")) {
-                    String[] rules = fields[11].split("__");
-                    game.getBetMadeRules().addAll(
-                            Arrays.stream(rules).map(RuleNumber::valueOf)
-                                    .collect(Collectors.toList()));
+                if (fields[11].equals("BET_MADE")) {
+                    game.setBetMade(true);
                 }
                 games.add(game);
             }
@@ -104,9 +99,9 @@ public class GameRepository {
                         formatDouble(game.getSecondWin()),
                         formatDouble(game.getFirstWinOrTie()),
                         formatDouble(game.getSecondWinOrTie()),
-                        game.getBetMadeRules().isEmpty()
-                                ? "-"
-                                : StringUtils.join(game.getBetMadeRules(), "__"),
+                        game.isBetMade()
+                                ? "BET_MADE"
+                                : "-",
                         game.getGameResult()) + "\n";
                 writer.write(line);
             }

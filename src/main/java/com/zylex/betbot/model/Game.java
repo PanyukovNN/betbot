@@ -4,7 +4,6 @@ import com.zylex.betbot.service.bet.rule.RuleNumber;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -35,7 +34,7 @@ public class Game {
 
     private GameResult gameResult;
 
-    private Set<RuleNumber> betMadeRuleSet = new LinkedHashSet<>();
+    private boolean betMade = false;
 
     public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie, GameResult gameResult) {
         this.league = league;
@@ -99,8 +98,12 @@ public class Game {
         this.gameResult = gameResult;
     }
 
-    public Set<RuleNumber> getBetMadeRules() {
-        return betMadeRuleSet;
+    public boolean isBetMade() {
+        return betMade;
+    }
+
+    public void setBetMade(boolean betMade) {
+        this.betMade = betMade;
     }
 
     @Override
