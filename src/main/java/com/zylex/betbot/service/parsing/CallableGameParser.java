@@ -1,18 +1,15 @@
 package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
-import com.zylex.betbot.exception.GameBotException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.Day;
-import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -45,10 +42,8 @@ public class CallableGameParser implements Callable<List<Game>> {
     public List<Game> call() {
         try {
             return processGameParsing();
-        } catch (HttpStatusException | SocketTimeoutException e) {
-            return new ArrayList<>();
         } catch (IOException e) {
-            throw new GameBotException(e.getMessage(), e);
+            return new ArrayList<>();
         }
     }
 

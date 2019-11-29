@@ -1,6 +1,6 @@
 package com.zylex.betbot.exception;
 
-public class ConsoleLoggerException extends OneXBetBotException {
+public class ConsoleLoggerException extends BetBotException {
 
     public ConsoleLoggerException() {
     }

@@ -1,7 +1,7 @@
 package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
-import com.zylex.betbot.exception.LeagueBotException;
+import com.zylex.betbot.exception.LeagueParserException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -31,7 +31,7 @@ class LeagueParser {
         try {
             return parseLeagueLinks();
         } catch (IOException e) {
-            throw new LeagueBotException(e.getMessage(), e);
+            throw new LeagueParserException(e.getMessage(), e);
         }
     }
 

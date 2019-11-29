@@ -1,6 +1,6 @@
 package com.zylex.betbot.exception;
 
-public class StatisticsAnalyserException extends OneXBetBotException {
+public class StatisticsAnalyserException extends BetBotException {
 
     public StatisticsAnalyserException() {
     }

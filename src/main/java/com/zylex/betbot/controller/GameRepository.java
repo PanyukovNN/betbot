@@ -1,6 +1,6 @@
 package com.zylex.betbot.controller;
 
-import com.zylex.betbot.exception.RepositoryException;
+import com.zylex.betbot.exception.GameRepositoryException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
@@ -75,7 +75,7 @@ public class GameRepository {
             }
             return games;
         } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
+            throw new GameRepositoryException(e.getMessage(), e);
         }
     }
 
@@ -106,7 +106,7 @@ public class GameRepository {
                 writer.write(line);
             }
         } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
+            throw new GameRepositoryException(e.getMessage(), e);
         }
     }
 
@@ -124,7 +124,7 @@ public class GameRepository {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
+            throw new GameRepositoryException(e.getMessage(), e);
         }
     }
 }

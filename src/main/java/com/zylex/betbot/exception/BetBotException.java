@@ -2,16 +2,16 @@ package com.zylex.betbot.exception;
 
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 
-public class OneXBetBotException extends RuntimeException {
+public class BetBotException extends RuntimeException {
 
-    public OneXBetBotException() {
+    public BetBotException() {
     }
 
-    public OneXBetBotException(String message) {
+    public BetBotException(String message) {
         super(message);
     }
 
-    public OneXBetBotException(String message, Throwable cause) {
+    public BetBotException(String message, Throwable cause) {
         super(message, cause);
         ConsoleLogger.writeExceptionToLog(message);
     }

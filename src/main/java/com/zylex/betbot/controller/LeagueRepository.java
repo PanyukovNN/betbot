@@ -1,6 +1,6 @@
 package com.zylex.betbot.controller;
 
-import com.zylex.betbot.exception.RepositoryException;
+import com.zylex.betbot.exception.LeagueRepositoryException;
 import com.zylex.betbot.service.bet.rule.RuleNumber;
 
 import java.io.*;
@@ -44,7 +44,7 @@ public class LeagueRepository {
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             reader.lines().forEach(leagueLinks::add);
         } catch (IOException e) {
-            throw new RepositoryException(e.getMessage(), e);
+            throw new LeagueRepositoryException(e.getMessage(), e);
         }
         return leagueLinks;
     }
