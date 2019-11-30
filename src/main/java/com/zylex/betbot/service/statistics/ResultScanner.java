@@ -86,7 +86,7 @@ public class ResultScanner {
         return games.stream()
                 .filter(game -> game.getGameResult() == GameResult.NO_RESULT
                         && game.getDateTime().toLocalDate().equals(day)
-                        && game.getDateTime().isBefore(LocalDateTime.now().minusHours(3)))
+                        && game.getDateTime().isBefore(LocalDateTime.now().minusHours(2)))
                 .collect(Collectors.toList());
     }
 

@@ -147,7 +147,10 @@ public class BetProcessor {
                 logger.noMoney();
                 break;
             }
-            clickOnCoefficient(betCoefficient, game);
+            if (!clickOnCoefficient(betCoefficient, game)) {
+                logger.logBet(0, 0, betCoefficient, game, LogType.BET_NOT_FOUND);
+                continue;
+            }
             if (makeBet(singleBetAmount)) {
                 availableBalance -= singleBetAmount;
                 betMadeGames.add(game);
@@ -195,10 +198,15 @@ public class BetProcessor {
         return true;
     }
 
-    private void clickOnCoefficient(BetCoefficient betCoefficient, Game game) {
-        fetchGameCoefficients(game)
-                .get(betCoefficient.INDEX)
-                .click();
+    private boolean clickOnCoefficient(BetCoefficient betCoefficient, Game game) {
+        try {
+            fetchGameCoefficients(game)
+                    .get(betCoefficient.INDEX)
+                    .click();
+            return true;
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
     }
 
     private List<WebElement> fetchGameCoefficients(Game game) {
