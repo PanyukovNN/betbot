@@ -1,11 +1,8 @@
 package com.zylex.betbot.model;
 
-import com.zylex.betbot.service.bet.rule.RuleNumber;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Instance of a football game.
