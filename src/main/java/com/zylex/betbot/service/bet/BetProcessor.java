@@ -87,7 +87,7 @@ public class BetProcessor {
     }
 
     private List<Game> filterByBetMade(List<Game> filteredBetGames) {
-        return filteredBetGames.stream().filter(game -> !game.isBetMade()).collect(Collectors.toList());
+        return filteredBetGames.stream().filter(game -> game.getBetMade() <= 0).collect(Collectors.toList());
     }
 
     private List<Game> filterByParsingTime(List<Game> betGames) {
@@ -148,13 +148,13 @@ public class BetProcessor {
                 break;
             }
             if (!clickOnCoefficient(betCoefficient, game)) {
-                logger.logBet(0, 0, betCoefficient, game, LogType.BET_NOT_FOUND);
+                game.setBetMade(-1);
                 continue;
             }
             if (makeBet(singleBetAmount)) {
                 availableBalance -= singleBetAmount;
                 betMadeGames.add(game);
-                game.setBetMade(true);
+                game.setBetMade(1);
                 logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
             }
         }
@@ -199,14 +199,13 @@ public class BetProcessor {
     }
 
     private boolean clickOnCoefficient(BetCoefficient betCoefficient, Game game) {
-        try {
-            fetchGameCoefficients(game)
-                    .get(betCoefficient.INDEX)
-                    .click();
-            return true;
-        } catch (IndexOutOfBoundsException e) {
+        List<WebElement> gameCoefficients = fetchGameCoefficients(game);
+        if (gameCoefficients.isEmpty()) {
+            logger.logBet(0, 0, null, game, LogType.BET_NOT_FOUND);
             return false;
         }
+        gameCoefficients.get(betCoefficient.INDEX).click();
+        return true;
     }
 
     private List<WebElement> fetchGameCoefficients(Game game) {
@@ -225,7 +224,6 @@ public class BetProcessor {
                 return gameWebElement.findElements(By.className("c-bets__bet"));
             }
         }
-        logger.logBet(0, 0, null, game, LogType.BET_NOT_FOUND);
         return new ArrayList<>();
     }
 

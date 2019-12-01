@@ -31,7 +31,7 @@ public class Game {
 
     private GameResult gameResult;
 
-    private boolean betMade = false;
+    private int betMade = 0;
 
     public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie, GameResult gameResult) {
         this.league = league;
@@ -95,11 +95,11 @@ public class Game {
         this.gameResult = gameResult;
     }
 
-    public boolean isBetMade() {
+    public int getBetMade() {
         return betMade;
     }
 
-    public void setBetMade(boolean betMade) {
+    public void setBetMade(int betMade) {
         this.betMade = betMade;
     }
 

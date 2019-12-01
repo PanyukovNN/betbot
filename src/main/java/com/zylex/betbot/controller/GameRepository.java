@@ -29,6 +29,7 @@ public class GameRepository {
 
     /**
      * Read games from RULE file.
+     *
      * @param ruleNumber - number of rule.
      * @return - list of games.
      */
@@ -39,8 +40,9 @@ public class GameRepository {
 
     /**
      * Save games to RULE file.
+     *
      * @param ruleNumber - number of rule.
-     * @param games - list of games.
+     * @param games      - list of games.
      */
     public void saveByRule(RuleNumber ruleNumber, List<Game> games) {
         writeToFile(ruleFileMap.get(ruleNumber), games);
@@ -69,7 +71,9 @@ public class GameRepository {
                         fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10],
                         GameResult.valueOf(fields[12]));
                 if (fields[11].equals("BET_MADE")) {
-                    game.setBetMade(true);
+                    game.setBetMade(1);
+                } else if (fields[11].equals("ERROR")) {
+                    game.setBetMade(-1);
                 }
                 games.add(game);
             }
@@ -99,8 +103,10 @@ public class GameRepository {
                         formatDouble(game.getSecondWin()),
                         formatDouble(game.getFirstWinOrTie()),
                         formatDouble(game.getSecondWinOrTie()),
-                        game.isBetMade()
+                        game.getBetMade() > 0
                                 ? "BET_MADE"
+                                : game.getBetMade() < 0
+                                ? "ERROR"
                                 : "-",
                         game.getGameResult()) + "\n";
                 writer.write(line);
