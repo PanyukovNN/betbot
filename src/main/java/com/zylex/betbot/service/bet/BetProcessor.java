@@ -174,13 +174,13 @@ public class BetProcessor {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(balanceFile)));
                      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(balanceFile), StandardCharsets.UTF_8))) {
                     String line = reader.readLine();
-                    if (!line.isEmpty()) {
+                    if (line != null && !line.isEmpty()) {
                         int balance = Integer.parseInt(line);
                         if (totalBalance < balance) {
                             totalBalance = balance;
                         }
-                        writer.write(balance);
                     }
+                    writer.write(totalBalance);
                 }
             } catch (IOException e) {
                 throw new BetProcessorException(e.getMessage(), e);
