@@ -14,6 +14,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -161,9 +162,29 @@ public class BetProcessor {
         return betMadeGames;
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void updateBalance() {
         if (totalBalance == -1) {
+            File balanceFile = new File("results/bank.csv");
             totalBalance = (int) Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
+            try {
+                if (!balanceFile.exists()) {
+                    balanceFile.createNewFile();
+                }
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(balanceFile)));
+                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(balanceFile), StandardCharsets.UTF_8))) {
+                    String line = reader.readLine();
+                    if (!line.isEmpty()) {
+                        int balance = Integer.parseInt(line);
+                        if (totalBalance < balance) {
+                            totalBalance = balance;
+                        }
+                        writer.write(balance);
+                    }
+                }
+            } catch (IOException e) {
+                throw new BetProcessorException(e.getMessage(), e);
+            }
             availableBalance = totalBalance;
         }
     }
