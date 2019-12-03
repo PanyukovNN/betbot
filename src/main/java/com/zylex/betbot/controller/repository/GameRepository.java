@@ -1,4 +1,4 @@
-package com.zylex.betbot.controller;
+package com.zylex.betbot.controller.repository;
 
 import com.zylex.betbot.exception.GameRepositoryException;
 import com.zylex.betbot.model.Game;
@@ -23,7 +23,9 @@ public class GameRepository extends Repository {
 
     {
         for (RuleNumber rule : RuleNumber.values()) {
-            ruleFileMap.put(rule, new File(String.format("results/MATCHES_%s.csv", rule)));
+            File ruleFile = new File(String.format("results/MATCHES_%s.csv", rule));
+            ruleFileMap.put(rule, ruleFile);
+            createFile(ruleFile);
         }
     }
 
@@ -36,7 +38,6 @@ public class GameRepository extends Repository {
     public List<Game> readByRule(RuleNumber ruleNumber) {
         return readFromFile(ruleFileMap.get(ruleNumber));
     }
-
 
     /**
      * Save games to RULE file.
@@ -57,9 +58,6 @@ public class GameRepository extends Repository {
     }
 
     private List<Game> readFromFile(File file) {
-        if (!file.exists()) {
-            return Collections.emptyList();
-        }
         List<String> lines = new ArrayList<>();
         try (InputStream inputStream = new FileInputStream(file);
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
@@ -87,7 +85,6 @@ public class GameRepository extends Repository {
         if (games.isEmpty()) {
             return;
         }
-        createFile(file);
         games.sort(Comparator.comparing(Game::getDateTime));
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             final String GAME_FORMAT = "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s";

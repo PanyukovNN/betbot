@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.statistics;
 
-import com.zylex.betbot.controller.GameRepository;
+import com.zylex.betbot.controller.repository.GameRepository;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ScannerConsoleLogger;
 import com.zylex.betbot.model.Game;

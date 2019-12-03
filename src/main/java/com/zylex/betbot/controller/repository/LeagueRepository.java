@@ -1,4 +1,4 @@
-package com.zylex.betbot.controller;
+package com.zylex.betbot.controller.repository;
 
 import com.zylex.betbot.exception.LeagueRepositoryException;
 import com.zylex.betbot.service.bet.rule.RuleNumber;

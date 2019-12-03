@@ -1,4 +1,4 @@
-package com.zylex.betbot.controller;
+package com.zylex.betbot.controller.repository;
 
 import com.zylex.betbot.exception.BetProcessorException;
 
@@ -10,7 +10,7 @@ public class BalanceRepository extends Repository {
     private File balanceFile;
 
     {
-        balanceFile = new File("results/bank.csv");
+        balanceFile = new File("external-resources/bank.csv");
         createFile(balanceFile);
     }
 

@@ -1,8 +1,8 @@
 package com.zylex.betbot;
 
-import com.zylex.betbot.controller.BalanceRepository;
-import com.zylex.betbot.controller.GameRepository;
-import com.zylex.betbot.controller.LeagueRepository;
+import com.zylex.betbot.controller.repository.BalanceRepository;
+import com.zylex.betbot.controller.repository.GameRepository;
+import com.zylex.betbot.controller.repository.LeagueRepository;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.service.bet.*;
 

@@ -1,7 +1,7 @@
 package com.zylex.betbot.service.bet;
 
-import com.zylex.betbot.controller.BalanceRepository;
-import com.zylex.betbot.controller.GameRepository;
+import com.zylex.betbot.controller.repository.BalanceRepository;
+import com.zylex.betbot.controller.repository.GameRepository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;

@@ -1,7 +1,7 @@
 package com.zylex.betbot;
 
-import com.zylex.betbot.controller.GameRepository;
-import com.zylex.betbot.controller.LeagueRepository;
+import com.zylex.betbot.controller.repository.GameRepository;
+import com.zylex.betbot.controller.repository.LeagueRepository;
 import com.zylex.betbot.service.statistics.ResultScanner;
 import com.zylex.betbot.service.statistics.StatisticsAnalyser;
 
