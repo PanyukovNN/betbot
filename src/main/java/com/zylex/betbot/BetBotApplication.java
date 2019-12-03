@@ -1,5 +1,6 @@
 package com.zylex.betbot;
 
+import com.zylex.betbot.controller.BalanceRepository;
 import com.zylex.betbot.controller.GameRepository;
 import com.zylex.betbot.controller.LeagueRepository;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
@@ -23,6 +24,7 @@ public class BetBotApplication {
                     new LeagueRepository(),
                     new ParseProcessor()
                 ),
+                new BalanceRepository(),
                 defineRuleNumbers(args)
             ).process();
         } finally {

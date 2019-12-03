@@ -1,5 +1,6 @@
 package com.zylex.betbot.service.bet;
 
+import com.zylex.betbot.controller.BalanceRepository;
 import com.zylex.betbot.controller.GameRepository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
@@ -14,7 +15,6 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -39,12 +39,15 @@ public class BetProcessor {
 
     private GameRepository gameRepository;
 
+    private BalanceRepository balanceRepository;
+
     private int totalBalance = -1;
 
     private int availableBalance = -1;
 
-    public BetProcessor(RuleProcessor ruleProcessor, List<RuleNumber> ruleList) {
+    public BetProcessor(RuleProcessor ruleProcessor, BalanceRepository balanceRepository, List<RuleNumber> ruleList) {
         this.ruleProcessor = ruleProcessor;
+        this.balanceRepository = balanceRepository;
         this.gameRepository = ruleProcessor.getGameRepository();
         this.ruleList = ruleList;
     }
@@ -162,30 +165,16 @@ public class BetProcessor {
         return betMadeGames;
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+
     private void updateBalance() {
         if (totalBalance == -1) {
-            File balanceFile = new File("results/bank.csv");
             totalBalance = (int) Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
-            try {
-                if (!balanceFile.exists()) {
-                    balanceFile.createNewFile();
-                }
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(balanceFile)));
-                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(balanceFile), StandardCharsets.UTF_8))) {
-                    String line = reader.readLine();
-                    if (line != null && !line.isEmpty()) {
-                        int balance = Integer.parseInt(line);
-                        if (totalBalance < balance) {
-                            totalBalance = balance;
-                        }
-                    }
-                    writer.write(totalBalance);
-                }
-            } catch (IOException e) {
-                throw new BetProcessorException(e.getMessage(), e);
+            int balance = balanceRepository.read();
+            if (totalBalance < balance) {
+                totalBalance = balance;
             }
             availableBalance = totalBalance;
+            balanceRepository.write(totalBalance);
         }
     }
 

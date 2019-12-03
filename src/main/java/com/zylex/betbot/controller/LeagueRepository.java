@@ -9,7 +9,7 @@ import java.util.*;
 /**
  * Process reading leagues files.
  */
-public class LeagueRepository {
+public class LeagueRepository extends Repository {
 
     private File leagues;
 

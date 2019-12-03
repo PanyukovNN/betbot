@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * Process saving and reading games from files.
  */
-public class GameRepository {
+public class GameRepository extends Repository {
 
     private final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd;HH:mm");
 
@@ -122,15 +122,6 @@ public class GameRepository {
                     .replace('.', ',');
         } catch (NumberFormatException e) {
             return value;
-        }
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void createFile(File file) {
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            throw new GameRepositoryException(e.getMessage(), e);
         }
     }
 }

@@ -10,8 +10,8 @@ import java.time.LocalDate;
 public class StatisticsApplication {
 
     public static void main(String[] args) {
-        LocalDate startDate = LocalDate.of(2019, 11, 25);
-        LocalDate endDate = LocalDate.now().minusDays(1);
+        LocalDate startDate = LocalDate.of(2019, 12, 2);
+        LocalDate endDate = LocalDate.now();
 
         new StatisticsAnalyser(
             new ResultScanner(
