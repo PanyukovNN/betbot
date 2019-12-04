@@ -1,6 +1,6 @@
 package com.zylex.betbot.controller.repository;
 
-import com.zylex.betbot.exception.BetProcessorException;
+import com.zylex.betbot.exception.BalanceRepositoryException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -22,15 +22,16 @@ public class BalanceRepository extends Repository {
             }
             return Integer.parseInt(reader.readLine());
         } catch (IOException e) {
-            throw new BetProcessorException(e.getMessage(), e);
+            throw new BalanceRepositoryException(e.getMessage(), e);
         }
     }
 
     public void write(int balance) {
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(balanceFile), StandardCharsets.UTF_8))) {
-            writer.write(balance);
+            writer.write(String.valueOf(balance));
+            writer.flush();
         } catch (IOException e) {
-            throw new BetProcessorException(e.getMessage(), e);
+            throw new BalanceRepositoryException(e.getMessage(), e);
         }
     }
 }
