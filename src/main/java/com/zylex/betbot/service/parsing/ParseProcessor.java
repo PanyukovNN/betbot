@@ -19,7 +19,7 @@ public class ParseProcessor {
 
     private ParsingConsoleLogger logger = new ParsingConsoleLogger();
 
-    private ExecutorService service = Executors.newFixedThreadPool(8);
+    private ExecutorService service = Executors.newWorkStealingPool();
 
     /**
      * Gets links on leagues which include football matches, then pulls information about matches from every link,

@@ -20,7 +20,7 @@ public class BalanceRepository extends Repository {
             if (line == null || line.isEmpty()) {
                 return -1;
             }
-            return Integer.parseInt(reader.readLine());
+            return Integer.parseInt(line);
         } catch (IOException e) {
             throw new BalanceRepositoryException(e.getMessage(), e);
         }

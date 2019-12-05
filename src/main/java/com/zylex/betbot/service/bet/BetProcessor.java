@@ -91,7 +91,7 @@ public class BetProcessor {
     }
 
     private List<Game> filterByBetMade(List<Game> filteredBetGames) {
-        return filteredBetGames.stream().filter(game -> game.getBetMade() <= 0).collect(Collectors.toList());
+        return filteredBetGames.stream().filter(game -> game.getBetMade() == 0).collect(Collectors.toList());
     }
 
     private List<Game> filterByParsingTime(List<Game> betGames) {
