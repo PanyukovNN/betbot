@@ -22,6 +22,7 @@
         <webdrivermanager.version>3.7.1</webdrivermanager.version>
         <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
         <jstl.artifactId>jstl</jstl.artifactId>
+        <postgresql.version>9.1-901-1.jdbc4</postgresql.version>
     </properties>
 
     <dependencies>
@@ -45,11 +46,11 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>postgresql</groupId>-->
-<!--            <artifactId>postgresql</artifactId>-->
-<!--            <version>${postgresql.version}</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+        </dependency>
 
         <!--Web-->
         <dependency>

@@ -79,13 +79,13 @@ public class CallableGameParser implements Callable<List<Game>> {
                 continue;
             }
             Elements coefficients = gameElement.select("div.c-bets > a.c-bets__bet");
-            String firstWin = coefficients.get(0).text();
-            String tie = coefficients.get(1).text();
-            String secondWin = coefficients.get(2).text();
-            String firstWinOrTie = coefficients.get(3).text();
-            String secondWinOrTie = coefficients.get(5).text();
-            Game game = new Game(leagueName, leagueLink, dateTime, firstTeam, secondTeam,
-                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT);
+            double firstWin = stringToDouble(coefficients.get(0).text());
+            double tie = stringToDouble(coefficients.get(1).text());
+            double secondWin = stringToDouble(coefficients.get(2).text());
+            double firstWinOrTie = stringToDouble(coefficients.get(3).text());
+            double secondWinOrTie = stringToDouble(coefficients.get(5).text());
+            Game game = new Game(0, leagueName, leagueLink, dateTime, firstTeam, secondTeam,
+                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT, 0);
             games.add(game);
         }
         return games;
@@ -96,5 +96,13 @@ public class CallableGameParser implements Callable<List<Game>> {
         String year = String.valueOf(LocalDate.now().getYear());
         time = time.replace(" ", String.format(".%s ", year)).substring(0, 16);
         return LocalDateTime.parse(time, FORMATTER);
+    }
+
+    private double stringToDouble(String value) {
+        if (value.equals("-") || value.isEmpty()) {
+            return 0d;
+        } else {
+            return Double.parseDouble(value);
+        }
     }
 }

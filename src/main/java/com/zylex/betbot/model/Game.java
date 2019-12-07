@@ -9,6 +9,8 @@ import java.util.Objects;
  */
 public class Game {
 
+    private long id;
+
     private String league;
 
     private String leagueLink;
@@ -19,21 +21,22 @@ public class Game {
 
     private String secondTeam;
 
-    private String firstWin;
+    private double firstWin;
 
-    private String tie;
+    private double tie;
 
-    private String secondWin;
+    private double secondWin;
 
-    private String firstWinOrTie;
+    private double firstWinOrTie;
 
-    private String secondWinOrTie;
+    private double secondWinOrTie;
 
     private GameResult gameResult;
 
-    private int betMade = 0;
+    private int betMade;
 
-    public Game(String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, String firstWin, String tie, String secondWin, String firstWinOrTie, String secondWinOrTie, GameResult gameResult) {
+    public Game(long id, String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie, GameResult gameResult, int betMade) {
+        this.id = id;
         this.league = league;
         this.leagueLink = leagueLink;
         this.dateTime = dateTime;
@@ -45,6 +48,15 @@ public class Game {
         this.firstWinOrTie = firstWinOrTie;
         this.secondWinOrTie = secondWinOrTie;
         this.gameResult = gameResult;
+        this.betMade = betMade;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getLeague() {
@@ -67,23 +79,23 @@ public class Game {
         return secondTeam;
     }
 
-    public String getFirstWin() {
+    public double getFirstWin() {
         return firstWin;
     }
 
-    public String getTie() {
+    public double getTie() {
         return tie;
     }
 
-    public String getSecondWin() {
+    public double getSecondWin() {
         return secondWin;
     }
 
-    public String getFirstWinOrTie() {
+    public double getFirstWinOrTie() {
         return firstWinOrTie;
     }
 
-    public String getSecondWinOrTie() {
+    public double getSecondWinOrTie() {
         return secondWinOrTie;
     }
 

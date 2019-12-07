@@ -65,14 +65,15 @@ public class GameRepository extends Repository {
             List<Game> games = new ArrayList<>();
             for (String line : lines) {
                 String[] fields = line.replace(",", ".").split(";");
-                Game game = new Game(fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
-                        fields[4], fields[5], fields[6], fields[7], fields[8], fields[9], fields[10],
-                        GameResult.valueOf(fields[12]));
+                int betMade = 0;
                 if (fields[11].equals("BET_MADE")) {
-                    game.setBetMade(1);
+                    betMade = 1;
                 } else if (fields[11].equals("ERROR")) {
-                    game.setBetMade(-1);
+                    betMade = -1;
                 }
+                Game game = new Game(0, fields[0], fields[1], LocalDateTime.parse(fields[2] + ";" + fields[3], DATE_FORMATTER),
+                        fields[4], fields[5], stringToDouble(fields[6]), stringToDouble(fields[7]), stringToDouble(fields[8]), stringToDouble(fields[9]), stringToDouble(fields[10]),
+                        GameResult.valueOf(fields[12]), betMade);
                 games.add(game);
             }
             return games;
@@ -113,12 +114,20 @@ public class GameRepository extends Repository {
         }
     }
 
-    private String formatDouble(String value) {
+    private String formatDouble(double value) {
         try {
-            return new DecimalFormat("#.00").format(Double.parseDouble(value))
+            return new DecimalFormat("#.00").format(value)
                     .replace('.', ',');
         } catch (NumberFormatException e) {
-            return value;
+            return "-";
+        }
+    }
+
+    private double stringToDouble(String value) {
+        if (value.equals("-") || value.isEmpty()) {
+            return 0d;
+        } else {
+            return Double.parseDouble(value);
         }
     }
 }
