@@ -112,13 +112,13 @@ public class BetProcessor {
     }
 
     private void logIn() throws IOException {
-        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("oneXBetAuth.properties")) {
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("BetBotAuth.properties")) {
             Properties property = new Properties();
             property.load(inputStream);
             waitSingleElementAndGet("base_auth_form").click();
             List<WebElement> authenticationForm = waitElementsAndGet("c-input-material__input");
-            authenticationForm.get(0).sendKeys(property.getProperty("oneXBet.login"));
-            authenticationForm.get(1).sendKeys(property.getProperty("oneXBet.password"));
+            authenticationForm.get(0).sendKeys(property.getProperty("BetBot.login"));
+            authenticationForm.get(1).sendKeys(property.getProperty("BetBot.password"));
             waitSingleElementAndGet("auth-button").click();
             checkVerify();
         }

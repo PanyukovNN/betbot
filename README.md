@@ -1,6 +1,6 @@
 ## **BetBot**
 Bot consists of two modules: 
-1. First module finds football games on 1xstavka.ru, which appropriate for special rule, then automaticaly do bets on those games.
+1. First module finds football games on 1xstavka.ru, that appropriate for special rule, then automaticaly do bets.
 1. Second module collects matches results and displays statistics. 
 
 #### **Used tecnologies:**

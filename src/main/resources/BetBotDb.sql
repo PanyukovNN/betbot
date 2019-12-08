@@ -12,5 +12,6 @@ CREATE TABLE IF NOT EXISTS game (
     first_win_or_tie  FLOAT NOT NULL,
     second_win_or_tie FLOAT NOT NULL,
     result            INT,
-    bet_made          INT
+    bet_made          INT,
+    rule_number       VARCHAR(100)
 );

@@ -1,5 +1,7 @@
 package com.zylex.betbot.model;
 
+import com.zylex.betbot.service.bet.rule.RuleNumber;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -33,7 +35,7 @@ public class Game {
 
     private GameResult gameResult;
 
-    private int betMade;
+    private int betMade = 0;
 
     public Game(long id, String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie, GameResult gameResult, int betMade) {
         this.id = id;
