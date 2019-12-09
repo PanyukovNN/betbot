@@ -1,6 +1,5 @@
 package com.zylex.betbot.controller;
 
-import com.zylex.betbot.controller.repository.GameRepository;
 import com.zylex.betbot.exception.GameDaoException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
@@ -69,54 +68,35 @@ public class GameDao {
         return new Game(id, league, leagueLink, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, gameResult, betMade);
     }
 
-//    public List<Game> getAll() {
-//        try (PreparedStatement statement = connection.prepareStatement(SQLGame.GET_ALL.QUERY)) {
-//            ResultSet resultSet = statement.executeQuery();
-//            List<Game> games = new ArrayList<>();
-//            while (resultSet.next()) {
-//                int id = resultSet.getInt("id");
-//                String league = resultSet.getString("league");
-//                String leagueLink = resultSet.getString("league_link");
-//                LocalDateTime dateTime = resultSet.getTimestamp("date_time").toLocalDateTime();
-//                String firstTeam = resultSet.getString("first_team");
-//                String secondTeam = resultSet.getString("second_team");
-//                double firstWin = resultSet.getDouble("first_win");
-//                double tie = resultSet.getDouble("tie");
-//                double secondWin = resultSet.getDouble("second_win");
-//                double firstWinOrTie = resultSet.getDouble("first_win_or_tie");
-//                double secondWinOrTie = resultSet.getDouble("second_win_or_tie");
-//                Integer result = (Integer) resultSet.getObject("result");
-//                GameResult gameResult = intToGameResult(result);
-//                int betMade = resultSet.getInt("bet_made");
-//                games.add(new Game(id, league, leagueLink, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, gameResult, betMade));
-//            }
-//            return games;
-//        } catch (SQLException e) {
-//            throw new GameDaoException(e.getMessage(), e);
-//        }
-//    }
-
-    public Game save(Game game, RuleNumber ruleNumber) {
-        try (PreparedStatement statement = connection.prepareStatement(SQLGame.INSERT.QUERY, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setString(1, game.getLeague());
-            statement.setString(2, game.getLeagueLink());
-            statement.setTimestamp(3, Timestamp.valueOf(game.getDateTime()));
-            statement.setString(4, game.getFirstTeam());
-            statement.setString(5, game.getSecondTeam());
-            statement.setDouble(6, game.getFirstWin());
-            statement.setDouble(7, game.getTie());
-            statement.setDouble(8, game.getSecondWin());
-            statement.setDouble(9, game.getFirstWinOrTie());
-            statement.setDouble(10, game.getSecondWinOrTie());
-            statement.setObject(11, gameResultToInt(game.getGameResult()));
-            statement.setInt(12, game.getBetMade());
-            statement.setString(13, ruleNumber.toString());
+    public void save(Game game, RuleNumber ruleNumber) {
+        //TODO
+        SQLGame sqlRequest = game.getId() == 0
+                ? SQLGame.INSERT
+                : SQLGame.UPDATE;
+        try (PreparedStatement statement = connection.prepareStatement(sqlRequest.QUERY, Statement.RETURN_GENERATED_KEYS)) {
+            int t = 0;
+            if (sqlRequest == SQLGame.UPDATE) {
+                statement.setLong(1, game.getId());
+                t = 1;
+            }
+            statement.setString(1 + t, game.getLeague());
+            statement.setString(2 + t, game.getLeagueLink());
+            statement.setTimestamp(3 + t, Timestamp.valueOf(game.getDateTime()));
+            statement.setString(4 + t, game.getFirstTeam());
+            statement.setString(5 + t, game.getSecondTeam());
+            statement.setDouble(6 + t, game.getFirstWin());
+            statement.setDouble(7 + t, game.getTie());
+            statement.setDouble(8 + t, game.getSecondWin());
+            statement.setDouble(9 + t, game.getFirstWinOrTie());
+            statement.setDouble(10 + t, game.getSecondWinOrTie());
+            statement.setObject(11 + t, gameResultToInt(game.getGameResult()));
+            statement.setInt(12 + t, game.getBetMade());
+            statement.setString(13 + t, ruleNumber.toString());
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
             if (generatedKeys.next()) {
                 game.setId(generatedKeys.getInt(1));
             }
-            return game;
         } catch (SQLException e) {
             throw new GameDaoException(e.getMessage(), e);
         }
@@ -162,6 +142,7 @@ public class GameDao {
         GET_BY_RULE_AND_DATE("SELECT * FROM game WHERE rule_number = (?) AND date_time >= (?) AND date_time <= (?)"),
         GET_BY_RULE_NUMBER("SELECT * FROM game WHERE rule_number = (?)"),
         INSERT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))"),
+        UPDATE("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES ((?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?)) ON CONFLICT (id) DO NOTHING"),
         DELETE_BY_ID("DELETE FROM game WHERE id = (?)");
 
         String QUERY;

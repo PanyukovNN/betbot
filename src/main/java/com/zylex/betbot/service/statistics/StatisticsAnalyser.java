@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.statistics;
 
-import com.zylex.betbot.controller.repository.GameRepository;
+import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.repository.LeagueRepository;
 import com.zylex.betbot.controller.logger.StatisticsConsoleLogger;
 import com.zylex.betbot.model.Game;
@@ -19,7 +19,7 @@ public class StatisticsAnalyser {
 
     private StatisticsConsoleLogger logger = new StatisticsConsoleLogger();
 
-    private GameRepository gameRepository;
+    private GameDao gameDao;
 
     private LeagueRepository leagueRepository;
 
@@ -28,7 +28,7 @@ public class StatisticsAnalyser {
     public StatisticsAnalyser(ResultScanner resultScanner, LeagueRepository leagueRepository) {
         this.resultScanner = resultScanner;
         this.leagueRepository = leagueRepository;
-        this.gameRepository = resultScanner.getGameRepository();
+        this.gameDao = resultScanner.getGameDao();
     }
 
     /**
@@ -41,7 +41,8 @@ public class StatisticsAnalyser {
         try {
             logger.startLogMessage(startDate, endDate);
             for (RuleNumber ruleNumber : RuleNumber.values()) {
-                List<Game> games = processGames(driverManager, ruleNumber);
+                List<Game> games = gameDao.getByRuleNumber(ruleNumber);
+                resultScanner.process(games, driverManager, ruleNumber);
                 List<Game> gamesByDatePeriod = filterByDatePeriod(startDate, endDate, games);
                 List<Game> betMadeGamesByLeagues = splitBetMadeGamesByLeagues(gamesByDatePeriod);
                 computeStatistics(ruleNumber, gamesByDatePeriod, betMadeGamesByLeagues);
@@ -49,13 +50,6 @@ public class StatisticsAnalyser {
         } finally {
             driverManager.quitDriver();
         }
-    }
-
-    private List<Game> processGames(DriverManager driverManager, RuleNumber ruleNumber) {
-        List<Game> games = gameRepository.readByRule(ruleNumber);
-        resultScanner.process(games, driverManager);
-        gameRepository.saveByRule(ruleNumber, games);
-        return games;
     }
 
     private List<Game> splitBetMadeGamesByLeagues(List<Game> betMadeGames) {

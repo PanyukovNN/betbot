@@ -1,11 +1,12 @@
 package com.zylex.betbot.service.statistics;
 
-import com.zylex.betbot.controller.repository.GameRepository;
+import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ScannerConsoleLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
+import com.zylex.betbot.service.bet.rule.RuleNumber;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,7 +25,6 @@ import java.util.stream.Collectors;
 /**
  * Scans games results.
  */
-@SuppressWarnings("WeakerAccess")
 public class ResultScanner {
 
     private ScannerConsoleLogger logger = new ScannerConsoleLogger();
@@ -33,14 +33,14 @@ public class ResultScanner {
 
     private WebDriverWait wait;
 
-    private GameRepository gameRepository;
+    private GameDao gameDao;
 
-    public ResultScanner(GameRepository gameRepository) {
-        this.gameRepository = gameRepository;
+    public ResultScanner(GameDao gameDao) {
+        this.gameDao = gameDao;
     }
 
-    public GameRepository getGameRepository() {
-        return gameRepository;
+    public GameDao getGameDao() {
+        return gameDao;
     }
 
     /**
@@ -48,7 +48,7 @@ public class ResultScanner {
      * @param games - list of games with no results.
      * @param driverManager - instance of driver manager.
      */
-    public void process(List<Game> games, DriverManager driverManager) {
+    public void process(List<Game> games, DriverManager driverManager, RuleNumber ruleNumber) {
         Map<LocalDate, List<Game>> betMadeNoResultGamesByDay = splitNoResultGamesByDay(games);
         if (betMadeNoResultGamesByDay.isEmpty()) {
             logger.endMessage(LogType.NO_GAMES_TO_SCAN);
@@ -59,6 +59,7 @@ public class ResultScanner {
         logger.startLogMessage(betMadeNoResultGamesByDay.size());
         if (openFootballGamesResults()) {
             processGameResults(betMadeNoResultGamesByDay);
+            betMadeNoResultGamesByDay.forEach((k, v) -> v.forEach(game -> gameDao.save(game, ruleNumber)));
             logger.endMessage(LogType.OK);
         }
     }
