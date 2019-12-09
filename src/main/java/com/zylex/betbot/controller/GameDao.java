@@ -68,30 +68,43 @@ public class GameDao {
         return new Game(id, league, leagueLink, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, gameResult, betMade);
     }
 
+    public void updateResult(Game game, RuleNumber ruleNumber) {
+        try (PreparedStatement statement = connection.prepareStatement(SQLGame.UPDATE_RESULT.QUERY)) {
+            statement.setLong(1, game.getId());
+            statement.setString(2, game.getLeague());
+            statement.setString(3, game.getLeagueLink());
+            statement.setTimestamp(4, Timestamp.valueOf(game.getDateTime()));
+            statement.setString(5, game.getFirstTeam());
+            statement.setString(6, game.getSecondTeam());
+            statement.setDouble(7, game.getFirstWin());
+            statement.setDouble(8, game.getTie());
+            statement.setDouble(9, game.getSecondWin());
+            statement.setDouble(10, game.getFirstWinOrTie());
+            statement.setDouble(11, game.getSecondWinOrTie());
+            statement.setObject(12, gameResultToInt(game.getGameResult()));
+            statement.setInt(13, game.getBetMade());
+            statement.setString(14, ruleNumber.toString());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new GameDaoException(e.getMessage(), e);
+        }
+    }
+
     public void save(Game game, RuleNumber ruleNumber) {
-        //TODO
-        SQLGame sqlRequest = game.getId() == 0
-                ? SQLGame.INSERT
-                : SQLGame.UPDATE;
-        try (PreparedStatement statement = connection.prepareStatement(sqlRequest.QUERY, Statement.RETURN_GENERATED_KEYS)) {
-            int t = 0;
-            if (sqlRequest == SQLGame.UPDATE) {
-                statement.setLong(1, game.getId());
-                t = 1;
-            }
-            statement.setString(1 + t, game.getLeague());
-            statement.setString(2 + t, game.getLeagueLink());
-            statement.setTimestamp(3 + t, Timestamp.valueOf(game.getDateTime()));
-            statement.setString(4 + t, game.getFirstTeam());
-            statement.setString(5 + t, game.getSecondTeam());
-            statement.setDouble(6 + t, game.getFirstWin());
-            statement.setDouble(7 + t, game.getTie());
-            statement.setDouble(8 + t, game.getSecondWin());
-            statement.setDouble(9 + t, game.getFirstWinOrTie());
-            statement.setDouble(10 + t, game.getSecondWinOrTie());
-            statement.setObject(11 + t, gameResultToInt(game.getGameResult()));
-            statement.setInt(12 + t, game.getBetMade());
-            statement.setString(13 + t, ruleNumber.toString());
+        try (PreparedStatement statement = connection.prepareStatement(SQLGame.INSERT.QUERY, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, game.getLeague());
+            statement.setString(2, game.getLeagueLink());
+            statement.setTimestamp(3, Timestamp.valueOf(game.getDateTime()));
+            statement.setString(4, game.getFirstTeam());
+            statement.setString(5, game.getSecondTeam());
+            statement.setDouble(6, game.getFirstWin());
+            statement.setDouble(7, game.getTie());
+            statement.setDouble(8, game.getSecondWin());
+            statement.setDouble(9, game.getFirstWinOrTie());
+            statement.setDouble(10, game.getSecondWinOrTie());
+            statement.setObject(11, gameResultToInt(game.getGameResult()));
+            statement.setInt(12, game.getBetMade());
+            statement.setString(13, ruleNumber.toString());
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
             if (generatedKeys.next()) {
@@ -142,7 +155,7 @@ public class GameDao {
         GET_BY_RULE_AND_DATE("SELECT * FROM game WHERE rule_number = (?) AND date_time >= (?) AND date_time <= (?)"),
         GET_BY_RULE_NUMBER("SELECT * FROM game WHERE rule_number = (?)"),
         INSERT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))"),
-        UPDATE("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES ((?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?)) ON CONFLICT (id) DO NOTHING"),
+        UPDATE_RESULT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES ((?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?)) ON CONFLICT (id) DO UPDATE SET result = EXCLUDED.result"),
         DELETE_BY_ID("DELETE FROM game WHERE id = (?)");
 
         String QUERY;
