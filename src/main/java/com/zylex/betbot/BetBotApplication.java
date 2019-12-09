@@ -18,6 +18,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +34,8 @@ public class BetBotApplication {
                 new RuleProcessor(
                     new GameRepository(),
                     new LeagueRepository(),
-                    new ParseProcessor()
+                    new ParseProcessor(),
+                        new GameDao(connection)
                 ),
                 new BalanceRepository(),
                 defineRuleNumbers(args)

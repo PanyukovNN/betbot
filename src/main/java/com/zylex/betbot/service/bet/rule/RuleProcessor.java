@@ -1,5 +1,6 @@
 package com.zylex.betbot.service.bet.rule;
 
+import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.repository.GameRepository;
 import com.zylex.betbot.controller.repository.LeagueRepository;
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
@@ -26,14 +27,17 @@ public class RuleProcessor {
 
     private LeagueRepository leagueRepository;
 
-    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor) {
+    private GameDao gameDao;
+
+    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor, GameDao gameDao) {
         this.gameRepository = gameRepository;
         this.leagueRepository = leagueRepository;
         this.parseProcessor = parseProcessor;
+        this.gameDao = gameDao;
     }
 
-    public GameRepository getGameRepository() {
-        return gameRepository;
+    public GameDao getGameDao() {
+        return gameDao;
     }
 
     /**
@@ -62,29 +66,20 @@ public class RuleProcessor {
         Map<RuleNumber, List<Game>> betGames = new HashMap<>();
         for (RuleNumber ruleNumber : RuleNumber.values()) {
             betGames.put(ruleNumber, new ArrayList<>());
-            List<Game> fileBetGames = gameRepository.readByRule(ruleNumber);
             for (Day day : Day.values()) {
                 LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX),
                         LocalTime.of(23, 0));
                 if (LocalDateTime.now().isBefore(startBetTime)) {
                     List<Game> dayBetGames = filterGamesByDay(eligibleGames.get(ruleNumber), day);
                     betGames.get(ruleNumber).addAll(dayBetGames);
-                    fileBetGames = removeDayGames(fileBetGames, day);
-                    fileBetGames.addAll(dayBetGames);
                 } else {
-                    betGames.get(ruleNumber).addAll(filterGamesByDay(fileBetGames, day));
+                    betGames.get(ruleNumber).addAll(gameDao.getByDate(ruleNumber, LocalDate.now().plusDays(day.INDEX)));
                 }
             }
-            gameRepository.saveByRule(ruleNumber, fileBetGames);
+            gameRepository.saveByRule(ruleNumber, betGames.get(ruleNumber));
         }
         logger.writeEligibleGamesNumber(betGames);
         return betGames;
-    }
-
-    private List<Game> removeDayGames(List<Game> fileBetGames, Day day) {
-        return fileBetGames.stream()
-                .filter(game -> !game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
-                .collect(Collectors.toList());
     }
 
     private List<Game> filterGamesByDay(List<Game> eligibleGames, Day day) {

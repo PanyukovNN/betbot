@@ -1,7 +1,7 @@
 package com.zylex.betbot.service.bet;
 
+import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.repository.BalanceRepository;
-import com.zylex.betbot.controller.repository.GameRepository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
@@ -37,9 +37,9 @@ public class BetProcessor {
 
     private RuleProcessor ruleProcessor;
 
-    private GameRepository gameRepository;
-
     private BalanceRepository balanceRepository;
+
+    private GameDao gameDao;
 
     private int totalBalance = -1;
 
@@ -48,7 +48,7 @@ public class BetProcessor {
     public BetProcessor(RuleProcessor ruleProcessor, BalanceRepository balanceRepository, List<RuleNumber> ruleList) {
         this.ruleProcessor = ruleProcessor;
         this.balanceRepository = balanceRepository;
-        this.gameRepository = ruleProcessor.getGameRepository();
+        this.gameDao = ruleProcessor.getGameDao();
         this.ruleList = ruleList;
     }
 
@@ -70,7 +70,8 @@ public class BetProcessor {
                 }
                 openSite();
                 List<Game> betMadeGames = processBets(ruleNumber, betGames);
-                gameRepository.appendSaveByRule(ruleNumber, betMadeGames);
+//                gameRepository.appendSaveByRule(ruleNumber, betMadeGames);
+                betMadeGames.forEach(game -> gameDao.save(game, ruleNumber));
             }
             if (driver == null) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
