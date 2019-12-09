@@ -54,7 +54,7 @@ public class BetProcessor {
 
     /**
      * Initiates non-headless chrome driver, opens the site, logs in,
-     * makes bets, and saves bet made games to files.
+     * makes bets, and saves bet made games to database.
      */
     public void process() {
         Map<RuleNumber, List<Game>> ruleGames = ruleProcessor.process();
@@ -70,7 +70,6 @@ public class BetProcessor {
                 }
                 openSite();
                 List<Game> betMadeGames = processBets(ruleNumber, betGames);
-//                gameRepository.appendSaveByRule(ruleNumber, betMadeGames);
                 betMadeGames.forEach(game -> gameDao.save(game, ruleNumber));
             }
             if (driver == null) {

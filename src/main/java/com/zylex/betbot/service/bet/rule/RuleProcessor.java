@@ -41,7 +41,7 @@ public class RuleProcessor {
     }
 
     /**
-     * Filters games by specified rule, takes list of games from site or from file,
+     * Filters games by specified rule, takes list of games from site or from database,
      * which depends on current time, sort games by time, then save eligible games to file,
      * and return games list.
      * @return - map of games lists by ruleNumbers.
