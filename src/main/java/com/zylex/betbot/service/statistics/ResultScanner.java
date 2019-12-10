@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 /**
  * Scans games results.
  */
+@SuppressWarnings("WeakerAccess")
 public class ResultScanner {
 
     private ScannerConsoleLogger logger = new ScannerConsoleLogger();
