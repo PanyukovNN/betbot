@@ -48,13 +48,16 @@ public class RuleProcessor {
      */
     public Map<RuleNumber, List<Game>> process() {
         List<Game> games = parseProcessor.process();
-        Map<RuleNumber, List<Game>> eligibleGames = findEligibleGames(games);
-        Map<RuleNumber, List<Game>> betGames = refreshGamesByParsingTime(eligibleGames);
+        Map<RuleNumber, List<Game>> ruleGames = findRuleGames(games);
+        Map<RuleNumber, List<Game>> betGames = refreshGamesByParsingTime(ruleGames);
         betGames.forEach((ruleNumber, gameList) -> gameList.sort(Comparator.comparing(Game::getDateTime)));
         return betGames;
+//        ruleGames.forEach((ruleNumber, gameList) -> gameList.sort(Comparator.comparing(Game::getDateTime)));
+//        logger.writeEligibleGamesNumber(ruleGames);
+//        return ruleGames;
     }
 
-    private Map<RuleNumber, List<Game>> findEligibleGames(List<Game> games) {
+    private Map<RuleNumber, List<Game>> findRuleGames(List<Game> games) {
         Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
         for (RuleNumber ruleNumber : RuleNumber.values()) {
             eligibleGames.put(ruleNumber, ruleNumber.rule.filter(leagueRepository, games));
@@ -73,6 +76,7 @@ public class RuleProcessor {
                     List<Game> dayBetGames = filterGamesByDay(eligibleGames.get(ruleNumber), day);
                     betGames.get(ruleNumber).addAll(dayBetGames);
                 } else {
+                    //TODO
                     betGames.get(ruleNumber).addAll(gameDao.getByDate(ruleNumber, LocalDate.now().plusDays(day.INDEX)));
                 }
             }

@@ -6,7 +6,7 @@ Bot consists of two modules:
 #### **Used tecnologies:**
 - Selenium
 - PostgreSQL
-- StreamAPI
+- Stream API
 - Multithreading
 - Java 8 Data/Time API
 

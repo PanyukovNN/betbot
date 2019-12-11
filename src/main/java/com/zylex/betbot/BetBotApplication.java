@@ -30,7 +30,7 @@ public class BetBotApplication {
                     new GameRepository(),
                     new LeagueRepository(),
                     new ParseProcessor(),
-                        new GameDao(connection)
+                    new GameDao(connection)
                 ),
                 new BalanceRepository(),
                 defineRuleNumbers(args)
