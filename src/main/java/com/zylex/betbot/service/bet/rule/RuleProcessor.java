@@ -1,43 +1,27 @@
 package com.zylex.betbot.service.bet.rule;
 
-import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.repository.GameRepository;
 import com.zylex.betbot.controller.repository.LeagueRepository;
-import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Filter games by rules.
  */
 public class RuleProcessor {
 
-    private ParsingConsoleLogger logger = new ParsingConsoleLogger();
-
     private ParseProcessor parseProcessor;
-
-    private GameRepository gameRepository;
 
     private LeagueRepository leagueRepository;
 
-    private GameDao gameDao;
+    private GameRepository gameRepository;
 
-    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor, GameDao gameDao) {
+    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor) {
         this.gameRepository = gameRepository;
         this.leagueRepository = leagueRepository;
         this.parseProcessor = parseProcessor;
-        this.gameDao = gameDao;
-    }
-
-    public GameDao getGameDao() {
-        return gameDao;
     }
 
     /**
@@ -49,46 +33,16 @@ public class RuleProcessor {
     public Map<RuleNumber, List<Game>> process() {
         List<Game> games = parseProcessor.process();
         Map<RuleNumber, List<Game>> ruleGames = findRuleGames(games);
-        Map<RuleNumber, List<Game>> betGames = refreshGamesByParsingTime(ruleGames);
-        betGames.forEach((ruleNumber, gameList) -> gameList.sort(Comparator.comparing(Game::getDateTime)));
-        return betGames;
-//        ruleGames.forEach((ruleNumber, gameList) -> gameList.sort(Comparator.comparing(Game::getDateTime)));
-//        logger.writeEligibleGamesNumber(ruleGames);
-//        return ruleGames;
+        ruleGames.forEach((ruleNumber, gameList) -> gameList.sort(Comparator.comparing(Game::getDateTime)));
+        return ruleGames;
     }
 
     private Map<RuleNumber, List<Game>> findRuleGames(List<Game> games) {
         Map<RuleNumber, List<Game>> eligibleGames = new HashMap<>();
         for (RuleNumber ruleNumber : RuleNumber.values()) {
             eligibleGames.put(ruleNumber, ruleNumber.rule.filter(leagueRepository, games));
+            gameRepository.saveByRule(ruleNumber, eligibleGames.get(ruleNumber));
         }
         return eligibleGames;
-    }
-
-    private Map<RuleNumber, List<Game>> refreshGamesByParsingTime(Map<RuleNumber, List<Game>> eligibleGames) {
-        Map<RuleNumber, List<Game>> betGames = new HashMap<>();
-        for (RuleNumber ruleNumber : RuleNumber.values()) {
-            betGames.put(ruleNumber, new ArrayList<>());
-            for (Day day : Day.values()) {
-                LocalDateTime startBetTime = LocalDateTime.of(LocalDate.now().minusDays(1).plusDays(day.INDEX),
-                        LocalTime.of(23, 0));
-                if (LocalDateTime.now().isBefore(startBetTime)) {
-                    List<Game> dayBetGames = filterGamesByDay(eligibleGames.get(ruleNumber), day);
-                    betGames.get(ruleNumber).addAll(dayBetGames);
-                } else {
-                    //TODO
-                    betGames.get(ruleNumber).addAll(gameDao.getByDate(ruleNumber, LocalDate.now().plusDays(day.INDEX)));
-                }
-            }
-            gameRepository.saveByRule(ruleNumber, betGames.get(ruleNumber));
-        }
-        logger.writeEligibleGamesNumber(betGames);
-        return betGames;
-    }
-
-    private List<Game> filterGamesByDay(List<Game> eligibleGames, Day day) {
-        return eligibleGames.stream()
-                .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
-                .collect(Collectors.toList());
     }
 }

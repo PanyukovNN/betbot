@@ -2,6 +2,7 @@ package com.zylex.betbot;
 
 import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.repository.BalanceRepository;
+import com.zylex.betbot.controller.repository.BetInfoRepository;
 import com.zylex.betbot.controller.repository.GameRepository;
 import com.zylex.betbot.controller.repository.LeagueRepository;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
@@ -29,10 +30,11 @@ public class BetBotApplication {
                 new RuleProcessor(
                     new GameRepository(),
                     new LeagueRepository(),
-                    new ParseProcessor(),
-                    new GameDao(connection)
+                    new ParseProcessor()
                 ),
+                new BetInfoRepository(),
                 new BalanceRepository(),
+                new GameDao(connection),
                 defineRuleNumbers(args)
             ).process();
         } catch (SQLException e) {

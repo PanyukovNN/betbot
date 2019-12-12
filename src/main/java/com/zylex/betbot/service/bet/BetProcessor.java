@@ -4,6 +4,7 @@ import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.repository.BalanceRepository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
+import com.zylex.betbot.controller.repository.BetInfoRepository;
 import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.Game;
@@ -39,16 +40,19 @@ public class BetProcessor {
 
     private BalanceRepository balanceRepository;
 
+    private BetInfoRepository betInfoRepository;
+
     private GameDao gameDao;
 
     private int totalBalance = -1;
 
     private int availableBalance = -1;
 
-    public BetProcessor(RuleProcessor ruleProcessor, BalanceRepository balanceRepository, List<RuleNumber> ruleList) {
+    public BetProcessor(RuleProcessor ruleProcessor, BetInfoRepository betInfoRepository, BalanceRepository balanceRepository, GameDao gameDao, List<RuleNumber> ruleList) {
         this.ruleProcessor = ruleProcessor;
         this.balanceRepository = balanceRepository;
-        this.gameDao = ruleProcessor.getGameDao();
+        this.gameDao = gameDao;
+        this.betInfoRepository = betInfoRepository;
         this.ruleList = ruleList;
     }
 
@@ -58,6 +62,7 @@ public class BetProcessor {
      */
     public void process() {
         Map<RuleNumber, List<Game>> ruleGames = ruleProcessor.process();
+        logger.writeEligibleGamesNumber(ruleGames);
         if (ruleList.isEmpty()) {
             return;
         }
@@ -75,6 +80,7 @@ public class BetProcessor {
             if (driver == null) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
             } else {
+                betInfoRepository.write(LocalDateTime.now());
                 logger.betMade(LogType.OK);
             }
         } catch (IOException | ElementNotInteractableException e) {
@@ -91,7 +97,8 @@ public class BetProcessor {
     }
 
     private List<Game> filterByBetMade(List<Game> filteredBetGames) {
-        return filteredBetGames.stream().filter(game -> game.getBetMade() == 0).collect(Collectors.toList());
+        LocalDateTime betTime = betInfoRepository.read();
+        return filteredBetGames.stream().filter(game -> !betTime.isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), LocalTime.of(22,59)))).collect(Collectors.toList());
     }
 
     private List<Game> filterByParsingTime(List<Game> betGames) {

@@ -2,7 +2,13 @@ package com.zylex.betbot.controller.logger;
 
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.service.Day;
+import com.zylex.betbot.service.bet.rule.RuleNumber;
 import org.apache.commons.lang3.StringUtils;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Logs BetProcessor.
@@ -81,5 +87,22 @@ public class BetConsoleLogger extends ConsoleLogger{
         }
         writeLineSeparator();
         writeInLine(String.format("\nBot work completed in %s", computeTime(programStartTime.get())));
+    }
+
+    /**
+     * Log number of eligible games for every rule.
+     * @param eligibleGames - map of eligible games.
+     */
+    public void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {
+        for (RuleNumber ruleNumber : RuleNumber.values()) {
+            writeInLine(String.format("\n%13s ", ruleNumber + " -"));
+            for (Day day : Day.values()) {
+                int eligibleGamesCount = (int) eligibleGames.get(ruleNumber).stream()
+                        .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
+                        .count();
+                writeInLine(String.format("%3d (%s) ", eligibleGamesCount, day));
+            }
+        }
+        writeLineSeparator();
     }
 }
