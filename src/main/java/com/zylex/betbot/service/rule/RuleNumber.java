@@ -1,4 +1,4 @@
-package com.zylex.betbot.service.bet.rule;
+package com.zylex.betbot.service.rule;
 
 import com.zylex.betbot.model.BetCoefficient;
 

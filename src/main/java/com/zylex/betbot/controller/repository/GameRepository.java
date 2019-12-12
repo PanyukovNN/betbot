@@ -2,7 +2,7 @@ package com.zylex.betbot.controller.repository;
 
 import com.zylex.betbot.exception.GameRepositoryException;
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.bet.rule.RuleNumber;
+import com.zylex.betbot.service.rule.RuleNumber;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

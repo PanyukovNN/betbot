@@ -6,7 +6,7 @@ import com.zylex.betbot.controller.logger.ScannerConsoleLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
-import com.zylex.betbot.service.bet.rule.RuleNumber;
+import com.zylex.betbot.service.rule.RuleNumber;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

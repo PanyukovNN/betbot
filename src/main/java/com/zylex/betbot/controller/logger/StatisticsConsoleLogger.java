@@ -1,6 +1,6 @@
 package com.zylex.betbot.controller.logger;
 
-import com.zylex.betbot.service.bet.rule.RuleNumber;
+import com.zylex.betbot.service.rule.RuleNumber;
 
 import java.time.LocalDate;
 

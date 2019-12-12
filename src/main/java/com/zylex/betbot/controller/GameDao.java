@@ -3,7 +3,7 @@ package com.zylex.betbot.controller;
 import com.zylex.betbot.exception.GameDaoException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
-import com.zylex.betbot.service.bet.rule.RuleNumber;
+import com.zylex.betbot.service.rule.RuleNumber;
 
 import java.sql.*;
 import java.time.LocalDate;
