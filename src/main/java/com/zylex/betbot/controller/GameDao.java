@@ -18,6 +18,22 @@ public class GameDao {
         this.connection = connection;
     }
 
+    public Game get(Game game) {
+        try (PreparedStatement statement = connection.prepareStatement(SQLGame.GET.QUERY)) {
+            statement.setString(1, game.getLeague());
+            statement.setTimestamp(2, Timestamp.valueOf(game.getDateTime()));
+            statement.setString(3, game.getFirstTeam());
+            statement.setString(4, game.getSecondTeam());
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return extractGame(resultSet);
+            }
+            return new Game();
+        } catch (SQLException e) {
+            throw new GameDaoException(e.getMessage(), e);
+        }
+    }
+
     public List<Game> getByRuleNumber(RuleNumber ruleNumber) {
         try (PreparedStatement statement = connection.prepareStatement(SQLGame.GET_BY_RULE_NUMBER.QUERY)) {
             statement.setString(1, ruleNumber.toString());
@@ -73,6 +89,9 @@ public class GameDao {
     }
 
     public void save(Game game, RuleNumber ruleNumber) {
+        if (get(game).getId() != 0) {
+            delete(game.getId());
+        }
         try (PreparedStatement statement = connection.prepareStatement(SQLGame.INSERT.QUERY, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, game.getLeague());
             statement.setString(2, game.getLeagueLink());
@@ -92,6 +111,15 @@ public class GameDao {
             if (generatedKeys.next()) {
                 game.setId(generatedKeys.getInt(1));
             }
+        } catch (SQLException e) {
+            throw new GameDaoException(e.getMessage(), e);
+        }
+    }
+
+    private void delete(long id) {
+        try (PreparedStatement statement = connection.prepareStatement(SQLGame.DELETE_BY_ID.QUERY)) {
+            statement.setLong(1, id);
+            statement.executeUpdate();
         } catch (SQLException e) {
             throw new GameDaoException(e.getMessage(), e);
         }
@@ -125,9 +153,11 @@ public class GameDao {
     }
 
     enum SQLGame {
+        GET("SELECT * FROM game WHERE league = (?) AND date_time = (?) AND first_team = (?) AND second_team = (?)"),
         GET_BY_RULE_NUMBER("SELECT * FROM game WHERE rule_number = (?)"),
         INSERT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))"),
-        UPDATE_RESULT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES ((?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?)) ON CONFLICT (id) DO UPDATE SET result = EXCLUDED.result");
+        UPDATE_RESULT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES ((?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?)) ON CONFLICT (id) DO UPDATE SET result = EXCLUDED.result"),
+        DELETE_BY_ID("DELETE FROM season WHERE id = (?)");
 
         String QUERY;
 

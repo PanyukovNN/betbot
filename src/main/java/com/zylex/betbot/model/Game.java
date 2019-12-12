@@ -34,7 +34,7 @@ public class Game {
     private GameResult gameResult;
 
     private int betMade = 0;
-
+    
     public Game(long id, String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie, GameResult gameResult, int betMade) {
         this.id = id;
         this.league = league;
@@ -49,6 +49,9 @@ public class Game {
         this.secondWinOrTie = secondWinOrTie;
         this.gameResult = gameResult;
         this.betMade = betMade;
+    }
+
+    public Game() {
     }
 
     public long getId() {
