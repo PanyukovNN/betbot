@@ -159,25 +159,28 @@ public class ResultScanner {
         return LocalDateTime.parse(dateText, dateTimeFormatter);
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     private void navigateToDay(LocalDate day) {
         if (day.getMonth().equals(LocalDate.now().getMonth())) {
             waitSingleElementAndGet("vdp-datepicker").click();
             WebElement nextButton = waitSingleElementAndGet("next");
             ((JavascriptExecutor) driver).executeScript("arguments[0].click()", nextButton);
-            waitElementsAndGet("day").stream()
-                    .filter(element -> element.getText().equals(String.valueOf(day.getDayOfMonth())))
-                    .findFirst()
-                    .get()
-                    .click();
+            List<WebElement> elements = waitElementsAndGet("day");
+            for (WebElement element : elements) {
+                if (element.getText().equals(String.valueOf(day.getDayOfMonth()))) {
+                    element.click();
+                    break;
+                }
+            }
         } else if (day.getMonth().equals(LocalDate.now().minusMonths(1).getMonth())) {
             waitSingleElementAndGet("vdp-datepicker").click();
             waitSingleElementAndGet("prev").click();
-            waitElementsAndGet("day").stream()
-                    .filter(element -> element.getText().equals(String.valueOf(day.getDayOfMonth())))
-                    .findFirst()
-                    .get()
-                    .click();
+            List<WebElement> elements = waitElementsAndGet("day");
+            for (WebElement element : elements) {
+                if (element.getText().equals(String.valueOf(day.getDayOfMonth()))) {
+                    element.click();
+                    break;
+                }
+            }
         }
     }
 
