@@ -48,11 +48,11 @@ public class BetProcessor {
 
     private int availableBalance = -1;
 
-    public BetProcessor(RuleProcessor ruleProcessor, BetInfoRepository betInfoRepository, BalanceRepository balanceRepository, GameDao gameDao, List<RuleNumber> ruleList) {
+    public BetProcessor(RuleProcessor ruleProcessor, BalanceRepository balanceRepository, List<RuleNumber> ruleList) {
         this.ruleProcessor = ruleProcessor;
         this.balanceRepository = balanceRepository;
-        this.gameDao = gameDao;
-        this.betInfoRepository = betInfoRepository;
+        this.gameDao = ruleProcessor.getGameDao();
+        this.betInfoRepository = ruleProcessor.getBetInfoRepository();
         this.ruleList = ruleList;
     }
 
@@ -74,8 +74,7 @@ public class BetProcessor {
                     continue;
                 }
                 openSite();
-                List<Game> betMadeGames = processBets(ruleNumber, betGames);
-                betMadeGames.forEach(game -> gameDao.save(game, ruleNumber));
+                processBets(ruleNumber, betGames);
             }
             if (driver == null) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
@@ -97,8 +96,7 @@ public class BetProcessor {
     }
 
     private List<Game> filterByBetMade(List<Game> filteredBetGames) {
-        LocalDateTime betTime = betInfoRepository.read();
-        return filteredBetGames.stream().filter(game -> !betTime.isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), LocalTime.of(22,59)))).collect(Collectors.toList());
+        return filteredBetGames.stream().filter(game -> game.getBetMade() == 0).collect(Collectors.toList());
     }
 
     private List<Game> filterByParsingTime(List<Game> betGames) {
@@ -146,12 +144,11 @@ public class BetProcessor {
         }
     }
 
-    private List<Game> processBets(RuleNumber ruleNumber, List<Game> betGames) {
+    private void processBets(RuleNumber ruleNumber, List<Game> betGames) {
         logger.startLogMessage(LogType.BET, ruleNumber.toString());
         BetCoefficient betCoefficient = ruleNumber.betCoefficient;
         updateBalance();
         int singleBetAmount = calculateAmount(ruleNumber);
-        List<Game> betMadeGames = new ArrayList<>();
         int i = 0;
         for (Game game : betGames) {
             if (availableBalance < singleBetAmount) {
@@ -164,12 +161,11 @@ public class BetProcessor {
             }
             if (makeBet(singleBetAmount)) {
                 availableBalance -= singleBetAmount;
-                betMadeGames.add(game);
                 game.setBetMade(1);
+                gameDao.save(game, ruleNumber);
                 logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
             }
         }
-        return betMadeGames;
     }
 
 

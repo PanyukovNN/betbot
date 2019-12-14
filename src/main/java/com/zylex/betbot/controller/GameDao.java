@@ -6,7 +6,9 @@ import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.rule.RuleNumber;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +31,22 @@ public class GameDao {
                 return extractGame(resultSet);
             }
             return new Game();
+        } catch (SQLException e) {
+            throw new GameDaoException(e.getMessage(), e);
+        }
+    }
+
+    public List<Game> getByDate(RuleNumber ruleNumber, LocalDate date) {
+        try (PreparedStatement statement = connection.prepareStatement(SQLGame.GET_BY_RULE_AND_DATE.QUERY)) {
+            statement.setString(1, ruleNumber.toString());
+            statement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.of(date, LocalTime.MIN)));
+            statement.setTimestamp(3, Timestamp.valueOf(LocalDateTime.of(date, LocalTime.MAX)));
+            ResultSet resultSet = statement.executeQuery();
+            List<Game> ruleGames = new ArrayList<>();
+            while (resultSet.next()) {
+                ruleGames.add(extractGame(resultSet));
+            }
+            return ruleGames;
         } catch (SQLException e) {
             throw new GameDaoException(e.getMessage(), e);
         }
@@ -154,6 +172,7 @@ public class GameDao {
 
     enum SQLGame {
         GET("SELECT * FROM game WHERE league = (?) AND date_time = (?) AND first_team = (?) AND second_team = (?)"),
+        GET_BY_RULE_AND_DATE("SELECT * FROM game WHERE rule_number = (?) AND date_time >= (?) AND date_time <= (?)"),
         GET_BY_RULE_NUMBER("SELECT * FROM game WHERE rule_number = (?)"),
         INSERT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))"),
         UPDATE_RESULT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES ((?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?)) ON CONFLICT (id) DO UPDATE SET result = EXCLUDED.result"),

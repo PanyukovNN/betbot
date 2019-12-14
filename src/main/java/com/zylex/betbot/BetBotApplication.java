@@ -30,11 +30,11 @@ public class BetBotApplication {
                 new RuleProcessor(
                     new GameRepository(),
                     new LeagueRepository(),
-                    new ParseProcessor()
+                    new ParseProcessor(),
+                    new GameDao(connection),
+                    new BetInfoRepository()
                 ),
-                new BetInfoRepository(),
                 new BalanceRepository(),
-                new GameDao(connection),
                 defineRuleNumbers(args)
             ).process();
         } catch (SQLException e) {
