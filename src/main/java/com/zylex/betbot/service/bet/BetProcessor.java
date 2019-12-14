@@ -171,12 +171,8 @@ public class BetProcessor {
 
     private void updateBalance() {
         if (totalBalance == -1) {
-            totalBalance = (int) Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
-            int balance = balanceRepository.read();
-            if (totalBalance < balance) {
-                totalBalance = balance;
-            }
-            availableBalance = totalBalance;
+            availableBalance = (int) Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
+            totalBalance = Math.max(availableBalance, balanceRepository.read());
             balanceRepository.write(totalBalance);
         }
     }
