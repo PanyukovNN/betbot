@@ -1,6 +1,7 @@
 package com.zylex.betbot.service.rule;
 
 import com.zylex.betbot.controller.GameDao;
+import com.zylex.betbot.controller.logger.RuleProcessorLogger;
 import com.zylex.betbot.controller.repository.BetInfoRepository;
 import com.zylex.betbot.controller.repository.GameRepository;
 import com.zylex.betbot.controller.repository.LeagueRepository;
@@ -12,11 +13,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Filter games by rules.
  */
 public class RuleProcessor {
+
+    private RuleProcessorLogger logger = new RuleProcessorLogger();
 
     private ParseProcessor parseProcessor;
 
@@ -62,18 +66,22 @@ public class RuleProcessor {
         LocalDateTime betTime = betInfoRepository.read();
         Map<RuleNumber, List<Game>> betGames = new HashMap<>();
         for (RuleNumber ruleNumber : RuleNumber.values()) {
+            betGames.put(ruleNumber, new ArrayList<>());
             for (Day day : Day.values()) {
                 List<Game> dayGames = gameDao.getByDate(ruleNumber, LocalDate.now().plusDays(day.INDEX));
                 if (betTime.isAfter(LocalDateTime.of(LocalDate.now().plusDays(day.INDEX).minusDays(1), LocalTime.of(22, 59)))) {
-                    betGames.put(ruleNumber, dayGames);
+                    betGames.get(ruleNumber).addAll(dayGames);
                 } else {
-                    //TODO
-                    betGames.put(ruleNumber, ruleGames.get(ruleNumber));
+                    //TODO improve delete; sort before saving
+                    List<Game> dayRuleGames = ruleGames.get(ruleNumber)
+                            .stream().filter(game -> game.getDateTime().toLocalDate().equals(LocalDate.now().plusDays(day.INDEX))).collect(Collectors.toList());
+                    betGames.get(ruleNumber).addAll(dayRuleGames);
                     dayGames.forEach(gameDao::delete);
-                    ruleGames.get(ruleNumber).forEach(game -> gameDao.save(game, ruleNumber));
+                    dayRuleGames.forEach(game -> gameDao.save(game, ruleNumber));
                 }
             }
         }
+        logger.writeEligibleGamesNumber(betGames);
         return betGames;
     }
 
