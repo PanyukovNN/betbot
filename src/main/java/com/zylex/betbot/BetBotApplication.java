@@ -3,7 +3,6 @@ package com.zylex.betbot;
 import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.repository.BalanceRepository;
 import com.zylex.betbot.controller.repository.BetInfoRepository;
-import com.zylex.betbot.controller.repository.GameRepository;
 import com.zylex.betbot.controller.repository.LeagueRepository;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.exception.BetBotException;
@@ -28,7 +27,6 @@ public class BetBotApplication {
         try (Connection connection = getConnection()) {
             new BetProcessor(
                 new RuleProcessor(
-                    new GameRepository(),
                     new LeagueRepository(),
                     new ParseProcessor(),
                     new GameDao(connection),

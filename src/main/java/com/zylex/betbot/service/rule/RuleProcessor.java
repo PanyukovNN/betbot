@@ -3,7 +3,6 @@ package com.zylex.betbot.service.rule;
 import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.logger.RuleProcessorLogger;
 import com.zylex.betbot.controller.repository.BetInfoRepository;
-import com.zylex.betbot.controller.repository.GameRepository;
 import com.zylex.betbot.controller.repository.LeagueRepository;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
@@ -26,14 +25,11 @@ public class RuleProcessor {
 
     private LeagueRepository leagueRepository;
 
-    private GameRepository gameRepository;
-
     private GameDao gameDao;
 
     private BetInfoRepository betInfoRepository;
 
-    public RuleProcessor(GameRepository gameRepository, LeagueRepository leagueRepository, ParseProcessor parseProcessor, GameDao gameDao, BetInfoRepository betInfoRepository) {
-        this.gameRepository = gameRepository;
+    public RuleProcessor(LeagueRepository leagueRepository, ParseProcessor parseProcessor, GameDao gameDao, BetInfoRepository betInfoRepository) {
         this.leagueRepository = leagueRepository;
         this.parseProcessor = parseProcessor;
         this.gameDao = gameDao;
