@@ -53,9 +53,7 @@ public class RuleProcessor {
     public Map<RuleNumber, List<Game>> process() {
         List<Game> games = parseProcessor.process();
         Map<RuleNumber, List<Game>> ruleGames = findRuleGames(games);
-        Map<RuleNumber, List<Game>> betGames = refreshByDay(ruleGames);
-        betGames.forEach((ruleNumber, gameList) -> gameList.sort(Comparator.comparing(Game::getDateTime)));
-        return betGames;
+        return refreshByDay(ruleGames);
     }
 
     private Map<RuleNumber, List<Game>> refreshByDay(Map<RuleNumber, List<Game>> ruleGames) {
@@ -66,11 +64,11 @@ public class RuleProcessor {
             for (Day day : Day.values()) {
                 List<Game> dayGames = gameDao.getByDate(ruleNumber, LocalDate.now().plusDays(day.INDEX));
                 if (betTime.isAfter(LocalDateTime.of(LocalDate.now().plusDays(day.INDEX).minusDays(1), LocalTime.of(22, 59)))) {
-                    betGames.get(ruleNumber).addAll(dayGames);
+                    betGames.get(ruleNumber).addAll(sortByDate(dayGames));
                 } else {
-                    //TODO improve delete; sort before saving
-                    List<Game> dayRuleGames = ruleGames.get(ruleNumber)
-                            .stream().filter(game -> game.getDateTime().toLocalDate().equals(LocalDate.now().plusDays(day.INDEX))).collect(Collectors.toList());
+                    List<Game> dayRuleGames = sortByDate(ruleGames.get(ruleNumber).stream()
+                            .filter(game -> game.getDateTime().toLocalDate().equals(LocalDate.now().plusDays(day.INDEX)))
+                            .collect(Collectors.toList()));
                     betGames.get(ruleNumber).addAll(dayRuleGames);
                     dayGames.forEach(gameDao::delete);
                     dayRuleGames.forEach(game -> gameDao.save(game, ruleNumber));
@@ -79,6 +77,12 @@ public class RuleProcessor {
         }
         logger.writeEligibleGamesNumber(betGames);
         return betGames;
+    }
+
+    private List<Game> sortByDate(List<Game> games) {
+        return games.stream()
+                .sorted(Comparator.comparing(Game::getDateTime))
+                .collect(Collectors.toList());
     }
 
     private Map<RuleNumber, List<Game>> findRuleGames(List<Game> games) {
