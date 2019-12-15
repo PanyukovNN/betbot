@@ -70,11 +70,11 @@ public class BetProcessor {
             for (RuleNumber ruleNumber : ruleList) {
                 List<Game> games = ruleGames.get(ruleNumber);
                 List<Game> betGames = findBetGames(games);
-                if (betGames.isEmpty()) {
-                    continue;
-                }
-                openSite();
-                processBets(ruleNumber, betGames);
+//                if (betGames.isEmpty()) {
+//                    continue;
+//                }
+//                openSite();
+//                processBets(ruleNumber, betGames);
             }
             if (driver == null) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
@@ -82,7 +82,7 @@ public class BetProcessor {
                 betInfoRepository.write(LocalDateTime.now());
                 logger.betMade(LogType.OK);
             }
-        } catch (IOException | ElementNotInteractableException e) {
+        } catch (ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         } finally {
             if (driver != null) {
@@ -159,12 +159,15 @@ public class BetProcessor {
                 game.setBetMade(-1);
                 continue;
             }
-            if (makeBet(singleBetAmount)) {
-                availableBalance -= singleBetAmount;
-                game.setBetMade(1);
-                gameDao.save(game, ruleNumber);
-                logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
-            }
+//            if (makeBet(singleBetAmount)) {
+//                availableBalance -= singleBetAmount;
+//                game.setBetMade(1);
+//                gameDao.updateBetMade(game, ruleNumber);
+//                logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
+//            }
+            game.setBetMade(1);
+            gameDao.save(game, ruleNumber);
+            logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
         }
     }
 

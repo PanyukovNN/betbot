@@ -63,10 +63,14 @@ public class RuleProcessor {
         Map<RuleNumber, List<Game>> betGames = new HashMap<>();
         for (RuleNumber ruleNumber : RuleNumber.values()) {
             for (Day day : Day.values()) {
+                List<Game> dayGames = gameDao.getByDate(ruleNumber, LocalDate.now().plusDays(day.INDEX));
                 if (betTime.isAfter(LocalDateTime.of(LocalDate.now().plusDays(day.INDEX).minusDays(1), LocalTime.of(22, 59)))) {
-                    betGames.put(ruleNumber, gameDao.getByDate(ruleNumber, LocalDate.now().plusDays(day.INDEX)));
+                    betGames.put(ruleNumber, dayGames);
                 } else {
+                    //TODO
                     betGames.put(ruleNumber, ruleGames.get(ruleNumber));
+                    dayGames.forEach(gameDao::delete);
+                    ruleGames.get(ruleNumber).forEach(game -> gameDao.save(game, ruleNumber));
                 }
             }
         }
@@ -77,7 +81,6 @@ public class RuleProcessor {
         Map<RuleNumber, List<Game>> ruleGames = new HashMap<>();
         for (RuleNumber ruleNumber : RuleNumber.values()) {
             ruleGames.put(ruleNumber, ruleNumber.rule.filter(leagueRepository, games));
-            gameRepository.saveByRule(ruleNumber, ruleGames.get(ruleNumber));
         }
         return ruleGames;
     }

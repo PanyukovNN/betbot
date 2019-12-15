@@ -60,7 +60,7 @@ public class ResultScanner {
         logger.startLogMessage(betMadeNoResultGamesByDay.size());
         if (openFootballGamesResults()) {
             processGameResults(betMadeNoResultGamesByDay);
-            betMadeNoResultGamesByDay.forEach((k, v) -> v.forEach(game -> gameDao.updateResult(game, ruleNumber)));
+            betMadeNoResultGamesByDay.forEach((k, v) -> v.forEach(game -> gameDao.save(game, ruleNumber)));
             logger.endMessage(LogType.OK);
         }
     }
