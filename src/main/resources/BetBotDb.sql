@@ -15,3 +15,10 @@ CREATE TABLE IF NOT EXISTS game (
     bet_made          INT,
     rule_number       VARCHAR(100)
 );
+
+DROP TABLE IF EXISTS selected_league;
+CREATE TABLE IF NOT EXISTS selected_league (
+    id  SERIAL NOT NULL PRIMARY KEY,
+    league_link VARCHAR(200) NOT NULL,
+    rule_number VARCHAR(100) NOT NULL
+)
