@@ -1,6 +1,7 @@
 package com.zylex.betbot;
 
 import com.zylex.betbot.controller.GameDao;
+import com.zylex.betbot.controller.LeagueDao;
 import com.zylex.betbot.controller.repository.BalanceRepository;
 import com.zylex.betbot.controller.repository.BetInfoRepository;
 import com.zylex.betbot.controller.repository.LeagueRepository;
@@ -24,7 +25,7 @@ import java.util.Properties;
 public class BetBotApplication {
 
     public static void main(String[] args) {
-        try (Connection connection = getConnection()) {
+        try (Connection connection = getConnection()) { ;
             new BetProcessor(
                 new RuleProcessor(
                     new LeagueRepository(),

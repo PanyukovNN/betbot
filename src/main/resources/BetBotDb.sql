@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS game (
 
 DROP TABLE IF EXISTS selected_league;
 CREATE TABLE IF NOT EXISTS selected_league (
-    id  SERIAL NOT NULL PRIMARY KEY,
-    league_link VARCHAR(200) NOT NULL,
-    rule_number VARCHAR(100) NOT NULL
+    id          SERIAL NOT NULL PRIMARY KEY,
+    league_link VARCHAR(200) NOT NULL
 )
