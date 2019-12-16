@@ -25,7 +25,7 @@ import java.util.Properties;
 public class BetBotApplication {
 
     public static void main(String[] args) {
-        try (Connection connection = getConnection()) { ;
+        try (Connection connection = getConnection()) {
             new BetProcessor(
                 new RuleProcessor(
                     new LeagueRepository(),

@@ -135,37 +135,18 @@ public class Game {
         return Objects.hash(league, leagueLink, dateTime, firstTeam, secondTeam);
     }
 
-//    @Override
-//    public String toString() {
-//        DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
-//        return DATE_FORMATTER.format(dateTime) +
-//                " \"" + league +
-//                "\" " + firstTeam +
-//                " - " + secondTeam +
-//                (betMade == 1
-//                        ? " (BET MADE) "
-//                        : " (BET NOT MADE) ") +
-//                (gameResult == GameResult.NO_RESULT
-//                        ? ""
-//                        : " (" + gameResult + ")");
-//    }
-
     @Override
     public String toString() {
-        return "Game{" +
-                "id=" + id +
-                ", league='" + league + '\'' +
-                ", leagueLink='" + leagueLink + '\'' +
-                ", dateTime=" + dateTime +
-                ", firstTeam='" + firstTeam + '\'' +
-                ", secondTeam='" + secondTeam + '\'' +
-                ", firstWin=" + firstWin +
-                ", tie=" + tie +
-                ", secondWin=" + secondWin +
-                ", firstWinOrTie=" + firstWinOrTie +
-                ", secondWinOrTie=" + secondWinOrTie +
-                ", gameResult=" + gameResult +
-                ", betMade=" + betMade +
-                '}';
+        DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
+        return DATE_FORMATTER.format(dateTime) +
+                " \"" + league +
+                "\" " + firstTeam +
+                " - " + secondTeam +
+                (betMade == 1
+                        ? " (BET MADE) "
+                        : " (BET NOT MADE) ") +
+                (gameResult == GameResult.NO_RESULT
+                        ? ""
+                        : " (" + gameResult + ")");
     }
 }
