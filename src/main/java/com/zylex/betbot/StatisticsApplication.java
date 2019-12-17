@@ -7,8 +7,8 @@ import com.zylex.betbot.exception.StatisticsApplicationException;
 import com.zylex.betbot.service.statistics.ResultScanner;
 import com.zylex.betbot.service.statistics.StatisticsAnalyser;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -33,7 +33,7 @@ public class StatisticsApplication {
     }
 
     private static Connection getConnection() {
-        try(FileInputStream inputStream = new FileInputStream("src/main/resources/BetBotDb.properties")) {
+        try(InputStream inputStream = BetBotApplication.class.getClassLoader().getResourceAsStream("BetBotDb.properties")) {
             Properties property = new Properties();
             property.load(inputStream);
             final String login = property.getProperty("db.login");

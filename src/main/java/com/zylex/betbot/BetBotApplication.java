@@ -12,14 +12,11 @@ import com.zylex.betbot.service.rule.RuleNumber;
 import com.zylex.betbot.service.rule.RuleProcessor;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class BetBotApplication {
 
@@ -44,7 +41,7 @@ public class BetBotApplication {
     }
 
     private static Connection getConnection() {
-        try(FileInputStream inputStream = new FileInputStream("src/main/resources/BetBotDb.properties")) {
+        try(InputStream inputStream = BetBotApplication.class.getClassLoader().getResourceAsStream("BetBotDb.properties")) {
             Properties property = new Properties();
             property.load(inputStream);
             final String login = property.getProperty("db.login");
