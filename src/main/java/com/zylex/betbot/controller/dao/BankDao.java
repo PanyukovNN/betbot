@@ -1,4 +1,4 @@
-package com.zylex.betbot.controller;
+package com.zylex.betbot.controller.dao;
 
 import com.zylex.betbot.exception.BankDaoException;
 

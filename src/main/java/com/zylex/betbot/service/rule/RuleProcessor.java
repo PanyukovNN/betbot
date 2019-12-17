@@ -1,8 +1,8 @@
 package com.zylex.betbot.service.rule;
 
-import com.zylex.betbot.controller.BetInfoDao;
-import com.zylex.betbot.controller.GameDao;
-import com.zylex.betbot.controller.LeagueDao;
+import com.zylex.betbot.controller.dao.BetInfoDao;
+import com.zylex.betbot.controller.dao.GameDao;
+import com.zylex.betbot.controller.dao.LeagueDao;
 import com.zylex.betbot.controller.logger.RuleProcessorLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;

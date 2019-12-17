@@ -1,9 +1,9 @@
 package com.zylex.betbot;
 
-import com.zylex.betbot.controller.BankDao;
-import com.zylex.betbot.controller.BetInfoDao;
-import com.zylex.betbot.controller.GameDao;
-import com.zylex.betbot.controller.LeagueDao;
+import com.zylex.betbot.controller.dao.BankDao;
+import com.zylex.betbot.controller.dao.BetInfoDao;
+import com.zylex.betbot.controller.dao.GameDao;
+import com.zylex.betbot.controller.dao.LeagueDao;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.exception.BetBotException;
 import com.zylex.betbot.service.bet.*;
