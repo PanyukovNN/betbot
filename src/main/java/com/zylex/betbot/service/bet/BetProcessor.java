@@ -1,8 +1,8 @@
 package com.zylex.betbot.service.bet;
 
+import com.zylex.betbot.controller.BankDao;
 import com.zylex.betbot.controller.BetInfoDao;
 import com.zylex.betbot.controller.GameDao;
-import com.zylex.betbot.controller.repository.BalanceRepository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
@@ -38,7 +38,7 @@ public class BetProcessor {
 
     private RuleProcessor ruleProcessor;
 
-    private BalanceRepository balanceRepository;
+    private BankDao bankDao;
 
     private BetInfoDao betInfoDao;
 
@@ -48,9 +48,9 @@ public class BetProcessor {
 
     private int availableBalance = -1;
 
-    public BetProcessor(RuleProcessor ruleProcessor, BalanceRepository balanceRepository, List<RuleNumber> ruleList) {
+    public BetProcessor(RuleProcessor ruleProcessor, BankDao bankDao, List<RuleNumber> ruleList) {
         this.ruleProcessor = ruleProcessor;
-        this.balanceRepository = balanceRepository;
+        this.bankDao = bankDao;
         this.gameDao = ruleProcessor.getGameDao();
         this.betInfoDao = ruleProcessor.getBetInfoDao();
         this.ruleList = ruleList;
@@ -171,8 +171,11 @@ public class BetProcessor {
     private void updateBalance() {
         if (totalBalance == -1) {
             availableBalance = (int) Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
-            totalBalance = Math.max(availableBalance, balanceRepository.read());
-            balanceRepository.write(totalBalance);
+            int bank = bankDao.getLast();
+            totalBalance = Math.max(availableBalance, bank);
+            if (availableBalance > bank) {
+                bankDao.save(totalBalance);
+            }
         }
     }
 

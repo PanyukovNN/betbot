@@ -3,7 +3,9 @@ package com.zylex.betbot.controller;
 import com.zylex.betbot.exception.BetInfoDaoException;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class BetInfoDao {
 
@@ -19,7 +21,7 @@ public class BetInfoDao {
             if (resultSet.next()) {
                 return resultSet.getTimestamp("bet_time").toLocalDateTime();
             }
-            return null;
+            return LocalDateTime.of(LocalDate.now().minusDays(2), LocalTime.of(0, 0));
         } catch (SQLException e) {
             throw new BetInfoDaoException(e.getMessage(), e);
         }

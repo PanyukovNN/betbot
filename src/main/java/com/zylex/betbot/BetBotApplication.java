@@ -1,9 +1,9 @@
 package com.zylex.betbot;
 
+import com.zylex.betbot.controller.BankDao;
 import com.zylex.betbot.controller.BetInfoDao;
 import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.LeagueDao;
-import com.zylex.betbot.controller.repository.BalanceRepository;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.exception.BetBotException;
 import com.zylex.betbot.service.bet.*;
@@ -33,7 +33,7 @@ public class BetBotApplication {
                     new GameDao(connection),
                     new BetInfoDao(connection)
                 ),
-                new BalanceRepository(),
+                new BankDao(connection),
                 defineRuleNumbers(args)
             ).process();
         } catch (SQLException e) {
