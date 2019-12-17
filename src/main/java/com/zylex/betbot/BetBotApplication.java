@@ -1,9 +1,9 @@
 package com.zylex.betbot;
 
 import com.zylex.betbot.controller.GameDao;
+import com.zylex.betbot.controller.LeagueDao;
 import com.zylex.betbot.controller.repository.BalanceRepository;
 import com.zylex.betbot.controller.repository.BetInfoRepository;
-import com.zylex.betbot.controller.repository.LeagueRepository;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.exception.BetBotException;
 import com.zylex.betbot.service.bet.*;
@@ -24,10 +24,11 @@ import java.util.Properties;
 public class BetBotApplication {
 
     public static void main(String[] args) {
+
         try (Connection connection = getConnection()) {
             new BetProcessor(
                 new RuleProcessor(
-                    new LeagueRepository(),
+                    new LeagueDao(connection),
                     new ParseProcessor(),
                     new GameDao(connection),
                     new BetInfoRepository()

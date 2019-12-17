@@ -1,6 +1,7 @@
 package com.zylex.betbot.service.rule;
 
 import com.zylex.betbot.controller.GameDao;
+import com.zylex.betbot.controller.LeagueDao;
 import com.zylex.betbot.controller.logger.RuleProcessorLogger;
 import com.zylex.betbot.controller.repository.BetInfoRepository;
 import com.zylex.betbot.controller.repository.LeagueRepository;
@@ -23,14 +24,14 @@ public class RuleProcessor {
 
     private ParseProcessor parseProcessor;
 
-    private LeagueRepository leagueRepository;
+    private LeagueDao leagueDao;
 
     private GameDao gameDao;
 
     private BetInfoRepository betInfoRepository;
 
-    public RuleProcessor(LeagueRepository leagueRepository, ParseProcessor parseProcessor, GameDao gameDao, BetInfoRepository betInfoRepository) {
-        this.leagueRepository = leagueRepository;
+    public RuleProcessor(LeagueDao leagueDao, ParseProcessor parseProcessor, GameDao gameDao, BetInfoRepository betInfoRepository) {
+        this.leagueDao = leagueDao;
         this.parseProcessor = parseProcessor;
         this.gameDao = gameDao;
         this.betInfoRepository = betInfoRepository;
@@ -88,7 +89,7 @@ public class RuleProcessor {
     private Map<RuleNumber, List<Game>> findRuleGames(List<Game> games) {
         Map<RuleNumber, List<Game>> ruleGames = new HashMap<>();
         for (RuleNumber ruleNumber : RuleNumber.values()) {
-            ruleGames.put(ruleNumber, ruleNumber.rule.filter(leagueRepository, games));
+            ruleGames.put(ruleNumber, ruleNumber.rule.filter(leagueDao, games));
         }
         return ruleGames;
     }

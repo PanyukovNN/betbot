@@ -1,7 +1,7 @@
 package com.zylex.betbot.service.statistics;
 
 import com.zylex.betbot.controller.GameDao;
-import com.zylex.betbot.controller.repository.LeagueRepository;
+import com.zylex.betbot.controller.LeagueDao;
 import com.zylex.betbot.controller.logger.StatisticsConsoleLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
@@ -21,13 +21,13 @@ public class StatisticsAnalyser {
 
     private GameDao gameDao;
 
-    private LeagueRepository leagueRepository;
+    private LeagueDao leagueDao;
 
     private ResultScanner resultScanner;
 
-    public StatisticsAnalyser(ResultScanner resultScanner, LeagueRepository leagueRepository) {
+    public StatisticsAnalyser(ResultScanner resultScanner, LeagueDao leagueDao) {
         this.resultScanner = resultScanner;
-        this.leagueRepository = leagueRepository;
+        this.leagueDao = leagueDao;
         this.gameDao = resultScanner.getGameDao();
     }
 
@@ -53,9 +53,9 @@ public class StatisticsAnalyser {
     }
 
     private List<Game> splitBetMadeGamesByLeagues(List<Game> betMadeGames) {
-        List<String> leagueLinksFromFile = leagueRepository.readLinks();
+        List<String> selectedLeagues = leagueDao.getAllSelectedLeagues();
         return betMadeGames.stream()
-                .filter(game -> leagueLinksFromFile.contains(game.getLeagueLink())).collect(Collectors.toList());
+                .filter(game -> selectedLeagues.contains(game.getLeagueLink())).collect(Collectors.toList());
     }
 
     private List<Game> filterByDatePeriod(LocalDate startDate, LocalDate endDate, List<Game> betMadeGames) {

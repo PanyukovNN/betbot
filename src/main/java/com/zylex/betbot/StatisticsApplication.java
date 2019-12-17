@@ -1,7 +1,7 @@
 package com.zylex.betbot;
 
 import com.zylex.betbot.controller.GameDao;
-import com.zylex.betbot.controller.repository.LeagueRepository;
+import com.zylex.betbot.controller.LeagueDao;
 import com.zylex.betbot.exception.BetBotException;
 import com.zylex.betbot.exception.StatisticsApplicationException;
 import com.zylex.betbot.service.statistics.ResultScanner;
@@ -25,7 +25,7 @@ public class StatisticsApplication {
                 new ResultScanner(
                     new GameDao(connection)
                 ),
-                new LeagueRepository()
+                new LeagueDao(connection)
             ).analyse(startDate, endDate);
         } catch (SQLException e) {
             throw new StatisticsApplicationException(e.getMessage(), e);
