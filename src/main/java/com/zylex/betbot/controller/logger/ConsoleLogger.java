@@ -32,8 +32,7 @@ public abstract class ConsoleLogger {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void writeToLogFile() {
         try {
-            File logFile = new File("results/log.txt");
-            new File("results").mkdir();
+            File logFile = new File("log.txt");
             logFile.createNewFile();
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, true))) {
                 writer.write(logOutput);
