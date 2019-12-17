@@ -4,7 +4,6 @@ import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.LeagueDao;
 import com.zylex.betbot.controller.logger.RuleProcessorLogger;
 import com.zylex.betbot.controller.repository.BetInfoRepository;
-import com.zylex.betbot.controller.repository.LeagueRepository;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.parsing.ParseProcessor;
