@@ -1,10 +1,10 @@
 package com.zylex.betbot.service.bet;
 
+import com.zylex.betbot.controller.BetInfoDao;
 import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.repository.BalanceRepository;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
-import com.zylex.betbot.controller.repository.BetInfoRepository;
 import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.Game;
@@ -40,7 +40,7 @@ public class BetProcessor {
 
     private BalanceRepository balanceRepository;
 
-    private BetInfoRepository betInfoRepository;
+    private BetInfoDao betInfoDao;
 
     private GameDao gameDao;
 
@@ -52,7 +52,7 @@ public class BetProcessor {
         this.ruleProcessor = ruleProcessor;
         this.balanceRepository = balanceRepository;
         this.gameDao = ruleProcessor.getGameDao();
-        this.betInfoRepository = ruleProcessor.getBetInfoRepository();
+        this.betInfoDao = ruleProcessor.getBetInfoDao();
         this.ruleList = ruleList;
     }
 
@@ -78,7 +78,7 @@ public class BetProcessor {
             if (driver == null) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
             } else {
-                betInfoRepository.write(LocalDateTime.now());
+                betInfoDao.save(LocalDateTime.now());
                 logger.betMade(LogType.OK);
             }
         } catch (ElementNotInteractableException | IOException e) {

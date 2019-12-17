@@ -1,9 +1,9 @@
 package com.zylex.betbot.service.rule;
 
+import com.zylex.betbot.controller.BetInfoDao;
 import com.zylex.betbot.controller.GameDao;
 import com.zylex.betbot.controller.LeagueDao;
 import com.zylex.betbot.controller.logger.RuleProcessorLogger;
-import com.zylex.betbot.controller.repository.BetInfoRepository;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.parsing.ParseProcessor;
@@ -27,21 +27,21 @@ public class RuleProcessor {
 
     private GameDao gameDao;
 
-    private BetInfoRepository betInfoRepository;
+    private BetInfoDao betInfoDao;
 
-    public RuleProcessor(LeagueDao leagueDao, ParseProcessor parseProcessor, GameDao gameDao, BetInfoRepository betInfoRepository) {
-        this.leagueDao = leagueDao;
+    public RuleProcessor(ParseProcessor parseProcessor, LeagueDao leagueDao, GameDao gameDao, BetInfoDao betInfoDao) {
         this.parseProcessor = parseProcessor;
+        this.leagueDao = leagueDao;
         this.gameDao = gameDao;
-        this.betInfoRepository = betInfoRepository;
+        this.betInfoDao = betInfoDao;
     }
 
     public GameDao getGameDao() {
         return gameDao;
     }
 
-    public BetInfoRepository getBetInfoRepository() {
-        return betInfoRepository;
+    public BetInfoDao getBetInfoDao() {
+        return betInfoDao;
     }
 
     /**
@@ -57,7 +57,7 @@ public class RuleProcessor {
     }
 
     private Map<RuleNumber, List<Game>> refreshByDay(Map<RuleNumber, List<Game>> ruleGames) {
-        LocalDateTime betTime = betInfoRepository.read();
+        LocalDateTime betTime = betInfoDao.getLast();
         Map<RuleNumber, List<Game>> betGames = new HashMap<>();
         for (RuleNumber ruleNumber : RuleNumber.values()) {
             betGames.put(ruleNumber, new ArrayList<>());

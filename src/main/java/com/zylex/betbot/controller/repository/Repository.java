@@ -1,6 +1,6 @@
 package com.zylex.betbot.controller.repository;
 
-import com.zylex.betbot.exception.GameRepositoryException;
+import com.zylex.betbot.exception.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ public abstract class Repository {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            throw new GameRepositoryException(e.getMessage(), e);
+            throw new RepositoryException(e.getMessage(), e);
         }
     }
 }

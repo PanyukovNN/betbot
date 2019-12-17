@@ -28,3 +28,9 @@ CREATE TABLE IF NOT EXISTS exclude_league (
     league_link VARCHAR(200) NOT NULL,
     rule_number VARCHAR(100) NOT NULL
 );
+
+DROP TABLE IF EXISTS bet_info;
+CREATE TABLE IF NOT EXISTS bet_info (
+    id          SERIAL NOT NULL PRIMARY KEY,
+    bet_time    TIMESTAMP NOT NULL
+);
