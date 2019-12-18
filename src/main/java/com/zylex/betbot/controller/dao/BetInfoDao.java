@@ -7,6 +7,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+/**
+ * Dao layer of bet dateTime.
+ */
 public class BetInfoDao {
 
     private final Connection connection;
@@ -15,6 +18,10 @@ public class BetInfoDao {
         this.connection = connection;
     }
 
+    /**
+     * Get last bet dateTime from bet_info relation.
+     * @return - instance of LocalDateTime.
+     */
     public LocalDateTime getLast() {
         try (PreparedStatement statement = connection.prepareStatement(SQLBet.GET_LAST.QUERY)) {
             ResultSet resultSet = statement.executeQuery();
@@ -27,8 +34,12 @@ public class BetInfoDao {
         }
     }
 
+    /**
+     * Save bet dateTime to bet_info relation.
+     * @param betTime - instance of LocalDateTime.
+     */
     public void save(LocalDateTime betTime) {
-        try (PreparedStatement statement = connection.prepareStatement(SQLBet.INSERT.QUERY, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement statement = connection.prepareStatement(SQLBet.INSERT.QUERY)) {
             statement.setTimestamp(1, Timestamp.valueOf(betTime));
             statement.executeUpdate();
         } catch (SQLException e) {
