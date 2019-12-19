@@ -21,7 +21,6 @@ import java.util.*;
 public class BetBotApplication {
 
     public static void main(String[] args) {
-
         try (Connection connection = getConnection()) {
             new BetProcessor(
                 new RuleProcessor(

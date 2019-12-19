@@ -7,6 +7,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Dao layer of league.
+ */
 public class LeagueDao {
 
     private final Connection connection;
@@ -15,6 +18,10 @@ public class LeagueDao {
         this.connection = connection;
     }
 
+    /**
+     * Get list of all leagues links from selected_league relation.
+     * @return - list of leagues links.
+     */
     public List<String> getAllSelectedLeagues() {
         try (PreparedStatement statement = connection.prepareStatement(SQLLeague.GET_ALL_SELECTED_LEAGUES.QUERY)) {
             ResultSet resultSet = statement.executeQuery();
@@ -29,6 +36,11 @@ public class LeagueDao {
         }
     }
 
+    /**
+     * Get list of leagues links from exclude_league relation by rule number.
+     * @param ruleNumber - number of rule.
+     * @return - list of leagues links.
+     */
     public List<String> getExcludeLeagues(RuleNumber ruleNumber) {
         try (PreparedStatement statement = connection.prepareStatement(SQLLeague.GET_EXCLUDE_LEAGUES_BY_RULE.QUERY)) {
             statement.setString(1, ruleNumber.toString());
@@ -44,6 +56,10 @@ public class LeagueDao {
         }
     }
 
+    /**
+     * Save league link to selected_league relation.
+     * @param leagueLink - league link.
+     */
     public void saveSelectedLeague(String leagueLink) {
         try (PreparedStatement statement = connection.prepareStatement(SQLLeague.INSERT_SELECTED_LEAGUE.QUERY, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, leagueLink);
@@ -53,6 +69,11 @@ public class LeagueDao {
         }
     }
 
+    /**
+     * Saves league link to exclude_league relation
+     * @param leagueLink - league link.
+     * @param ruleNumber - number of rule.
+     */
     public void saveExcludeLeague(String leagueLink, RuleNumber ruleNumber) {
         try (PreparedStatement statement = connection.prepareStatement(SQLLeague.INSERT_EXCLUDE_LEAGUE.QUERY, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, leagueLink);

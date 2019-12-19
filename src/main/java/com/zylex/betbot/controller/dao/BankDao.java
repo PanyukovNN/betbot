@@ -5,6 +5,9 @@ import com.zylex.betbot.exception.BankDaoException;
 import java.sql.*;
 import java.time.LocalDate;
 
+/**
+ * Dao layer of bank.
+ */
 public class BankDao {
 
     private final Connection connection;
@@ -13,6 +16,10 @@ public class BankDao {
         this.connection = connection;
     }
 
+    /**
+     * Get last record in bank relation.
+     * @return - last amount.
+     */
     public int getLast() {
         try (PreparedStatement statement = connection.prepareStatement(SQLBank.GET_LAST.QUERY)) {
             ResultSet resultSet = statement.executeQuery();
@@ -25,6 +32,10 @@ public class BankDao {
         }
     }
 
+    /**
+     * Save amount to bank.
+     * @param amount - bank amount.
+     */
     public void save(int amount) {
         try (PreparedStatement statement = connection.prepareStatement(SQLBank.INSERT.QUERY, Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, amount);

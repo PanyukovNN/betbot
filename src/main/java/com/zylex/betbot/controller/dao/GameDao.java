@@ -12,6 +12,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Dao layer of game.
+ */
 public class GameDao {
 
     private final Connection connection;
@@ -20,6 +23,12 @@ public class GameDao {
         this.connection = connection;
     }
 
+    /**
+     * Get list of games from game relation by rule number and date.
+     * @param ruleNumber - number of rule.
+     * @param date - date of games.
+     * @return - list of games.
+     */
     public List<Game> getByDate(RuleNumber ruleNumber, LocalDate date) {
         try (PreparedStatement statement = connection.prepareStatement(SQLGame.GET_BY_RULE_AND_DATE.QUERY)) {
             statement.setString(1, ruleNumber.toString());
@@ -36,6 +45,11 @@ public class GameDao {
         }
     }
 
+    /**
+     * Get list of games by rule number.
+     * @param ruleNumber - number of rule.
+     * @return - list of games.
+     */
     public List<Game> getByRuleNumber(RuleNumber ruleNumber) {
         try (PreparedStatement statement = connection.prepareStatement(SQLGame.GET_BY_RULE_NUMBER.QUERY)) {
             statement.setString(1, ruleNumber.toString());
@@ -68,6 +82,11 @@ public class GameDao {
         return new Game(id, league, leagueLink, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, gameResult, betMade);
     }
 
+    /**
+     * Save game to game relation.
+     * @param game - game instance.
+     * @param ruleNumber - number of rule.
+     */
     public void save(Game game, RuleNumber ruleNumber) {
         SQLGame sqlRequest = game.getId() == 0
                 ? SQLGame.INSERT
@@ -110,6 +129,10 @@ public class GameDao {
         }
     }
 
+    /**
+     * Delete game by game instance.
+     * @param game - game instance.
+     */
     public void delete(Game game) {
         delete(game.getId());
     }
