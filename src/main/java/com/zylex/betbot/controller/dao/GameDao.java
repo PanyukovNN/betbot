@@ -19,8 +19,11 @@ public class GameDao {
 
     private final Connection connection;
 
+    private final GameLinkDao gameLinkDao;
+
     public GameDao(final Connection connection) {
         this.connection = connection;
+        this.gameLinkDao = new GameLinkDao(connection);
     }
 
     /**
@@ -79,7 +82,8 @@ public class GameDao {
         Integer result = (Integer) resultSet.getObject("result");
         GameResult gameResult = intToGameResult(result);
         int betMade = resultSet.getInt("bet_made");
-        return new Game(id, league, leagueLink, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, gameResult, betMade);
+        String link = gameLinkDao.getByGameId(id);
+        return new Game(id, league, leagueLink, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, gameResult, betMade, link);
     }
 
     /**
@@ -115,6 +119,7 @@ public class GameDao {
                     game.setId(generatedKeys.getInt(1));
                 }
             }
+            gameLinkDao.save(game);
         } catch (SQLException e) {
             throw new GameDaoException(e.getMessage(), e);
         }
