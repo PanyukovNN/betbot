@@ -7,19 +7,12 @@ import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.rule.RuleNumber;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 /**
@@ -40,148 +33,62 @@ public class ResultScanner {
         this.gameDao = gameDao;
     }
 
-    public GameDao getGameDao() {
-        return gameDao;
-    }
-
     /**
      * Scans games results from site.
-     * @param games - list of games with no results.
      * @param driverManager - instance of driver manager.
      */
-    public void process(List<Game> games, DriverManager driverManager, RuleNumber ruleNumber) {
-        Map<LocalDate, List<Game>> betMadeNoResultGamesByDay = splitNoResultGamesByDay(games);
-        if (betMadeNoResultGamesByDay.isEmpty()) {
+    public List<Game> process(DriverManager driverManager, RuleNumber ruleNumber) {
+        List<Game> games = gameDao.getByRuleNumber(ruleNumber);
+        //TODO write specified gameDao method for getting appropriate games.
+        List<Game> betMadeNoResultGames = findGamesWithLinks(findNoResultGames(games));
+        if (betMadeNoResultGames.isEmpty()) {
             logger.endMessage(LogType.NO_GAMES_TO_SCAN);
-            return;
+            return Collections.emptyList();
         } else if (driver == null) {
             driverInit(driverManager);
         }
-        logger.startLogMessage(betMadeNoResultGamesByDay.size());
-        if (openFootballGamesResults()) {
-            processGameResults(betMadeNoResultGamesByDay);
-            betMadeNoResultGamesByDay.forEach((k, v) -> v.forEach(game -> gameDao.save(game, ruleNumber)));
-            logger.endMessage(LogType.OK);
-        }
-    }
+        logger.startLogMessage();
 
-    private void driverInit(DriverManager driverManager) {
-        driver = driverManager.initiateDriver(true);
-        wait = new WebDriverWait(driver, 20);
-        driver.navigate().to("https://1xstavka.ru/results/");
-    }
+        for (Game game : betMadeNoResultGames) {
+            driver.navigate().to("https://1xstavka.ru/" + game.getLink());
+            driver.switchTo().frame(driver.findElement(By.className("statistic-after-game")));
 
-    private Map<LocalDate, List<Game>> splitNoResultGamesByDay(List<Game> games) {
-        Map<LocalDate, List<Game>> betMadeGamesByDay = new HashMap<>();
-        Set<LocalDate> days = new HashSet<>();
-        games.forEach(game -> days.add(game.getDateTime().toLocalDate()));
-        days.forEach(day -> {
-            List<Game> noResultGames = filterNoResultGames(games, day);
-            if (!noResultGames.isEmpty()) {
-                betMadeGamesByDay.put(day, noResultGames);
-            }
-        });
-        return betMadeGamesByDay;
-    }
-
-    private List<Game> filterNoResultGames(List<Game> games, LocalDate day) {
-        return games.stream()
-                .filter(game -> game.getGameResult() == GameResult.NO_RESULT
-                        && game.getDateTime().toLocalDate().equals(day)
-                        && game.getDateTime().isBefore(LocalDateTime.now().minusHours(2)))
-                .collect(Collectors.toList());
-    }
-
-    private boolean openFootballGamesResults() {
-        WebElement footballLink = waitElementsAndGet("c-nav__link").get(1);
-        if (!footballLink.getText().contains("Футбол")) {
-            return false;
-        }
-        footballLink.click();
-        waitSingleElementAndGet("c-filter_filled").click();
-        return true;
-    }
-
-    private void processGameResults(Map<LocalDate, List<Game>> betsMadeGamesByDay) {
-        for (Map.Entry<LocalDate, List<Game>> entry : betsMadeGamesByDay.entrySet()) {
-            LocalDate day = entry.getKey();
-            List<Game> betMadeGamesNoResult = entry.getValue();
-            if (betMadeGamesNoResult.isEmpty()) {
+            try {
+                String matchEndText = driver.findElement(By.className("match-info__text")).getText();
+                if (!matchEndText.contains("Матч состоялся")) {
+                    continue;
+                }
+            } catch (NoSuchElementException ignore) {
                 continue;
             }
-            navigateToDay(day);
-            waitElementsAndGet("c-games__row");
-            Document document = Jsoup.parse(driver.getPageSource());
-            Elements gameElements = document.select("div[class=c-games__row u-nvpd c-games__row_light c-games__row_can-toggle]");
-            parseGameResults(gameElements, betMadeGamesNoResult);
-        }
-    }
 
-    private void parseGameResults(Elements gameElements, List<Game> betsMadeNoResultGames) {
-        AtomicInteger index = new AtomicInteger();
-        for (Element gameElement : gameElements) {
-            if (index.get() == betsMadeNoResultGames.size()) {
-                break;
-            }
-            LocalDateTime date = processDateTime(gameElement);
-            String[] teams = gameElement.select("div[class=c-games__opponents u-dir-ltr]").text().split(" - ");
-            if (teams.length < 2 || teams[0].contains("(голы)") || teams[0].contains("/") || teams[0].contains("(люб)")) {
-                continue;
-            }
-            String firstTeam = teams[0];
-            String secondTeam = teams[1];
-            String[] balls = gameElement.select("div[class=c-games__results u-mla u-tar]").text()
-                    .replace(" ", "")
-                    .split("\\(")[0]
-                    .split(":");
-            if (balls[0].contains("Голы")) {
-                continue;
-            }
+            String[] balls = waitSingleElementAndGet("match-info__score").getText().split(" : ");
             int firstBalls = Integer.parseInt(balls[0]);
             int secondBalls = Integer.parseInt(balls[1]);
             GameResult gameResult = computeGameResult(firstBalls, secondBalls);
-            betsMadeNoResultGames.stream().filter(
-                    game -> game.getDateTime().toLocalDate().equals(date.toLocalDate())
-                            && firstTeam.startsWith(game.getFirstTeam())
-                            && secondTeam.startsWith(game.getSecondTeam()))
-                    .findFirst()
-                    .ifPresent(game -> {
-                        index.getAndIncrement();
-                        game.setGameResult(gameResult);
-                    });
+            game.setGameResult(gameResult);
+            gameDao.save(game, ruleNumber);
+            //TODO return games
         }
+        logger.endMessage(LogType.OK);
+        return betMadeNoResultGames;
     }
 
-    private LocalDateTime processDateTime(Element element) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-        String dateText = element.select("div.c-games__date").text();
-        dateText = dateText.substring(0, 5) + "." + LocalDateTime.now().getYear() + dateText.substring(5);
-        return LocalDateTime.parse(dateText, dateTimeFormatter);
+    private void driverInit(DriverManager driverManager) {
+        driver = driverManager.initiateDriver(false);
+        wait = new WebDriverWait(driver, 20);
     }
 
-    private void navigateToDay(LocalDate day) {
-        if (day.getMonth().equals(LocalDate.now().getMonth())) {
-            waitSingleElementAndGet("vdp-datepicker").click();
-            WebElement nextButton = waitSingleElementAndGet("next");
-            ((JavascriptExecutor) driver).executeScript("arguments[0].click()", nextButton);
-            List<WebElement> elements = waitElementsAndGet("day");
-            for (WebElement element : elements) {
-                if (element.getText().equals(String.valueOf(day.getDayOfMonth()))) {
-                    element.click();
-                    break;
-                }
-            }
-        } else if (day.getMonth().equals(LocalDate.now().minusMonths(1).getMonth())) {
-            waitSingleElementAndGet("vdp-datepicker").click();
-            waitSingleElementAndGet("prev").click();
-            List<WebElement> elements = waitElementsAndGet("day");
-            for (WebElement element : elements) {
-                if (element.getText().equals(String.valueOf(day.getDayOfMonth()))) {
-                    element.click();
-                    break;
-                }
-            }
-        }
+    private List<Game> findNoResultGames(List<Game> games) {
+        return games.stream()
+                .filter(game -> game.getGameResult() == GameResult.NO_RESULT)
+                .collect(Collectors.toList());
+    }
+
+    private List<Game> findGamesWithLinks(List<Game> games) {
+        return games.stream()
+                .filter(game -> game.getLink() != null && !game.getLink().isEmpty())
+                .collect(Collectors.toList());
     }
 
     private GameResult computeGameResult(int firstBalls, int secondBalls) {
@@ -192,12 +99,6 @@ public class ResultScanner {
         } else {
             return GameResult.SECOND_WIN;
         }
-    }
-
-    private List<WebElement> waitElementsAndGet(String className) {
-        wait.ignoring(StaleElementReferenceException.class)
-                .until(ExpectedConditions.presenceOfElementLocated(By.className(className)));
-        return driver.findElements(By.className(className));
     }
 
     private WebElement waitSingleElementAndGet(String className) {

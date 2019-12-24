@@ -6,8 +6,9 @@ import com.zylex.betbot.model.Game;
 import java.sql.*;
 
 /**
- * Dao layer of league.
+ * Dao layer of game_link relation.
  */
+@SuppressWarnings("WeakerAccess")
 public class GameLinkDao {
 
     private final Connection connection;

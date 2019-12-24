@@ -73,7 +73,7 @@ public class BetProcessor {
                     continue;
                 }
                 openSite();
-                processBets(ruleNumber, betGames);
+//                processBets(ruleNumber, betGames);
             }
             if (driver == null) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
@@ -109,7 +109,7 @@ public class BetProcessor {
             DriverManager driverManager = new DriverManager();
             driver = driverManager.initiateDriver(false);
             wait = new WebDriverWait(driver, 5);
-            driver.navigate().to("https://ballchockdee.com/ru-ru/euro/");
+            driver.navigate().to("https://1xstavka.ru/");
             logger.startLogMessage(LogType.LOG_IN, "");
             logIn();
         }

@@ -124,10 +124,6 @@ public class Game {
         return link;
     }
 
-    public void setLink(String link) {
-        this.link = link;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

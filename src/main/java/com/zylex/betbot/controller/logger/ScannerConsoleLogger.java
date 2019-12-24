@@ -9,12 +9,9 @@ public class ScannerConsoleLogger extends ConsoleLogger{
 
     /**
      * Log start messages.
-     * @param gamesNumber - number of games.
      */
-    public void startLogMessage(int gamesNumber) {
-        String output = gamesNumber == 0
-                ? "\nNo games to scan."
-                : "\nProcess scanning: ...";
+    public void startLogMessage() {
+        String output = "\nProcess scanning: ...";
         writeInLine(output);
     }
 
