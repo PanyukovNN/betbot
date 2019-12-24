@@ -67,6 +67,26 @@ public class GameDao {
         }
     }
 
+    /**
+     * Get list of games by rule number with no result.
+     * @param ruleNumber - number of rule.
+     * @return - list of games.
+     */
+    public List<Game> getByRuleNumberWithNoResult(RuleNumber ruleNumber) {
+        try (PreparedStatement statement = connection.prepareStatement(SQLGame.GET_BY_RULE_NUMBER_WITH_NO_RESULT.QUERY)) {
+            statement.setString(1, ruleNumber.toString());
+            statement.setInt(2, 0);
+            ResultSet resultSet = statement.executeQuery();
+            List<Game> ruleGames = new ArrayList<>();
+            while (resultSet.next()) {
+                ruleGames.add(extractGame(resultSet));
+            }
+            return ruleGames;
+        } catch (SQLException e) {
+            throw new GameDaoException(e.getMessage(), e);
+        }
+    }
+
     private Game extractGame(ResultSet resultSet) throws SQLException {
         long id = resultSet.getLong("id");
         String league = resultSet.getString("league");
@@ -172,6 +192,7 @@ public class GameDao {
     enum SQLGame {
         GET_BY_RULE_AND_DATE("SELECT * FROM game WHERE rule_number = (?) AND date_time >= (?) AND date_time <= (?)"),
         GET_BY_RULE_NUMBER("SELECT * FROM game WHERE rule_number = (?)"),
+        GET_BY_RULE_NUMBER_WITH_NO_RESULT("SELECT * FROM game WHERE rule_number = (?) AND result = (?)"),
         INSERT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))"),
         UPDATE("UPDATE game SET league=(?), league_link=(?), date_time=(?), first_team=(?), second_team=(?), first_win=(?), tie=(?), second_win=(?), first_win_or_tie=(?), second_win_or_tie=(?), result=(?), bet_made=(?), rule_number=(?) WHERE id = (?)"),
         DELETE_BY_ID("DELETE FROM game WHERE id = (?)");

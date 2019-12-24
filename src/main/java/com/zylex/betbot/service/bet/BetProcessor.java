@@ -73,7 +73,7 @@ public class BetProcessor {
                     continue;
                 }
                 openSite();
-//                processBets(ruleNumber, betGames);
+                processBets(ruleNumber, betGames);
             }
             if (driver == null) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);

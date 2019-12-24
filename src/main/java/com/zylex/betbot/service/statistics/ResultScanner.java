@@ -38,10 +38,8 @@ public class ResultScanner {
      * @param driverManager - instance of driver manager.
      */
     public List<Game> process(DriverManager driverManager, RuleNumber ruleNumber) {
-        List<Game> games = gameDao.getByRuleNumber(ruleNumber);
-        //TODO write specified gameDao method for getting appropriate games.
-        List<Game> betMadeNoResultGames = findGamesWithLinks(findNoResultGames(games));
-        if (betMadeNoResultGames.isEmpty()) {
+        List<Game> games = findGamesWithLinks(gameDao.getByRuleNumberWithNoResult(ruleNumber));
+        if (games.isEmpty()) {
             logger.endMessage(LogType.NO_GAMES_TO_SCAN);
             return Collections.emptyList();
         } else if (driver == null) {
@@ -49,29 +47,15 @@ public class ResultScanner {
         }
         logger.startLogMessage();
 
-        for (Game game : betMadeNoResultGames) {
-            driver.navigate().to("https://1xstavka.ru/" + game.getLink());
-            driver.switchTo().frame(driver.findElement(By.className("statistic-after-game")));
-
-            try {
-                String matchEndText = driver.findElement(By.className("match-info__text")).getText();
-                if (!matchEndText.contains("Матч состоялся")) {
-                    continue;
-                }
-            } catch (NoSuchElementException ignore) {
-                continue;
-            }
-
-            String[] balls = waitSingleElementAndGet("match-info__score").getText().split(" : ");
-            int firstBalls = Integer.parseInt(balls[0]);
-            int secondBalls = Integer.parseInt(balls[1]);
-            GameResult gameResult = computeGameResult(firstBalls, secondBalls);
-            game.setGameResult(gameResult);
-            gameDao.save(game, ruleNumber);
-            //TODO return games
-        }
+        processResults(ruleNumber, games);
         logger.endMessage(LogType.OK);
-        return betMadeNoResultGames;
+        return games;
+    }
+
+    private List<Game> findGamesWithLinks(List<Game> games) {
+        return games.stream()
+                .filter(game -> game.getLink() != null && !game.getLink().isEmpty())
+                .collect(Collectors.toList());
     }
 
     private void driverInit(DriverManager driverManager) {
@@ -79,16 +63,34 @@ public class ResultScanner {
         wait = new WebDriverWait(driver, 20);
     }
 
-    private List<Game> findNoResultGames(List<Game> games) {
-        return games.stream()
-                .filter(game -> game.getGameResult() == GameResult.NO_RESULT)
-                .collect(Collectors.toList());
+    private void processResults(RuleNumber ruleNumber, List<Game> games) {
+        for (Game game : games) {
+            driver.navigate().to("https://1xstavka.ru/" + game.getLink());
+            driver.switchTo().frame(driver.findElement(By.className("statistic-after-game")));
+            if (matchOver()) {
+                findGameResult(game);
+                gameDao.save(game, ruleNumber);
+            }
+        }
     }
 
-    private List<Game> findGamesWithLinks(List<Game> games) {
-        return games.stream()
-                .filter(game -> game.getLink() != null && !game.getLink().isEmpty())
-                .collect(Collectors.toList());
+    private boolean matchOver() {
+        try {
+            return driver.findElement(By.className("match-info__text"))
+                    .getText().contains("Матч состоялся");
+        } catch (NoSuchElementException ignore) {
+            return false;
+        }
+    }
+
+    private void findGameResult(Game game) {
+        wait.ignoring(StaleElementReferenceException.class)
+                .until(ExpectedConditions.presenceOfElementLocated(By.className("match-info__score")));
+        String[] balls = driver.findElement(By.className("match-info__score")).getText().split(" : ");
+        int firstBalls = Integer.parseInt(balls[0]);
+        int secondBalls = Integer.parseInt(balls[1]);
+        GameResult gameResult = computeGameResult(firstBalls, secondBalls);
+        game.setGameResult(gameResult);
     }
 
     private GameResult computeGameResult(int firstBalls, int secondBalls) {
@@ -99,11 +101,5 @@ public class ResultScanner {
         } else {
             return GameResult.SECOND_WIN;
         }
-    }
-
-    private WebElement waitSingleElementAndGet(String className) {
-        wait.ignoring(StaleElementReferenceException.class)
-                .until(ExpectedConditions.presenceOfElementLocated(By.className(className)));
-        return driver.findElement(By.className(className));
     }
 }

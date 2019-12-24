@@ -50,7 +50,7 @@ public class GameLinkDao {
     }
 
     enum SQLGameLink {
-        GET_BY_ID("SELECT * FROM game_link WHERE id = (?)"),
+        GET_BY_ID("SELECT * FROM game_link WHERE game_id = (?)"),
         INSERT("INSERT INTO game_link (id, game_id, link) VALUES (DEFAULT, (?), (?))");
 
         String QUERY;
