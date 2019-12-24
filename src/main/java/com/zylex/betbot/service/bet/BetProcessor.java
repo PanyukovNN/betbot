@@ -109,7 +109,7 @@ public class BetProcessor {
             DriverManager driverManager = new DriverManager();
             driver = driverManager.initiateDriver(false);
             wait = new WebDriverWait(driver, 5);
-            driver.navigate().to("https://1xstavka.ru/");
+            driver.navigate().to("https://ballchockdee.com/ru-ru/euro/");
             logger.startLogMessage(LogType.LOG_IN, "");
             logIn();
         }
@@ -166,7 +166,6 @@ public class BetProcessor {
             }
         }
     }
-
 
     private void updateBalance() {
         if (totalBalance == -1) {

@@ -1,7 +1,6 @@
 package com.zylex.betbot.model;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
@@ -34,8 +33,10 @@ public class Game {
     private GameResult gameResult;
 
     private int betMade = 0;
+
+    private String link;
     
-    public Game(long id, String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie, GameResult gameResult, int betMade) {
+    public Game(long id, String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie, GameResult gameResult, int betMade, String link) {
         this.id = id;
         this.league = league;
         this.leagueLink = leagueLink;
@@ -49,6 +50,7 @@ public class Game {
         this.secondWinOrTie = secondWinOrTie;
         this.gameResult = gameResult;
         this.betMade = betMade;
+        this.link = link;
     }
 
     public Game() {
@@ -118,6 +120,14 @@ public class Game {
         this.betMade = betMade;
     }
 
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -135,18 +145,39 @@ public class Game {
         return Objects.hash(league, leagueLink, dateTime, firstTeam, secondTeam);
     }
 
+//    @Override
+//    public String toString() {
+//        DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
+//        return DATE_FORMATTER.format(dateTime) +
+//                " \"" + league +
+//                "\" " + firstTeam +
+//                " - " + secondTeam +
+//                (betMade == 1
+//                        ? " (BET MADE) "
+//                        : " (BET NOT MADE) ") +
+//                (gameResult == GameResult.NO_RESULT
+//                        ? ""
+//                        : " (" + gameResult + ")");
+//    }
+
+
     @Override
     public String toString() {
-        DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
-        return DATE_FORMATTER.format(dateTime) +
-                " \"" + league +
-                "\" " + firstTeam +
-                " - " + secondTeam +
-                (betMade == 1
-                        ? " (BET MADE) "
-                        : " (BET NOT MADE) ") +
-                (gameResult == GameResult.NO_RESULT
-                        ? ""
-                        : " (" + gameResult + ")");
+        return "Game{" +
+                "id=" + id +
+                ", league='" + league + '\'' +
+                ", leagueLink='" + leagueLink + '\'' +
+                ", dateTime=" + dateTime +
+                ", firstTeam='" + firstTeam + '\'' +
+                ", secondTeam='" + secondTeam + '\'' +
+                ", firstWin=" + firstWin +
+                ", tie=" + tie +
+                ", secondWin=" + secondWin +
+                ", firstWinOrTie=" + firstWinOrTie +
+                ", secondWinOrTie=" + secondWinOrTie +
+                ", gameResult=" + gameResult +
+                ", betMade=" + betMade +
+                ", link='" + link + '\'' +
+                '}';
     }
 }
