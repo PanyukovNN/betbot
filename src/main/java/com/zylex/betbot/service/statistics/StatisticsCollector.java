@@ -32,7 +32,8 @@ public class StatisticsCollector {
     }
 
     /**
-     * Gets results of games and compute them statistics for specified period.
+     * Runs ResultScanner, which finds games results.
+     * Gets results of games from database and compute them statistics for specified period.
      * @param startDate - start date of period.
      * @param endDate - end date of period.
      */

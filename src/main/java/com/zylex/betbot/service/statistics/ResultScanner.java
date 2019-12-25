@@ -39,7 +39,8 @@ public class ResultScanner {
     }
 
     /**
-     * Scans games results from site.
+     * Finds games with no result, with links, and appropriate by time, then opens every game link,
+     * pulls result of the game from site and saves this result to database.
      * @param driverManager - instance of driver manager.
      */
     public void process(DriverManager driverManager, RuleNumber ruleNumber) {
