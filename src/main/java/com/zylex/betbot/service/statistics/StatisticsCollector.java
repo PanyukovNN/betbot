@@ -1,5 +1,6 @@
 package com.zylex.betbot.service.statistics;
 
+import com.zylex.betbot.controller.dao.GameDao;
 import com.zylex.betbot.controller.dao.LeagueDao;
 import com.zylex.betbot.controller.logger.StatisticsConsoleLogger;
 import com.zylex.betbot.model.Game;
@@ -22,9 +23,12 @@ public class StatisticsCollector {
 
     private ResultScanner resultScanner;
 
+    private GameDao gameDao;
+
     public StatisticsCollector(ResultScanner resultScanner, LeagueDao leagueDao) {
         this.resultScanner = resultScanner;
         this.leagueDao = leagueDao;
+        this.gameDao = resultScanner.getGameDao();
     }
 
     /**
@@ -37,7 +41,8 @@ public class StatisticsCollector {
         try {
             logger.startLogMessage(startDate, endDate);
             for (RuleNumber ruleNumber : RuleNumber.values()) {
-                List<Game> games = resultScanner.process(driverManager, ruleNumber);
+                resultScanner.process(driverManager, ruleNumber);
+                List<Game> games = gameDao.getByRuleNumber(ruleNumber);
                 List<Game> gamesByDatePeriod = filterByDatePeriod(startDate, endDate, games);
                 List<Game> betMadeGamesByLeagues = splitBetMadeGamesByLeagues(gamesByDatePeriod);
                 computeStatistics(ruleNumber, gamesByDatePeriod, betMadeGamesByLeagues);

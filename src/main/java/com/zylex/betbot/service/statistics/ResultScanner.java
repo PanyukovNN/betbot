@@ -11,6 +11,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -33,27 +34,38 @@ public class ResultScanner {
         this.gameDao = gameDao;
     }
 
+    public GameDao getGameDao() {
+        return gameDao;
+    }
+
     /**
      * Scans games results from site.
      * @param driverManager - instance of driver manager.
      */
-    public List<Game> process(DriverManager driverManager, RuleNumber ruleNumber) {
-        List<Game> games = findGamesWithLinks(gameDao.getByRuleNumberWithNoResult(ruleNumber));
+    public void process(DriverManager driverManager, RuleNumber ruleNumber) {
+        List<Game> games = excludeGamesByTime(
+                findGamesWithLinks(
+                        gameDao.getByRuleNumberWithNoResult(ruleNumber)
+                ));
         if (games.isEmpty()) {
             logger.endMessage(LogType.NO_GAMES_TO_SCAN);
-            return Collections.emptyList();
         } else if (driver == null) {
             driverInit(driverManager);
         }
         logger.startLogMessage();
         processResults(ruleNumber, games);
         logger.endMessage(LogType.OK);
-        return games;
     }
 
     private List<Game> findGamesWithLinks(List<Game> games) {
         return games.stream()
                 .filter(game -> game.getLink() != null && !game.getLink().isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private List<Game> excludeGamesByTime(List<Game> games) {
+        return games.stream()
+                .filter(game -> LocalDateTime.now().isAfter(game.getDateTime().plusHours(2)))
                 .collect(Collectors.toList());
     }
 
