@@ -84,7 +84,9 @@ public class CallableGameParser implements Callable<List<Game>> {
             double secondWin = stringToDouble(coefficients.get(2).text());
             double firstWinOrTie = stringToDouble(coefficients.get(3).text());
             double secondWinOrTie = stringToDouble(coefficients.get(5).text());
-            String link = gameElement.select("a.c-events__name").attr("href");
+            String link = gameElement.select("a.c-events__name")
+                    .attr("href")
+                    .replaceFirst("line", "live");
             Game game = new Game(0, leagueName, leagueLink, dateTime, firstTeam, secondTeam,
                     firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT, 0, link);
             games.add(game);

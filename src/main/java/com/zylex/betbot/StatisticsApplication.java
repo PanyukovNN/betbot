@@ -1,6 +1,7 @@
 package com.zylex.betbot;
 
 import com.zylex.betbot.controller.dao.GameDao;
+import com.zylex.betbot.controller.dao.GameLinkDao;
 import com.zylex.betbot.controller.dao.LeagueDao;
 import com.zylex.betbot.exception.BetBotException;
 import com.zylex.betbot.exception.StatisticsApplicationException;
@@ -18,7 +19,7 @@ public class StatisticsApplication {
 
     public static void main(String[] args) {
         LocalDate startDate = LocalDate.of(2019, 12, 16);
-        LocalDate endDate = LocalDate.now().minusDays(1);
+        LocalDate endDate = LocalDate.now().minusDays(0);
 
         try (Connection connection = getConnection()) {
             new StatisticsCollector(

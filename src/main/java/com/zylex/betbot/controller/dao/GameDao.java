@@ -75,7 +75,6 @@ public class GameDao {
     public List<Game> getByRuleNumberWithNoResult(RuleNumber ruleNumber) {
         try (PreparedStatement statement = connection.prepareStatement(SQLGame.GET_BY_RULE_NUMBER_WITH_NO_RESULT.QUERY)) {
             statement.setString(1, ruleNumber.toString());
-            statement.setInt(2, 0);
             ResultSet resultSet = statement.executeQuery();
             List<Game> ruleGames = new ArrayList<>();
             while (resultSet.next()) {
@@ -145,6 +144,14 @@ public class GameDao {
         }
     }
 
+    /**
+     * Delete game by game instance.
+     * @param game - game instance.
+     */
+    public void delete(Game game) {
+        delete(game.getId());
+    }
+
     private void delete(long id) {
         try (PreparedStatement statement = connection.prepareStatement(SQLGame.DELETE_BY_ID.QUERY)) {
             statement.setLong(1, id);
@@ -152,14 +159,6 @@ public class GameDao {
         } catch (SQLException e) {
             throw new GameDaoException(e.getMessage(), e);
         }
-    }
-
-    /**
-     * Delete game by game instance.
-     * @param game - game instance.
-     */
-    public void delete(Game game) {
-        delete(game.getId());
     }
 
     private GameResult intToGameResult(Integer result) {
@@ -192,9 +191,9 @@ public class GameDao {
     enum SQLGame {
         GET_BY_RULE_AND_DATE("SELECT * FROM game WHERE rule_number = (?) AND date_time >= (?) AND date_time <= (?)"),
         GET_BY_RULE_NUMBER("SELECT * FROM game WHERE rule_number = (?)"),
-        GET_BY_RULE_NUMBER_WITH_NO_RESULT("SELECT * FROM game WHERE rule_number = (?) AND result = (?)"),
+        GET_BY_RULE_NUMBER_WITH_NO_RESULT("SELECT * FROM game WHERE rule_number = (?) AND result IS NULL"),
         INSERT("INSERT INTO game (id, league, league_link, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))"),
-        UPDATE("UPDATE game SET league=(?), league_link=(?), date_time=(?), first_team=(?), second_team=(?), first_win=(?), tie=(?), second_win=(?), first_win_or_tie=(?), second_win_or_tie=(?), result=(?), bet_made=(?), rule_number=(?) WHERE id = (?)"),
+        UPDATE("UPDATE game SET league = (?), league_link = (?), date_time = (?), first_team = (?), second_team = (?), first_win = (?), tie = (?), second_win = (?), first_win_or_tie = (?), second_win_or_tie = (?), result = (?), bet_made = (?), rule_number = (?) WHERE id = (?)"),
         DELETE_BY_ID("DELETE FROM game WHERE id = (?)");
 
         String QUERY;

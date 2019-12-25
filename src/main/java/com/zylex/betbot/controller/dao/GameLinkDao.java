@@ -18,7 +18,7 @@ public class GameLinkDao {
     }
 
     /**
-     * Get game link from game_link relation by game id.
+     * Get link of the game from game_link relation by game id.
      * @param gameId - id of game.
      * @return - game link.
      */
@@ -36,11 +36,14 @@ public class GameLinkDao {
     }
 
     /**
-     * Saves game link to game_link relation.
+     * Saves link of the game to game_link relation.
      * @param game - instance of game.
      */
     public void save(Game game) {
-        try (PreparedStatement statement = connection.prepareStatement(SQLGameLink.INSERT.QUERY, Statement.RETURN_GENERATED_KEYS)) {
+        if (!getByGameId(game.getId()).isEmpty()) {
+            return;
+        }
+        try (PreparedStatement statement = connection.prepareStatement(SQLGameLink.INSERT.QUERY)) {
             statement.setLong(1, game.getId());
             statement.setString(2, game.getLink());
             statement.executeUpdate();
@@ -51,7 +54,7 @@ public class GameLinkDao {
 
     enum SQLGameLink {
         GET_BY_ID("SELECT * FROM game_link WHERE game_id = (?)"),
-        INSERT("INSERT INTO game_link (id, game_id, link) VALUES (DEFAULT, (?), (?))");
+        INSERT("INSERT INTO game_link (game_id, link) VALUES ((?), (?))");
 
         String QUERY;
 

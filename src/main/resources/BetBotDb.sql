@@ -44,7 +44,6 @@ CREATE TABLE IF NOT EXISTS bank (
 
 DROP TABLE IF EXISTS game_link;
 CREATE TABLE IF NOT EXISTS game_link (
-    id          SERIAL NOT NULL PRIMARY KEY,
     game_id     INT NOT NULL,
     link        VARCHAR(300) NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE

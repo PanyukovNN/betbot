@@ -46,7 +46,6 @@ public class ResultScanner {
             driverInit(driverManager);
         }
         logger.startLogMessage();
-
         processResults(ruleNumber, games);
         logger.endMessage(LogType.OK);
         return games;
@@ -60,37 +59,38 @@ public class ResultScanner {
 
     private void driverInit(DriverManager driverManager) {
         driver = driverManager.initiateDriver(false);
-        wait = new WebDriverWait(driver, 20);
+        wait = new WebDriverWait(driver, 5);
     }
 
     private void processResults(RuleNumber ruleNumber, List<Game> games) {
         for (Game game : games) {
             driver.navigate().to("https://1xstavka.ru/" + game.getLink());
             driver.switchTo().frame(driver.findElement(By.className("statistic-after-game")));
-            if (matchOver()) {
-                findGameResult(game);
+            boolean what = matchIsOver();
+            if (what) {
+                game.setGameResult(findGameResult());
                 gameDao.save(game, ruleNumber);
             }
         }
     }
 
-    private boolean matchOver() {
+    private boolean matchIsOver() {
         try {
             return driver.findElement(By.className("match-info__text"))
-                    .getText().contains("Матч состоялся");
+                    .getText().contains("МАТЧ СОСТОЯЛСЯ");
         } catch (NoSuchElementException ignore) {
+            System.out.println("Exception");
             return false;
         }
     }
 
-    private void findGameResult(Game game) {
+    private GameResult findGameResult() {
         wait.ignoring(StaleElementReferenceException.class)
                 .until(ExpectedConditions.presenceOfElementLocated(By.className("match-info__score")));
         String[] balls = driver.findElement(By.className("match-info__score")).getText().split(" : ");
         int firstBalls = Integer.parseInt(balls[0]);
         int secondBalls = Integer.parseInt(balls[1]);
-        GameResult gameResult = computeGameResult(firstBalls, secondBalls);
-        game.setGameResult(gameResult);
+        return computeGameResult(firstBalls, secondBalls);
     }
 
     private GameResult computeGameResult(int firstBalls, int secondBalls) {
