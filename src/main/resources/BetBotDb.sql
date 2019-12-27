@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS game (
     result_id         INT NOT NULL,
     bet_made          INT,
     rule_number       VARCHAR(100),
-    FOREIGN KEY (result_id) REFERENCES game_result (id)
+    FOREIGN KEY (result_id) REFERENCES result (id)
 );
 
 DROP TABLE IF EXISTS game_temp;
@@ -32,8 +32,9 @@ CREATE TABLE IF NOT EXISTS game_temp (
     second_win_or_tie FLOAT NOT NULL,
     result_id         INT NOT NULL,
     bet_made          INT,
-    rule_number       VARCHAR(100),
-    FOREIGN KEY (result_id) REFERENCES game_result (id)
+    rule_id           INT NOT NULL,
+    FOREIGN KEY (result_id) REFERENCES result (id),
+    FOREIGN KEY (rule_id) REFERENCES rule (id)
 );
 
 DROP TABLE IF EXISTS selected_league;
@@ -69,12 +70,12 @@ CREATE TABLE IF NOT EXISTS game_link (
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS game_result;
-CREATE TABLE IF NOT EXISTS game_result (
+DROP TABLE IF EXISTS result;
+CREATE TABLE IF NOT EXISTS result (
     id          SERIAL NOT NULL PRIMARY KEY,
-    result      VARCHAR(50) NOT NULL
+    value       VARCHAR(50) NOT NULL
 );
-INSERT INTO game_result (id, result)
+INSERT INTO result (id, value)
 VALUES (DEFAULT, 'FIRST_WIN'),
        (DEFAULT, 'TIE'),
        (DEFAULT, 'SECOND_WIN'),
