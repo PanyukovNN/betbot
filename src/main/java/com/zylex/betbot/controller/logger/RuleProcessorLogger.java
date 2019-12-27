@@ -1,10 +1,8 @@
 package com.zylex.betbot.controller.logger;
 
-import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.rule.RuleNumber;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDate;
 import java.util.List;

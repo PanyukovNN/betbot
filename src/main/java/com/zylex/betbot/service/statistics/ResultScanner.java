@@ -1,8 +1,7 @@
 package com.zylex.betbot.service.statistics;
 
 import com.zylex.betbot.controller.dao.GameDao;
-import com.zylex.betbot.controller.logger.LogType;
-import com.zylex.betbot.controller.logger.ScannerConsoleLogger;
+import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.DriverManager;
@@ -21,13 +20,15 @@ import java.util.stream.Collectors;
  */
 public class ResultScanner {
 
-    private ScannerConsoleLogger logger = new ScannerConsoleLogger();
+    private ResultScannerConsoleLogger logger = new ResultScannerConsoleLogger();
 
     private WebDriver driver;
 
     private WebDriverWait wait;
 
     private GameDao gameDao;
+
+    private int gamesToScan;
 
     public ResultScanner(GameDao gameDao) {
         this.gameDao = gameDao;
@@ -39,20 +40,34 @@ public class ResultScanner {
      */
     public void process() {
         DriverManager driverManager = new DriverManager();
+
+        try {
+            Map<RuleNumber, List<Game>> ruleGames = findRuleGames();
+            logger.startLogMessage(gamesToScan);
+            if (ruleGames.isEmpty()) {
+                logger.noGamesLog();
+            } else {
+                driverInit(driverManager);
+            }
+            processResults(ruleGames);
+        } finally {
+            driverManager.quitDriver();
+        }
+    }
+
+    private Map<RuleNumber, List<Game>> findRuleGames() {
+        Map<RuleNumber, List<Game>> ruleGames = new LinkedHashMap<>();
         for (RuleNumber ruleNumber : RuleNumber.values()) {
             List<Game> games = excludeGamesByTime(
                     findGamesWithLinks(
                             gameDao.getByRuleNumberWithNoResult(ruleNumber)
                     ));
-            if (games.isEmpty()) {
-                logger.endMessage(LogType.NO_GAMES_TO_SCAN);
-            } else if (driver == null) {
-                driverInit(driverManager);
+            if (!games.isEmpty()) {
+                ruleGames.put(ruleNumber, games);
             }
-            logger.startLogMessage();
-            processResults(ruleNumber, games);
-            logger.endMessage(LogType.OK);
+            gamesToScan += games.size();
         }
+        return ruleGames;
     }
 
     private List<Game> findGamesWithLinks(List<Game> games) {
@@ -72,14 +87,16 @@ public class ResultScanner {
         wait = new WebDriverWait(driver, 5);
     }
 
-    private void processResults(RuleNumber ruleNumber, List<Game> games) {
-        for (Game game : games) {
-            driver.navigate().to("https://1xstavka.ru/" + game.getLink());
-            driver.switchTo().frame(driver.findElement(By.className("statistic-after-game")));
-            boolean what = matchIsOver();
-            if (what) {
-                game.setGameResult(findGameResult());
-                gameDao.save(game, ruleNumber);
+    private void processResults(Map<RuleNumber, List<Game>> ruleGames) {
+        for (RuleNumber ruleNumber : ruleGames.keySet()) {
+            for (Game game : ruleGames.get(ruleNumber)) {
+                driver.navigate().to("https://1xstavka.ru/" + game.getLink());
+                driver.switchTo().frame(driver.findElement(By.className("statistic-after-game")));
+                if (matchIsOver()) {
+                    game.setGameResult(findGameResult());
+                    gameDao.save(game, ruleNumber);
+                    logger.logGame();
+                }
             }
         }
     }
@@ -89,7 +106,6 @@ public class ResultScanner {
             return driver.findElement(By.className("match-info__text"))
                     .getText().contains("МАТЧ СОСТОЯЛСЯ");
         } catch (NoSuchElementException ignore) {
-            System.out.println("Exception");
             return false;
         }
     }

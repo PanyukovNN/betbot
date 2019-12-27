@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ParsingConsoleLogger extends ConsoleLogger {
 
-    private int totalLeagues = 0;
+    private int totalLeagues;
 
-    private AtomicInteger processedLeagues = new AtomicInteger(0);
+    private AtomicInteger processedLeagues = new AtomicInteger();
 
     /**
      * Log start messages.

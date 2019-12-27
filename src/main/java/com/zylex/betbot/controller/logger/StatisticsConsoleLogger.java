@@ -15,7 +15,7 @@ public class StatisticsConsoleLogger extends ConsoleLogger{
      * @param endDate - end date.
      */
     public synchronized void startLogMessage(LocalDate startDate, LocalDate endDate) {
-        writeInLine(String.format("Analyse statistics for period from %s to %s", startDate, endDate));
+        writeInLine(String.format("\nAnalyse statistics for period from %s to %s", startDate, endDate));
         writeLineSeparator();
     }
 

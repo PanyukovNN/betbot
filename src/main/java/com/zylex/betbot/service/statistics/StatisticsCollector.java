@@ -5,7 +5,6 @@ import com.zylex.betbot.controller.dao.LeagueDao;
 import com.zylex.betbot.controller.logger.StatisticsConsoleLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
-import com.zylex.betbot.service.DriverManager;
 import com.zylex.betbot.service.rule.RuleNumber;
 
 import java.time.LocalDate;
@@ -35,17 +34,12 @@ public class StatisticsCollector {
      * @param endDate - end date of period.
      */
     public void analyse(LocalDate startDate, LocalDate endDate) {
-        DriverManager driverManager = new DriverManager();
-        try {
-            logger.startLogMessage(startDate, endDate);
-            for (RuleNumber ruleNumber : RuleNumber.values()) {
-                List<Game> games = gameDao.getByRuleNumber(ruleNumber);
-                List<Game> gamesByDatePeriod = filterByDatePeriod(startDate, endDate, games);
-                List<Game> betMadeGamesByLeagues = splitBetMadeGamesByLeagues(gamesByDatePeriod);
-                computeStatistics(ruleNumber, gamesByDatePeriod, betMadeGamesByLeagues);
-            }
-        } finally {
-            driverManager.quitDriver();
+        logger.startLogMessage(startDate, endDate);
+        for (RuleNumber ruleNumber : RuleNumber.values()) {
+            List<Game> games = gameDao.getByRuleNumber(ruleNumber);
+            List<Game> gamesByDatePeriod = filterByDatePeriod(startDate, endDate, games);
+            List<Game> betMadeGamesByLeagues = splitBetMadeGamesByLeagues(gamesByDatePeriod);
+            computeStatistics(ruleNumber, gamesByDatePeriod, betMadeGamesByLeagues);
         }
     }
 
