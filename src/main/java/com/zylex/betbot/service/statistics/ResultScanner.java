@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 /**
  * Scans games results.
  */
-@SuppressWarnings("WeakerAccess")
 public class ResultScanner {
 
     private ScannerConsoleLogger logger = new ScannerConsoleLogger();
@@ -34,28 +33,26 @@ public class ResultScanner {
         this.gameDao = gameDao;
     }
 
-    public GameDao getGameDao() {
-        return gameDao;
-    }
-
     /**
      * Finds games with no result, with links, and appropriate by time, then opens every game link,
      * pulls result of the game from site and saves this result to database.
-     * @param driverManager - instance of driver manager.
      */
-    public void process(DriverManager driverManager, RuleNumber ruleNumber) {
-        List<Game> games = excludeGamesByTime(
-                findGamesWithLinks(
-                        gameDao.getByRuleNumberWithNoResult(ruleNumber)
-                ));
-        if (games.isEmpty()) {
-            logger.endMessage(LogType.NO_GAMES_TO_SCAN);
-        } else if (driver == null) {
-            driverInit(driverManager);
+    public void process() {
+        DriverManager driverManager = new DriverManager();
+        for (RuleNumber ruleNumber : RuleNumber.values()) {
+            List<Game> games = excludeGamesByTime(
+                    findGamesWithLinks(
+                            gameDao.getByRuleNumberWithNoResult(ruleNumber)
+                    ));
+            if (games.isEmpty()) {
+                logger.endMessage(LogType.NO_GAMES_TO_SCAN);
+            } else if (driver == null) {
+                driverInit(driverManager);
+            }
+            logger.startLogMessage();
+            processResults(ruleNumber, games);
+            logger.endMessage(LogType.OK);
         }
-        logger.startLogMessage();
-        processResults(ruleNumber, games);
-        logger.endMessage(LogType.OK);
     }
 
     private List<Game> findGamesWithLinks(List<Game> games) {

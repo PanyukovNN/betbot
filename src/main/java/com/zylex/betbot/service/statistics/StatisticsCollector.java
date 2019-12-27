@@ -21,14 +21,11 @@ public class StatisticsCollector {
 
     private LeagueDao leagueDao;
 
-    private ResultScanner resultScanner;
-
     private GameDao gameDao;
 
-    public StatisticsCollector(ResultScanner resultScanner, LeagueDao leagueDao) {
-        this.resultScanner = resultScanner;
+    public StatisticsCollector(LeagueDao leagueDao, GameDao gameDao) {
         this.leagueDao = leagueDao;
-        this.gameDao = resultScanner.getGameDao();
+        this.gameDao = gameDao;
     }
 
     /**
@@ -42,7 +39,6 @@ public class StatisticsCollector {
         try {
             logger.startLogMessage(startDate, endDate);
             for (RuleNumber ruleNumber : RuleNumber.values()) {
-                resultScanner.process(driverManager, ruleNumber);
                 List<Game> games = gameDao.getByRuleNumber(ruleNumber);
                 List<Game> gamesByDatePeriod = filterByDatePeriod(startDate, endDate, games);
                 List<Game> betMadeGamesByLeagues = splitBetMadeGamesByLeagues(gamesByDatePeriod);

@@ -87,8 +87,8 @@ public class CallableGameParser implements Callable<List<Game>> {
             String link = gameElement.select("a.c-events__name")
                     .attr("href")
                     .replaceFirst("line", "live");
-            Game game = new Game(0, leagueName, leagueLink, dateTime, firstTeam, secondTeam,
-                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT, 0, link);
+            Game game = new Game(0, leagueName, dateTime, firstTeam, secondTeam,
+                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT, 0, link, leagueLink);
             games.add(game);
         }
         return games;

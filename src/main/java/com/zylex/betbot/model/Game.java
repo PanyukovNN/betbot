@@ -12,8 +12,6 @@ public class Game {
 
     private String league;
 
-    private String leagueLink;
-
     private LocalDateTime dateTime;
 
     private String firstTeam;
@@ -35,11 +33,12 @@ public class Game {
     private int betMade = 0;
 
     private String link;
+
+    private String leagueLink;
     
-    public Game(long id, String league, String leagueLink, LocalDateTime dateTime, String firstTeam, String secondTeam, double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie, GameResult gameResult, int betMade, String link) {
+    public Game(long id, String league, LocalDateTime dateTime, String firstTeam, String secondTeam, double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie, GameResult gameResult, int betMade, String link, String leagueLink) {
         this.id = id;
         this.league = league;
-        this.leagueLink = leagueLink;
         this.dateTime = dateTime;
         this.firstTeam = firstTeam;
         this.secondTeam = secondTeam;
@@ -51,6 +50,7 @@ public class Game {
         this.gameResult = gameResult;
         this.betMade = betMade;
         this.link = link;
+        this.leagueLink = leagueLink;
     }
 
     public Game() {
