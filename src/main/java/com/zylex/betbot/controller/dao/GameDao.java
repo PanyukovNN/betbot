@@ -170,7 +170,8 @@ public class GameDao {
         int betMade = resultSet.getInt("bet_made");
         String link = gameLinkDao.getByGameId(id);
         String leagueLink = resultSet.getString("league_link");
-        return new Game(id, league, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, gameResult, betMade, link, leagueLink);
+        RuleNumber ruleNumber = RuleNumber.valueOf(resultSet.getString("rule_number"));
+        return new Game(id, league, dateTime, firstTeam, secondTeam, firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, gameResult, betMade, link, leagueLink, ruleNumber);
     }
 
     /**

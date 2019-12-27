@@ -80,3 +80,12 @@ VALUES (DEFAULT, 'FIRST_WIN'),
        (DEFAULT, 'SECOND_WIN'),
        (DEFAULT, 'NO_RESULT'),
        (DEFAULT, 'NOT_PLAYED');
+
+DROP TABLE IF EXISTS rule;
+CREATE TABLE IF NOT EXISTS rule (
+     id              SERIAL NOT NULL PRIMARY KEY,
+     rule_number     VARCHAR(100) NOT NULL
+);
+INSERT INTO rule (id, rule_number)
+VALUES (DEFAULT, 'RULE_ONE'),
+       (DEFAULT, 'RULE_TEST');
