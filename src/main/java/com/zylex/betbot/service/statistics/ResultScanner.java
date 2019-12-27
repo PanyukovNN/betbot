@@ -1,6 +1,7 @@
 package com.zylex.betbot.service.statistics;
 
 import com.zylex.betbot.controller.dao.GameDao;
+import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
@@ -40,14 +41,14 @@ public class ResultScanner {
      */
     public void process() {
         DriverManager driverManager = new DriverManager();
-
         try {
             Map<RuleNumber, List<Game>> ruleGames = findRuleGames();
-            logger.startLogMessage(gamesToScan);
+            logger.startLogMessage(LogType.PARSING_SITE_START, 0);
             if (ruleGames.isEmpty()) {
                 logger.noGamesLog();
             } else {
                 driverInit(driverManager);
+                logger.startLogMessage(LogType.GAMES, gamesToScan);
             }
             processResults(ruleGames);
         } finally {
@@ -90,7 +91,7 @@ public class ResultScanner {
     private void processResults(Map<RuleNumber, List<Game>> ruleGames) {
         for (RuleNumber ruleNumber : ruleGames.keySet()) {
             for (Game game : ruleGames.get(ruleNumber)) {
-                driver.navigate().to("https://1xstavka.ru/" + game.getLink());
+                driver.navigate().to("http://1xstavka.ru/" + game.getLink());
                 driver.switchTo().frame(driver.findElement(By.className("statistic-after-game")));
                 if (matchIsOver()) {
                     game.setGameResult(findGameResult());
@@ -105,7 +106,7 @@ public class ResultScanner {
         try {
             return driver.findElement(By.className("match-info__text"))
                     .getText().contains("МАТЧ СОСТОЯЛСЯ");
-        } catch (NoSuchElementException ignore) {
+        } catch (NoSuchElementException e) {
             return false;
         }
     }

@@ -17,17 +17,20 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
     /**
      * Log start messages.
      */
-    public void startLogMessage(int totalGames) {
-        this.totalGames = totalGames;
-        String output = "\nStart scanning game results.";
-        writeInLine(output);
+    public void startLogMessage(LogType type, Integer arg) {
+        if (type == LogType.PARSING_SITE_START) {
+            writeInLine("Start scanning game results.");
+        } else if (type == LogType.GAMES) {
+            totalGames = arg;
+            writeInLine(String.format("\nProcessing games: 0/%d (0.0%%)", arg));
+        }
     }
 
     /**
      * Log single game. If all games logged - print end message.
      */
     public void logGame() {
-        String output = String.format("Processing leagues: %d/%d (%s%%)",
+        String output = String.format("Processing games: %d/%d (%s%%)",
                 processedGames.incrementAndGet(),
                 totalGames,
                 new DecimalFormat("#0.0").format(((double) processedGames.get() / (double) totalGames) * 100).replace(",", "."));
@@ -42,6 +45,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
      * Log "no games to scan" message.
      */
     public void noGamesLog() {
+        writeLineSeparator();
         writeInLine("\nNo games to scan");
         writeLineSeparator();
     }
