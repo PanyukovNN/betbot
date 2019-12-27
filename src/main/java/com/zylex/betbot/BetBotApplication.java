@@ -6,6 +6,7 @@ import com.zylex.betbot.controller.dao.GameDao;
 import com.zylex.betbot.controller.dao.LeagueDao;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.exception.BetBotException;
+import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.bet.*;
 
 import com.zylex.betbot.service.rule.RuleNumber;
@@ -32,6 +33,10 @@ public class BetBotApplication {
                 new BankDao(connection),
                 defineRuleNumbers(args)
             ).process();
+//            GameDao gameDao = new GameDao(connection);
+//            List<Game> games = gameDao.getAll();
+//            games.sort(Comparator.comparing(Game::getDateTime));
+//            games.forEach(System.out::println);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

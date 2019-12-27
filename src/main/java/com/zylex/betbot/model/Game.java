@@ -1,5 +1,7 @@
 package com.zylex.betbot.model;
 
+import com.zylex.betbot.service.rule.RuleNumber;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -35,8 +37,10 @@ public class Game {
     private String link;
 
     private String leagueLink;
+
+    private RuleNumber ruleNumber;
     
-    public Game(long id, String league, LocalDateTime dateTime, String firstTeam, String secondTeam, double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie, GameResult gameResult, int betMade, String link, String leagueLink) {
+    public Game(long id, String league, LocalDateTime dateTime, String firstTeam, String secondTeam, double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie, GameResult gameResult, int betMade, String link, String leagueLink, RuleNumber ruleNumber) {
         this.id = id;
         this.league = league;
         this.dateTime = dateTime;
@@ -51,6 +55,7 @@ public class Game {
         this.betMade = betMade;
         this.link = link;
         this.leagueLink = leagueLink;
+        this.ruleNumber = ruleNumber;
     }
 
     public Game() {
@@ -122,6 +127,14 @@ public class Game {
 
     public String getLink() {
         return link;
+    }
+
+    public RuleNumber getRuleNumber() {
+        return ruleNumber;
+    }
+
+    public void setRuleNumber(RuleNumber ruleNumber) {
+        this.ruleNumber = ruleNumber;
     }
 
     @Override
