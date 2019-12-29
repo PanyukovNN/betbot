@@ -170,7 +170,7 @@ public class BetProcessor {
     private void updateBalance() {
         if (totalBalance == -1) {
             availableBalance = (int) Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
-            int bank = bankDao.getLast();
+            int bank = bankDao.getMax();
             totalBalance = Math.max(availableBalance, bank);
             if (availableBalance > bank) {
                 bankDao.save(totalBalance);

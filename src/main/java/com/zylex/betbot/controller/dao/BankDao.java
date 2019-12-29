@@ -20,11 +20,11 @@ public class BankDao {
      * Get last record in bank relation.
      * @return - last amount.
      */
-    public int getLast() {
+    public int getMax() {
         try (PreparedStatement statement = connection.prepareStatement(SQLBank.GET_LAST.QUERY)) {
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return resultSet.getInt("amount");
+                return resultSet.getInt(1);
             }
             return 0;
         } catch (SQLException e) {
@@ -47,7 +47,7 @@ public class BankDao {
     }
 
     enum SQLBank {
-        GET_LAST("SELECT * FROM bank ORDER BY id DESC LIMIT 1"),
+        GET_LAST("SELECT MAX(amount) FROM bank"),
         INSERT("INSERT INTO bank (id, amount, bank_date) VALUES (DEFAULT, (?), (?))");
 
         String QUERY;

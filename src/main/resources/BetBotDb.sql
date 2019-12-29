@@ -25,14 +25,14 @@ CREATE TABLE IF NOT EXISTS game_temp (
     date_time         TIMESTAMP NOT NULL,
     first_team        VARCHAR(50) NOT NULL,
     second_team       VARCHAR(50) NOT NULL,
+    rule_id           INT NOT NULL,
     first_win         FLOAT NOT NULL,
     tie               FLOAT NOT NULL,
     second_win        FLOAT NOT NULL,
     first_win_or_tie  FLOAT NOT NULL,
     second_win_or_tie FLOAT NOT NULL,
     result_id         INT NOT NULL,
-    bet_made          INT,
-    rule_id           INT NOT NULL,
+    bet_made          BOOLEAN,
     FOREIGN KEY (result_id) REFERENCES result (id),
     FOREIGN KEY (rule_id) REFERENCES rule (id)
 );

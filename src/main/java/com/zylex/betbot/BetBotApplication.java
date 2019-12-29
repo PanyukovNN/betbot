@@ -6,11 +6,11 @@ import com.zylex.betbot.controller.dao.GameDao;
 import com.zylex.betbot.controller.dao.LeagueDao;
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.exception.BetBotException;
-import com.zylex.betbot.service.bet.*;
 
+import com.zylex.betbot.service.bet.BetProcessor;
+import com.zylex.betbot.service.parsing.ParseProcessor;
 import com.zylex.betbot.service.rule.RuleNumber;
 import com.zylex.betbot.service.rule.RuleProcessor;
-import com.zylex.betbot.service.parsing.ParseProcessor;
 
 import java.io.IOException;
 import java.io.InputStream;

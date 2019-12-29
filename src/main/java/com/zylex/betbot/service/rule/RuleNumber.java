@@ -6,6 +6,7 @@ import com.zylex.betbot.model.BetCoefficient;
  * Specifies rule.
  */
 public enum RuleNumber {
+    NO_RULE(null, 0, null),
     RULE_ONE(BetCoefficient.FIRST_WIN, 0.05d, new FirstRule()),
     RULE_TEST(BetCoefficient.FIRST_WIN, 0.05d, new TestRule());
 

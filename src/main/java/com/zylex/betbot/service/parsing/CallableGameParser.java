@@ -4,6 +4,7 @@ import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.Day;
+import com.zylex.betbot.service.rule.RuleNumber;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -88,7 +89,7 @@ public class CallableGameParser implements Callable<List<Game>> {
                     .attr("href")
                     .replaceFirst("line", "live");
             Game game = new Game(0, leagueName, dateTime, firstTeam, secondTeam,
-                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT, 0, link, leagueLink);
+                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT, 0, link, leagueLink, RuleNumber.NO_RULE);
             games.add(game);
         }
         return games;

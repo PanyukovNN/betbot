@@ -17,7 +17,7 @@ import java.util.Properties;
 public class StatisticsApplication {
 
     public static void main(String[] args) {
-        LocalDate startDate = LocalDate.of(2019, 12, 16);
+        LocalDate startDate = LocalDate.of(2019, 12, 23);
         LocalDate endDate = LocalDate.now().minusDays(0);
 
         try (Connection connection = getConnection()) {
