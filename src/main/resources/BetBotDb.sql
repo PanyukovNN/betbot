@@ -20,21 +20,23 @@ CREATE TABLE IF NOT EXISTS game (
 DROP TABLE IF EXISTS game_temp;
 CREATE TABLE IF NOT EXISTS game_temp (
     id                SERIAL NOT NULL PRIMARY KEY,
-    league            VARCHAR(200) NOT NULL,
-    league_link       VARCHAR(200) NOT NULL,
+    league_id         INT NOT NULL,
     date_time         TIMESTAMP NOT NULL,
     first_team        VARCHAR(50) NOT NULL,
     second_team       VARCHAR(50) NOT NULL,
     rule_id           INT NOT NULL,
-    first_win         FLOAT NOT NULL,
-    tie               FLOAT NOT NULL,
-    second_win        FLOAT NOT NULL,
-    first_win_or_tie  FLOAT NOT NULL,
-    second_win_or_tie FLOAT NOT NULL,
+    coefficient_id    INT NOT NULL,
     result_id         INT NOT NULL,
     bet_made          BOOLEAN,
     FOREIGN KEY (result_id) REFERENCES result (id),
     FOREIGN KEY (rule_id) REFERENCES rule (id)
+);
+
+DROP TABLE IF EXISTS league;
+CREATE TABLE IF NOT EXISTS league (
+    id          SERIAL NOT NULL PRIMARY KEY,
+    name        VARCHAR(200) NOT NULL,
+    league_link VARCHAR(200) NOT NULL
 );
 
 DROP TABLE IF EXISTS selected_league;
@@ -97,4 +99,15 @@ CREATE TABLE IF NOT EXISTS game_rule (
     rule_id     INT NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE,
     FOREIGN KEY (rule_id) REFERENCES rule (id) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS coefficient;
+CREATE TABLE IF NOT EXISTS coefficient (
+     game_id           INT NOT NULL,
+     first_win         FLOAT NOT NULL,
+     tie               FLOAT NOT NULL,
+     second_win        FLOAT NOT NULL,
+     first_win_or_tie  FLOAT NOT NULL,
+     second_win_or_tie FLOAT NOT NULL,
+     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE
 );

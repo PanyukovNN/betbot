@@ -60,15 +60,35 @@ public class GameDao {
         }
     }
 
-    public void saveTemp(Game game, RuleNumber ruleNumber) {
+    public void saveTemp(Game game) {
+
+//        id,
+//        league,
+//        league_link,
+//        date_time,
+//        first_team,
+//        second_team,
+//        rule_id,
+//        first_win,
+//        tie,
+//        second_win,
+//        first_win_or_tie,
+//        second_win_or_tie,
+//        result_id,
+//        bet_made) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))
+
+
         SQLGame sqlRequest = get(game).getId() == 0
-                ? SQLGame.INSERT
-                : SQLGame.UPDATE;
+                ? SQLGame.INSERT_TEMP
+                : SQLGame.UPDATE_TEMP;
         try (PreparedStatement statement = connection.prepareStatement(sqlRequest.QUERY, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, game.getLeague());
-            statement.setTimestamp(2, Timestamp.valueOf(game.getDateTime()));
-            statement.setString(3, game.getFirstTeam());
-            statement.setString(4, game.getSecondTeam());
+            statement.setString(2, game.getLeagueLink());
+            statement.setTimestamp(3, Timestamp.valueOf(game.getDateTime()));
+            statement.setString(4, game.getFirstTeam());
+            statement.setString(5, game.getSecondTeam());
+            statement.setInt();
+
             statement.setDouble(5, game.getFirstWin());
             statement.setDouble(6, game.getTie());
             statement.setDouble(7, game.getSecondWin());
@@ -258,6 +278,8 @@ public class GameDao {
     }
 
     enum SQLGame {
+        //TODO stopped here
+        GET_RULE_ID("SELECT id FROM rule WHERE rule_number = (?)"),
         GET("SELECT * FROM game WHERE league = (?) AND date_time = (?) AND first_team = (?) AND second_team = (?)"),
         GET_ALL("SELECT * FROM game"),
         GET_BY_RULE_AND_DATE("SELECT * FROM game WHERE rule_number = (?) AND date_time >= (?) AND date_time <= (?)"),
@@ -265,6 +287,8 @@ public class GameDao {
         GET_BY_RULE_NUMBER_WITH_NO_RESULT("SELECT * FROM game WHERE rule_number = (?) AND result IS NULL"),
         INSERT("INSERT INTO game (id, league, date_time, first_team, second_team, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result, bet_made, rule_number, league_link) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))"),
         UPDATE("UPDATE game SET league = (?), date_time = (?), first_team = (?), second_team = (?), first_win = (?), tie = (?), second_win = (?), first_win_or_tie = (?), second_win_or_tie = (?), result = (?), bet_made = (?), rule_number = (?), league_link = (?) WHERE id = (?)"),
+        INSERT_TEMP("INSERT INTO game_temp (id, league, league_link, date_time, first_team, second_team, rule_id, first_win, tie, second_win, first_win_or_tie, second_win_or_tie, result_id, bet_made) VALUES (DEFAULT, (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?))"),
+        UPDATE_TEMP("UPDATE game_temp SET league = (?), league_link = (?), date_time = (?), first_team = (?), second_team = (?), rule_id = (?), first_win = (?), tie = (?), second_win = (?), first_win_or_tie = (?), second_win_or_tie = (?), result_id = (?), bet_made = (?) WHERE id = (?)"),
         DELETE_BY_ID("DELETE FROM game WHERE id = (?)");
 
         String QUERY;
