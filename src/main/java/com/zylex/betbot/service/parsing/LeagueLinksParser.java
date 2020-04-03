@@ -6,6 +6,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -14,13 +15,8 @@ import java.util.List;
 /**
  * Parsing football leagues links from the site.
  */
-class LeagueParser {
-
-    private ParsingConsoleLogger logger;
-
-    LeagueParser(ParsingConsoleLogger logger) {
-        this.logger = logger;
-    }
+@Service
+class LeagueLinksParser {
 
     /**
      * Gets links on leagues which include football matches from the site,
@@ -45,7 +41,7 @@ class LeagueParser {
                 leagueLinks.add(link.replace("line/Football/", ""));
             }
         }
-        logger.logLeague();
+        ParsingConsoleLogger.logLeague();
         return leagueLinks;
     }
 

@@ -1,65 +1,69 @@
 package com.zylex.betbot.model;
 
-import com.zylex.betbot.service.rule.RuleNumber;
-
+import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
  * Instance of a football game.
  */
-public class Game {
+@Entity
+@Table(name = "game")
+public class Game implements Serializable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private String league;
-
+    @Column(name = "date_time")
     private LocalDateTime dateTime;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "league_id")
+    private League league;
+
+    @Column(name = "first_team")
     private String firstTeam;
 
+    @Column(name = "second_team")
     private String secondTeam;
 
-    private double firstWin;
+    @ManyToMany
+    @JoinTable(
+            name = "game_rule",
+            joinColumns = { @JoinColumn(name = "game_id") },
+            inverseJoinColumns = { @JoinColumn(name = "rule_id") }
+    )
+    private List<Rule> rules = new ArrayList<>();
 
-    private double tie;
+    @Column(name = "result")
+    private String result;
 
-    private double secondWin;
+    @Column(name = "bet_made")
+    private boolean betMade;
 
-    private double firstWinOrTie;
-
-    private double secondWinOrTie;
-
-    private GameResult gameResult;
-
-    private int betMade = 0;
-
+    @Column(name = "link")
     private String link;
 
-    private String leagueLink;
-
-    private RuleNumber ruleNumber;
-    
-    public Game(long id, String league, LocalDateTime dateTime, String firstTeam, String secondTeam, double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie, GameResult gameResult, int betMade, String link, String leagueLink, RuleNumber ruleNumber) {
-        this.id = id;
-        this.league = league;
-        this.dateTime = dateTime;
-        this.firstTeam = firstTeam;
-        this.secondTeam = secondTeam;
-        this.firstWin = firstWin;
-        this.tie = tie;
-        this.secondWin = secondWin;
-        this.firstWinOrTie = firstWinOrTie;
-        this.secondWinOrTie = secondWinOrTie;
-        this.gameResult = gameResult;
-        this.betMade = betMade;
-        this.link = link;
-        this.leagueLink = leagueLink;
-        this.ruleNumber = ruleNumber;
-    }
+    @OneToOne(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private GameInfo gameInfo;
 
     public Game() {
+    }
+
+    public Game(LocalDateTime dateTime, League league, String firstTeam, String secondTeam, String result, boolean betMade, String link, GameInfo gameInfo) {
+        this.dateTime = dateTime;
+        this.league = league;
+        this.firstTeam = firstTeam;
+        this.secondTeam = secondTeam;
+        this.result = result;
+        this.betMade = betMade;
+        this.link = link;
+        this.gameInfo = gameInfo;
     }
 
     public long getId() {
@@ -70,59 +74,59 @@ public class Game {
         this.id = id;
     }
 
-    public String getLeague() {
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
+    }
+
+    public League getLeague() {
         return league;
     }
 
-    public String getLeagueLink() {
-        return leagueLink;
-    }
-
-    public LocalDateTime getDateTime() {
-        return dateTime;
+    public void setLeague(League league) {
+        this.league = league;
     }
 
     public String getFirstTeam() {
         return firstTeam;
     }
 
+    public void setFirstTeam(String firstTeam) {
+        this.firstTeam = firstTeam;
+    }
+
     public String getSecondTeam() {
         return secondTeam;
     }
 
-    public double getFirstWin() {
-        return firstWin;
+    public void setSecondTeam(String secondTeam) {
+        this.secondTeam = secondTeam;
     }
 
-    public double getTie() {
-        return tie;
+    public List<Rule> getRules() {
+        return rules;
     }
 
-    public double getSecondWin() {
-        return secondWin;
+    public void setRules(List<Rule> rules) {
+        this.rules = rules;
     }
 
-    public double getFirstWinOrTie() {
-        return firstWinOrTie;
+    public String getResult() {
+        return result;
     }
 
-    public double getSecondWinOrTie() {
-        return secondWinOrTie;
+    public void setResult(String result) {
+        this.result = result;
     }
 
-    public GameResult getGameResult() {
-        return gameResult;
-    }
-
-    public void setGameResult(GameResult gameResult) {
-        this.gameResult = gameResult;
-    }
-
-    public int getBetMade() {
+    public boolean isBetMade() {
         return betMade;
     }
 
-    public void setBetMade(int betMade) {
+    public void setBetMade(boolean betMade) {
         this.betMade = betMade;
     }
 
@@ -130,43 +134,45 @@ public class Game {
         return link;
     }
 
-    public RuleNumber getRuleNumber() {
-        return ruleNumber;
+    public void setLink(String link) {
+        this.link = link;
     }
 
-    public void setRuleNumber(RuleNumber ruleNumber) {
-        this.ruleNumber = ruleNumber;
+    public GameInfo getGameInfo() {
+        return gameInfo;
+    }
+
+    public void setGameInfo(GameInfo gameInfo) {
+        this.gameInfo = gameInfo;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Game game = (Game) o;
-        return Objects.equals(league, game.league) &&
-                Objects.equals(leagueLink, game.leagueLink) &&
-                Objects.equals(dateTime, game.dateTime) &&
-                Objects.equals(firstTeam, game.firstTeam) &&
-                Objects.equals(secondTeam, game.secondTeam);
+        Game gameTemp = (Game) o;
+        return id == gameTemp.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(league, leagueLink, dateTime, firstTeam, secondTeam);
+        return Objects.hash(id);
     }
 
     @Override
     public String toString() {
-        DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
-        return DATE_FORMATTER.format(dateTime) +
-                " \"" + league +
-                "\" " + firstTeam +
-                " - " + secondTeam +
-                (betMade == 1
-                        ? " (BET MADE) "
-                        : " (BET NOT MADE) ") +
-                (gameResult == GameResult.NO_RESULT
-                        ? ""
-                        : " (" + gameResult + ")");
+        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
+        String body = "%d %s %s '%s'-vs-'%s' (%s) (%s) (%s) %s";
+        return String.format(body,
+                id,
+                DATE_TIME_FORMATTER.format(dateTime),
+                league,
+                firstTeam,
+                secondTeam,
+                rules,
+                result,
+                (betMade ? "BET MADE"
+                        : "BET NOT MADE"),
+                gameInfo);
     }
 }

@@ -14,16 +14,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ParsingConsoleLogger extends ConsoleLogger {
 
-    private int totalLeagues;
+    private static int totalLeagues;
 
-    private AtomicInteger processedLeagues = new AtomicInteger();
+    private static AtomicInteger processedLeagues = new AtomicInteger();
 
     /**
      * Log start messages.
      * @param type - type of log.
      * @param arg - different argument for specified log type.
      */
-    public synchronized void startLogMessage(LogType type, Integer arg) {
+    public static synchronized void startLogMessage(LogType type, Integer arg) {
         if (type == LogType.PARSING_SITE_START) {
             writeInLine("Parsing started.");
             writeInLine("\nFinding leagues: ...");
@@ -36,7 +36,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
     /**
      * Log league finding.
      */
-    public void logLeague() {
+    public static void logLeague() {
         String output = "Finding leagues: complete";
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
     }
@@ -44,7 +44,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
     /**
      * Log count of processed games.
      */
-    public synchronized void logLeagueGame() {
+    public static synchronized void logLeagueGame() {
         String output = String.format("Processing leagues: %d/%d (%s%%)",
                 processedLeagues.incrementAndGet(),
                 totalLeagues,
@@ -59,7 +59,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
     /**
      * Log summarizing of parsing.
      */
-    public void writeTotalGames(List<Game> games) {
+    public static void writeTotalGames(List<Game> games) {
         writeInLine("\nTotal games - ");
         for (Day day : Day.values()) {
             int gamesCount = (int) games.stream()

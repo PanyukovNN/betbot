@@ -5,6 +5,7 @@ package com.zylex.betbot.model;
  */
 @SuppressWarnings("unused")
 public enum BetCoefficient {
+    NULL(-1),
     FIRST_WIN(0),
     TIE(1),
     SECOND_WIN(2),

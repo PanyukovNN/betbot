@@ -2,37 +2,57 @@ package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.model.GameInfo;
 import com.zylex.betbot.model.GameResult;
+import com.zylex.betbot.model.League;
 import com.zylex.betbot.service.Day;
-import com.zylex.betbot.service.rule.RuleNumber;
+import com.zylex.betbot.service.repository.GameInfoRepository;
+import com.zylex.betbot.service.repository.GameRepository;
+import com.zylex.betbot.service.repository.LeagueRepository;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
  * Thread for parsing one league link.
  */
+//@Component
+//@Scope("prototype")
+@Service
 @SuppressWarnings("WeakerAccess")
 public class CallableGameParser implements Callable<List<Game>> {
-
-    private ParsingConsoleLogger logger;
 
     private final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     private String leagueLink;
 
-    public CallableGameParser(ParsingConsoleLogger logger, String leagueLink) {
-        this.logger = logger;
-        this.leagueLink = leagueLink;
+    private LeagueRepository leagueRepository;
+
+    private GameRepository gameRepository;
+
+    private GameInfoRepository gameInfoRepository;
+
+    @Autowired
+    public CallableGameParser(
+                              LeagueRepository leagueRepository,
+                              GameRepository gameRepository,
+                              GameInfoRepository gameInfoRepository) {
+//        this.leagueLink = leagueLink;
+        this.leagueRepository = leagueRepository;
+        this.gameRepository = gameRepository;
+        this.gameInfoRepository = gameInfoRepository;
     }
 
     /**
@@ -44,12 +64,21 @@ public class CallableGameParser implements Callable<List<Game>> {
         try {
             return processGameParsing();
         } catch (IOException e) {
-            return new ArrayList<>();
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Game> process(String leagueLink) {
+        this.leagueLink = leagueLink;
+        try {
+            return processGameParsing();
+        } catch (IOException e) {
+            return Collections.emptyList();
         }
     }
 
     private List<Game> processGameParsing() throws IOException {
-        logger.logLeagueGame();
+        ParsingConsoleLogger.logLeagueGame();
         Document document = Jsoup.connect(String.format("https://1xstavka.ru/line/Football/%s", leagueLink))
                 .userAgent("Chrome/4.0.249.0 Safari/532.5")
                 .referrer("http://www.google.com")
@@ -88,8 +117,10 @@ public class CallableGameParser implements Callable<List<Game>> {
             String link = gameElement.select("a.c-events__name")
                     .attr("href")
                     .replaceFirst("line", "live");
-            Game game = new Game(0, leagueName, dateTime, firstTeam, secondTeam,
-                    firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie, GameResult.NO_RESULT, 0, link, leagueLink, RuleNumber.NO_RULE);
+            League league = leagueRepository.save(new League(leagueName, leagueLink));
+            GameInfo gameInfo = gameInfoRepository.save(new GameInfo(firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie));
+            Game game = gameRepository.save(new Game(dateTime, league, firstTeam, secondTeam, GameResult.NO_RESULT.toString(), false, link, gameInfo));
+            gameInfo.setGame(game);
             games.add(game);
         }
         return games;

@@ -1,31 +1,38 @@
 package com.zylex.betbot.service.bet;
 
-import com.zylex.betbot.controller.dao.BankDao;
-import com.zylex.betbot.controller.dao.BetInfoDao;
-import com.zylex.betbot.controller.dao.GameDao;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
+import com.zylex.betbot.model.Bank;
 import com.zylex.betbot.model.BetCoefficient;
+import com.zylex.betbot.model.BetInfo;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.DriverManager;
+import com.zylex.betbot.service.repository.BankRepository;
+import com.zylex.betbot.service.repository.BetInfoRepository;
+import com.zylex.betbot.service.repository.GameRepository;
 import com.zylex.betbot.service.rule.RuleNumber;
 import com.zylex.betbot.service.rule.RuleProcessor;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.zylex.betbot.BetBotApplication.betStartTime;
+
 /**
  * Making bets.
  */
+@Service
 public class BetProcessor {
 
     private BetConsoleLogger logger = new BetConsoleLogger();
@@ -34,51 +41,50 @@ public class BetProcessor {
 
     private WebDriverWait wait;
 
-    private List<RuleNumber> ruleList;
-
     private RuleProcessor ruleProcessor;
 
-    private BankDao bankDao;
+    private BankRepository bankRepository;
 
-    private BetInfoDao betInfoDao;
+    private BetInfoRepository betInfoRepository;
 
-    private GameDao gameDao;
+    private GameRepository gameRepository;
 
     private int totalBalance = -1;
 
     private int availableBalance = -1;
 
-    public BetProcessor(RuleProcessor ruleProcessor, BankDao bankDao, List<RuleNumber> ruleList) {
+    @Autowired
+    public BetProcessor(RuleProcessor ruleProcessor,
+                        BankRepository bankRepository,
+                        GameRepository gameRepository,
+                        BetInfoRepository betInfoRepository) {
         this.ruleProcessor = ruleProcessor;
-        this.bankDao = bankDao;
-        this.gameDao = ruleProcessor.getGameDao();
-        this.betInfoDao = ruleProcessor.getBetInfoDao();
-        this.ruleList = ruleList;
+        this.bankRepository = bankRepository;
+        this.gameRepository = gameRepository;
+        this.betInfoRepository = betInfoRepository;
     }
 
     /**
      * Initiates non-headless chrome driver, opens the site, logs in,
      * makes bets, and saves bet made games to database.
      */
-    public void process() {
+    @Transactional
+    public void process(List<RuleNumber> ruleNumberList) {
         Map<RuleNumber, List<Game>> ruleGames = ruleProcessor.process();
-        if (ruleList.isEmpty()) {
-            return;
-        }
         try {
-            for (RuleNumber ruleNumber : ruleList) {
+            for (RuleNumber ruleNumber : ruleNumberList) {
                 List<Game> games = ruleGames.get(ruleNumber);
+                games.forEach(System.out::println);
                 List<Game> betGames = findBetGames(games);
-                if (betGames.isEmpty()) {
-                    continue;
+                if (!betGames.isEmpty()) {
+                    openSite();
+//                    processBets(ruleNumber, betGames);
                 }
-                openSite();
-                processBets(ruleNumber, betGames);
             }
             if (driver == null) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
             } else {
-                betInfoDao.save(LocalDateTime.now());
+                betInfoRepository.save(new BetInfo(LocalDateTime.now()));
                 logger.betMade(LogType.OK);
             }
         } catch (ElementNotInteractableException | IOException e) {
@@ -91,16 +97,16 @@ public class BetProcessor {
     }
 
     private List<Game> findBetGames(List<Game> betGames) {
-        return filterByBetMade(filterByParsingTime(betGames));
+        return filterByBetNotMade(filterByParsingTime(betGames));
     }
 
-    private List<Game> filterByBetMade(List<Game> filteredBetGames) {
-        return filteredBetGames.stream().filter(game -> game.getBetMade() == 0).collect(Collectors.toList());
+    private List<Game> filterByBetNotMade(List<Game> filteredBetGames) {
+        return filteredBetGames.stream().filter(game -> !game.isBetMade()).collect(Collectors.toList());
     }
 
     private List<Game> filterByParsingTime(List<Game> betGames) {
         return betGames.stream()
-                .filter(game -> LocalDateTime.now().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), LocalTime.of(22,59))))
+                .filter(game -> LocalDateTime.now().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), betStartTime)))
                 .collect(Collectors.toList());
     }
 
@@ -155,13 +161,14 @@ public class BetProcessor {
                 break;
             }
             if (!clickOnCoefficient(betCoefficient, game)) {
-                game.setBetMade(-1);
+                game.setBetMade(false);
+                gameRepository.update(game);
                 continue;
             }
             if (makeBet(singleBetAmount)) {
                 availableBalance -= singleBetAmount;
-                game.setBetMade(1);
-                gameDao.save(game, ruleNumber);
+                game.setBetMade(true);
+                gameRepository.update(game);
                 logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
             }
         }
@@ -170,16 +177,13 @@ public class BetProcessor {
     private void updateBalance() {
         if (totalBalance == -1) {
             availableBalance = (int) Double.parseDouble(waitSingleElementAndGet("top-b-acc__amount").getText());
-            int bank = bankDao.getMax();
-            totalBalance = Math.max(availableBalance, bank);
-            if (availableBalance > bank) {
-                bankDao.save(totalBalance);
-            }
+            totalBalance = availableBalance;
+            bankRepository.save(new Bank(LocalDate.now(), totalBalance));
         }
     }
 
     private int calculateAmount(RuleNumber ruleNumber) {
-        double singleBetMoney = totalBalance * ruleNumber.PERCENT;
+        double singleBetMoney = totalBalance * ruleNumber.percent;
         return (int) Math.max(singleBetMoney, 20);
     }
 
@@ -219,7 +223,7 @@ public class BetProcessor {
     }
 
     private List<WebElement> fetchGameCoefficients(Game game) {
-        driver.navigate().to("https://1xstavka.ru/line/Football/" + game.getLeagueLink());
+        driver.navigate().to("https://1xstavka.ru/line/Football/" + game.getLeague().getLink());
         List<WebElement> gameWebElements = waitElementsAndGet("c-events__item_game");
         for (WebElement gameWebElement : gameWebElements) {
             LocalDateTime dateTime = processDateTime(gameWebElement);

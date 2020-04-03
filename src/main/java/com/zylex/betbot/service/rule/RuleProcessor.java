@@ -1,47 +1,54 @@
 package com.zylex.betbot.service.rule;
 
-import com.zylex.betbot.controller.dao.BetInfoDao;
-import com.zylex.betbot.controller.dao.GameDao;
-import com.zylex.betbot.controller.dao.LeagueDao;
 import com.zylex.betbot.controller.logger.RuleProcessorLogger;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.model.Rule;
 import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.parsing.ParseProcessor;
+import com.zylex.betbot.service.repository.BetInfoRepository;
+import com.zylex.betbot.service.repository.GameRepository;
+import com.zylex.betbot.service.repository.LeagueRepository;
+import com.zylex.betbot.service.repository.RuleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.zylex.betbot.BetBotApplication.betStartTime;
 
 /**
  * Filter games by rules.
  */
+@Service
 public class RuleProcessor {
 
     private RuleProcessorLogger logger = new RuleProcessorLogger();
 
     private ParseProcessor parseProcessor;
 
-    private LeagueDao leagueDao;
+    private LeagueRepository leagueRepository;
 
-    private GameDao gameDao;
+    private GameRepository gameRepository;
 
-    private BetInfoDao betInfoDao;
+    private BetInfoRepository betInfoRepository;
 
-    public RuleProcessor(ParseProcessor parseProcessor, LeagueDao leagueDao, GameDao gameDao, BetInfoDao betInfoDao) {
+    private RuleRepository ruleRepository;
+
+    @Autowired
+    public RuleProcessor(ParseProcessor parseProcessor,
+                         LeagueRepository leagueRepository,
+                         GameRepository gameRepository,
+                         BetInfoRepository betInfoRepository,
+                         RuleRepository ruleRepository) {
         this.parseProcessor = parseProcessor;
-        this.leagueDao = leagueDao;
-        this.gameDao = gameDao;
-        this.betInfoDao = betInfoDao;
-    }
-
-    public GameDao getGameDao() {
-        return gameDao;
-    }
-
-    public BetInfoDao getBetInfoDao() {
-        return betInfoDao;
+        this.leagueRepository = leagueRepository;
+        this.gameRepository = gameRepository;
+        this.betInfoRepository = betInfoRepository;
+        this.ruleRepository = ruleRepository;
     }
 
     /**
@@ -50,28 +57,47 @@ public class RuleProcessor {
      * and return games list.
      * @return - map of games lists by ruleNumbers.
      */
+    @Transactional
     public Map<RuleNumber, List<Game>> process() {
         List<Game> games = parseProcessor.process();
         Map<RuleNumber, List<Game>> ruleGames = findRuleGames(games);
         return refreshByDay(ruleGames);
     }
 
+    private Map<RuleNumber, List<Game>> findRuleGames(List<Game> games) {
+        Map<RuleNumber, List<Game>> ruleGames = new HashMap<>();
+        for (RuleNumber ruleNumber : RuleNumber.values()) {
+            Rule rule = ruleRepository.getByRuleNumber(ruleNumber);
+            List<Game> eligibleGames = ruleNumber.ruleFilter.filter(leagueRepository, games, rule);
+            eligibleGames.forEach(gameRepository::update);
+            ruleGames.put(ruleNumber, eligibleGames);
+        }
+        return ruleGames;
+    }
+
     private Map<RuleNumber, List<Game>> refreshByDay(Map<RuleNumber, List<Game>> ruleGames) {
-        LocalDateTime betTime = betInfoDao.getLast();
+        LocalDateTime betTime = betInfoRepository.getLast().getDateTime();
         Map<RuleNumber, List<Game>> betGames = new HashMap<>();
         for (RuleNumber ruleNumber : RuleNumber.values()) {
             betGames.put(ruleNumber, new ArrayList<>());
             for (Day day : Day.values()) {
-                List<Game> dayGames = gameDao.getByDate(ruleNumber, LocalDate.now().plusDays(day.INDEX));
-                if (betTime.isAfter(LocalDateTime.of(LocalDate.now().plusDays(day.INDEX).minusDays(1), LocalTime.of(22, 59)))) {
+                List<Game> dayGames = gameRepository.getByDate(ruleNumber, LocalDate.now().plusDays(day.INDEX));
+                Rule rule = ruleRepository.getByRuleNumber(ruleNumber);
+                dayGames = dayGames.stream().filter(game -> game.getRules().contains(rule)).collect(Collectors.toList());
+                if (betTime.isAfter(LocalDateTime.of(LocalDate.now().plusDays(day.INDEX).minusDays(1), betStartTime.minusMinutes(1)))) {
                     betGames.get(ruleNumber).addAll(sortByDate(dayGames));
                 } else {
                     List<Game> dayRuleGames = sortByDate(ruleGames.get(ruleNumber).stream()
                             .filter(game -> game.getDateTime().toLocalDate().equals(LocalDate.now().plusDays(day.INDEX)))
                             .collect(Collectors.toList()));
                     betGames.get(ruleNumber).addAll(dayRuleGames);
-                    dayGames.forEach(gameDao::delete);
-                    dayRuleGames.forEach(game -> gameDao.save(game, ruleNumber));
+                    dayGames.forEach(gameRepository::delete);
+                    for (Game game : dayGames) {
+                        betGames.get(ruleNumber).remove(game);
+                        dayRuleGames.remove(game);
+                    }
+                    dayRuleGames.forEach(gameRepository::save);
+                    dayGames.clear();
                 }
             }
         }
@@ -83,13 +109,5 @@ public class RuleProcessor {
         return games.stream()
                 .sorted(Comparator.comparing(Game::getDateTime))
                 .collect(Collectors.toList());
-    }
-
-    private Map<RuleNumber, List<Game>> findRuleGames(List<Game> games) {
-        Map<RuleNumber, List<Game>> ruleGames = new HashMap<>();
-        for (RuleNumber ruleNumber : RuleNumber.values()) {
-            ruleGames.put(ruleNumber, ruleNumber.rule.filter(leagueDao, games));
-        }
-        return ruleGames;
     }
 }

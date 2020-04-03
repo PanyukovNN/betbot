@@ -6,20 +6,19 @@ import com.zylex.betbot.model.BetCoefficient;
  * Specifies rule.
  */
 public enum RuleNumber {
-    NO_RULE(null, 0, null),
-    RULE_ONE(BetCoefficient.FIRST_WIN, 0.05d, new FirstRule()),
-    RULE_TEST(BetCoefficient.FIRST_WIN, 0.05d, new TestRule());
+    FIRST_WIN(BetCoefficient.FIRST_WIN, 0.05d, new FirstRuleFilter()),
+    X_TWO(BetCoefficient.X_TWO, 0.05d, new XTwoRuleFilter());
 
     public final BetCoefficient betCoefficient;
 
-    public final double PERCENT;
+    public final double percent;
 
-    public final Rule rule;
+    public final RuleFilter ruleFilter;
 
-    RuleNumber(BetCoefficient betCoefficient, double PERCENT, Rule rule) {
+    RuleNumber(BetCoefficient betCoefficient, double percent, RuleFilter ruleFilter) {
         this.betCoefficient = betCoefficient;
-        this.PERCENT = PERCENT;
-        this.rule = rule;
+        this.percent = percent;
+        this.ruleFilter = ruleFilter;
     }
 
 }

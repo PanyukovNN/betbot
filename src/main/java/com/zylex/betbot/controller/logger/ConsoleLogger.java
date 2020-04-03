@@ -22,7 +22,7 @@ public abstract class ConsoleLogger {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm a");
         LocalDateTime startDateTime = LocalDateTime.now();
         logOutput = "\n\n" + StringUtils.repeat("-", 100) + "\n"
-                + String.format("Bot started at: %s", startDateTime.format(formatter))
+                + String.format("BetBot started at: %s", startDateTime.format(formatter))
                 + "\n" + StringUtils.repeat("-", 50) + "\n";
     }
 
@@ -61,7 +61,7 @@ public abstract class ConsoleLogger {
         logOutput += "\n" + message;
     }
 
-    void writeLineSeparator() {
+    static void writeLineSeparator() {
         String line = "\n" + StringUtils.repeat("-", 50);
         writeInLine(line);
     }
@@ -71,7 +71,7 @@ public abstract class ConsoleLogger {
         addToLog(line);
     }
 
-    synchronized void writeInLine(String line) {
+    synchronized static void writeInLine(String line) {
         System.out.print(line);
         addToLog(line);
     }
@@ -85,7 +85,7 @@ public abstract class ConsoleLogger {
         }
     }
 
-    String computeTime(long startTime) {
+    static String computeTime(long startTime) {
         long millis = System.currentTimeMillis() - startTime;
         String time = String.format("%02d min. %02d sec.",
                 TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
