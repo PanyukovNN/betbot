@@ -80,6 +80,5 @@ public class BetConsoleLogger extends ConsoleLogger{
             writeInLine("\nNo appropriate betting games.");
         }
         writeLineSeparator();
-        writeInLine(String.format("\nBot work completed in %s", computeTime(programStartTime.get())));
     }
 }
