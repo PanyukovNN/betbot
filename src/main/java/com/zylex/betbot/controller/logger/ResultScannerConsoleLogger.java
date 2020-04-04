@@ -1,14 +1,19 @@
 package com.zylex.betbot.controller.logger;
 
+import com.zylex.betbot.service.statistics.ResultScanner;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Logs ResultScanner.
+ * Log ResultScanner.
  */
 public class ResultScannerConsoleLogger extends ConsoleLogger{
+
+    private final static Logger LOG = LoggerFactory.getLogger(ResultScanner.class);
 
     private int totalGames;
 
@@ -19,7 +24,9 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
      */
     public void startLogMessage(LogType type, Integer arg) {
         if (type == LogType.PARSING_SITE_START) {
-            writeInLine("Start scanning game results.");
+            String output = "Scanning game results started.";
+            writeInLine("\n" + output);
+            LOG.info(output);
         } else if (type == LogType.GAMES) {
             totalGames = arg;
             writeInLine(String.format("\nProcessing games: 0/%d (0.0%%)", arg));
@@ -36,8 +43,10 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
                 new DecimalFormat("#0.0").format(((double) processedGames.get() / (double) totalGames) * 100).replace(",", "."));
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
         if (processedGames.get() == totalGames) {
-            writeInLine(String.format("\nScanning completed in %s", computeTime(programStartTime.get())));
+            String scanningCompleteOutput = "Scanning completed in %s" + computeTime(programStartTime.get());
+            writeInLine("\n" + scanningCompleteOutput);
             writeLineSeparator();
+            LOG.info(scanningCompleteOutput);
         }
     }
 
@@ -45,8 +54,10 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
      * Log "no games to scan" message.
      */
     public void noGamesLog() {
+        String output = "No games to scan";
         writeLineSeparator();
-        writeInLine("\nNo games to scan");
+        writeInLine("\n" + output);
         writeLineSeparator();
+        LOG.info(output);
     }
 }

@@ -5,7 +5,7 @@ import com.zylex.betbot.service.rule.RuleNumber;
 import java.time.LocalDate;
 
 /**
- * Logs StatisticsAnalyser.
+ * Log StatisticsAnalyser.
  */
 public class StatisticsConsoleLogger extends ConsoleLogger{
 

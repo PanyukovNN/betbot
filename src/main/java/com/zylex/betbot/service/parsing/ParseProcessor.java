@@ -38,7 +38,7 @@ public class ParseProcessor {
         try {
             ParsingConsoleLogger.startLogMessage(LogType.PARSING_SITE_START, 0);
             List<String> leagueLinks = leagueLinksParser.processLeagueParsing();
-            ParsingConsoleLogger.startLogMessage(LogType.GAMES, leagueLinks.size());
+            ParsingConsoleLogger.startLogMessage(LogType.LEAGUES, leagueLinks.size());
             List<Game> games = processGameParsing(leagueLinks);
             ParsingConsoleLogger.writeTotalGames(games);
             return games;

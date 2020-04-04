@@ -2,12 +2,17 @@ package com.zylex.betbot.controller.logger;
 
 import com.zylex.betbot.model.BetCoefficient;
 import com.zylex.betbot.model.Game;
+import com.zylex.betbot.service.bet.BetProcessor;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Logs BetProcessor.
+ * Log BetProcessor.
  */
 public class BetConsoleLogger extends ConsoleLogger{
+
+    private final static Logger LOG = LoggerFactory.getLogger(BetProcessor.class);
 
     /**
      * Log start message.
@@ -17,8 +22,10 @@ public class BetConsoleLogger extends ConsoleLogger{
     public synchronized void startLogMessage(LogType type, String message) {
         if (type == LogType.BET) {
             writeInLine(String.format("\nProcessing bets for %s:", message));
+            LOG.info("Processing bets started");
         } else if (type == LogType.LOG_IN) {
             writeInLine("\nLogging in: ...");
+            LOG.info("Logging in started");
         }
     }
 
@@ -32,15 +39,21 @@ public class BetConsoleLogger extends ConsoleLogger{
      */
     public void logBet(int index, int betAmount, BetCoefficient betCoefficient, Game game, LogType type) {
         if (type == LogType.OK) {
-            writeInLine(String.format("\n%d) %s rub. bet has been placed on %s for: %s",
+            String output = String.format("%d) %s rub. bet has been placed on %s for: %s",
                     index,
                     betAmount,
                     betCoefficient,
-                    game));
+                    game);
+            writeInLine("\n" + output);
+            LOG.info(output);
         } else if (type == LogType.BET_NOT_FOUND) {
-            writeErrorMessage("\nDid't find the game: " + game);
+            String output = "Did't find the game: " + game;
+            writeErrorMessage("\n" + output, new Throwable());
+            LOG.warn(output);
         } else if (type == LogType.BET_ERROR) {
-            writeErrorMessage("\nError during bet making for game: " + game);
+            String output = "Error during bet making for game: " + game;
+            writeErrorMessage("\n" + output, new Throwable());
+            LOG.warn(output);
         }
     }
 
@@ -52,11 +65,14 @@ public class BetConsoleLogger extends ConsoleLogger{
         if (type == LogType.OK) {
             String output = "Logging in: complete";
             writeInLine(StringUtils.repeat("\b", output.length()) + output);
+            LOG.info("Logging in complete");
         } else if (type == LogType.VERIFY) {
             String output = "Logging in: need to verify";
             writeInLine(StringUtils.repeat("\b", output.length()) + output);
             writeInLine("\nPlease, finish the verification in browser, after that press Enter to continue...");
-            pressEnter();
+            LOG.info("Logging in need verify");
+            pressAnyButton();
+            LOG.info("Logging in verify finished");
         }
         writeLineSeparator();
     }
@@ -65,7 +81,9 @@ public class BetConsoleLogger extends ConsoleLogger{
      * Log no money situation.
      */
     public void noMoney() {
-        writeInLine("\nMoney is over.");
+        String output = "Money is over.";
+        writeInLine("\n" + output);
+        LOG.info(output);
     }
 
     /**
@@ -75,9 +93,13 @@ public class BetConsoleLogger extends ConsoleLogger{
     public void betMade(LogType type) {
         if (type == LogType.OK) {
             writeLineSeparator();
-            writeInLine("\nBets are made successfully.");
+            String output = "Bets are made successfully.";
+            writeInLine("\n" + output);
+            LOG.info(output);
         } else if (type == LogType.NO_GAMES_TO_BET) {
-            writeInLine("\nNo appropriate betting games.");
+            String output = "No appropriate betting games.";
+            writeInLine("\n" + output);
+            LOG.info(output);
         }
         writeLineSeparator();
     }
