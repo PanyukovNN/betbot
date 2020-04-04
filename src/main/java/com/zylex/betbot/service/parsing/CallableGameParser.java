@@ -13,9 +13,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,31 +27,27 @@ import java.util.concurrent.Callable;
 /**
  * Thread for parsing one league link.
  */
-//@Component
-//@Scope("prototype")
-@Service
-@SuppressWarnings("WeakerAccess")
 public class CallableGameParser implements Callable<List<Game>> {
 
     private final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     private String leagueLink;
 
-    private LeagueRepository leagueRepository;
+//    private LeagueRepository leagueRepository;
+//
+//    private GameRepository gameRepository;
+//
+//    private GameInfoRepository gameInfoRepository;
 
-    private GameRepository gameRepository;
-
-    private GameInfoRepository gameInfoRepository;
-
-    @Autowired
-    public CallableGameParser(
-                              LeagueRepository leagueRepository,
-                              GameRepository gameRepository,
-                              GameInfoRepository gameInfoRepository) {
-//        this.leagueLink = leagueLink;
-        this.leagueRepository = leagueRepository;
-        this.gameRepository = gameRepository;
-        this.gameInfoRepository = gameInfoRepository;
+    public CallableGameParser(String leagueLink
+//                              LeagueRepository leagueRepository,
+//                              GameRepository gameRepository,
+//                              GameInfoRepository gameInfoRepository
+    ) {
+        this.leagueLink = leagueLink;
+//        this.leagueRepository = leagueRepository;
+//        this.gameRepository = gameRepository;
+//        this.gameInfoRepository = gameInfoRepository;
     }
 
     /**
@@ -60,16 +55,8 @@ public class CallableGameParser implements Callable<List<Game>> {
      * @return - list of games.
      */
     @Override
+    @Transactional
     public List<Game> call() {
-        try {
-            return processGameParsing();
-        } catch (IOException e) {
-            return Collections.emptyList();
-        }
-    }
-
-    public List<Game> process(String leagueLink) {
-        this.leagueLink = leagueLink;
         try {
             return processGameParsing();
         } catch (IOException e) {
@@ -117,9 +104,12 @@ public class CallableGameParser implements Callable<List<Game>> {
             String link = gameElement.select("a.c-events__name")
                     .attr("href")
                     .replaceFirst("line", "live");
-            League league = leagueRepository.save(new League(leagueName, leagueLink));
-            GameInfo gameInfo = gameInfoRepository.save(new GameInfo(firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie));
-            Game game = gameRepository.save(new Game(dateTime, league, firstTeam, secondTeam, GameResult.NO_RESULT.toString(), false, link, gameInfo));
+//            League league = leagueRepository.save(new League(leagueName, leagueLink));
+//            GameInfo gameInfo = gameInfoRepository.save(new GameInfo(firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie));
+//            Game game = gameRepository.save(new Game(dateTime, league, firstTeam, secondTeam, GameResult.NO_RESULT.toString(), false, link, gameInfo));
+            League league = new League(leagueName, leagueLink);
+            GameInfo gameInfo = new GameInfo(firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie);
+            Game game = new Game(dateTime, league, firstTeam, secondTeam, GameResult.NO_RESULT.toString(), false, link, gameInfo);
             gameInfo.setGame(game);
             games.add(game);
         }

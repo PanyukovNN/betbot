@@ -22,7 +22,7 @@ public class Game implements Serializable {
     @Column(name = "date_time")
     private LocalDateTime dateTime;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "league_id")
     private League league;
 

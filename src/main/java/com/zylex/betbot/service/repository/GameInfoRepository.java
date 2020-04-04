@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.NoResultException;
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -27,6 +28,7 @@ public class GameInfoRepository {
         this.sessionFactory = sessionFactory;
     }
 
+    @Transactional
     public GameInfo save(GameInfo gameInfo) {
         Session session = sessionFactory.getCurrentSession();
         GameInfo retreatedGameInfo = get(gameInfo);

@@ -8,13 +8,14 @@ import com.zylex.betbot.service.repository.GameInfoRepository;
 import com.zylex.betbot.service.repository.GameRepository;
 import com.zylex.betbot.service.repository.LeagueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
@@ -23,24 +24,23 @@ import java.util.concurrent.Future;
 @Service
 public class ParseProcessor {
 
-//    @Autowired
-//    private ThreadPoolTaskExecutor threadPool;
-
     private LeagueLinksParser leagueLinksParser;
 
-//    private LeagueRepository leagueRepository;
-//
-//    private GameRepository gameRepository;
-//
-//    private GameInfoRepository gameInfoRepository;
+    private LeagueRepository leagueRepository;
 
-    private CallableGameParser callableGameParser;
+    private GameRepository gameRepository;
+
+    private GameInfoRepository gameInfoRepository;
 
     @Autowired
     public ParseProcessor(LeagueLinksParser leagueLinksParser,
-                          CallableGameParser callableGameParser) {
+                          LeagueRepository leagueRepository,
+                          GameRepository gameRepository,
+                          GameInfoRepository gameInfoRepository) {
         this.leagueLinksParser = leagueLinksParser;
-        this.callableGameParser = callableGameParser;
+        this.leagueRepository = leagueRepository;
+        this.gameRepository = gameRepository;
+        this.gameInfoRepository = gameInfoRepository;
     }
 
     /**
@@ -50,7 +50,6 @@ public class ParseProcessor {
      */
     @Transactional
     public List<Game> process() {
-//        ExecutorService service = Executors.newWorkStealingPool();
         try {
             ParsingConsoleLogger.startLogMessage(LogType.PARSING_SITE_START, 0);
             List<String> leagueLinks = leagueLinksParser.processLeagueParsing();
@@ -60,27 +59,25 @@ public class ParseProcessor {
             return games;
         } catch (InterruptedException | ExecutionException e) {
             throw new ParseProcessorException(e.getMessage(), e);
-        } finally {
-//            service.shutdown();
         }
     }
 
     private List<Game> processGameParsing(List<String> leagueLinks) throws InterruptedException, ExecutionException {
-//        List<CallableGameParser> callableGameParsers = new ArrayList<>();
-//        List<Future<List<Game>>> futureGameParsers = new ArrayList<>();
-//        for (String leagueLink : leagueLinks) {
-////            callableGameParsers.add(new CallableGameParser(leagueLink, leagueRepository, ));
-//            CallableGameParser gameParser = new CallableGameParser(leagueLink, leagueRepository, gameRepository, gameInfoRepository);
-//            Future<List<Game>> future = threadPool.submit(gameParser);
-//            futureGameParsers.add(future);
-//        }
-        List<Game> games = new ArrayList<>();
-        for (String leagueLink : leagueLinks) {
-            games.addAll(callableGameParser.process(leagueLink));
+        ExecutorService service = Executors.newWorkStealingPool();
+        try {
+            List<CallableGameParser> callableGameParsers = new ArrayList<>();
+            for (String leagueLink : leagueLinks) {
+//                callableGameParsers.add(new CallableGameParser(leagueLink, leagueRepository, gameRepository, gameInfoRepository));
+                callableGameParsers.add(new CallableGameParser(leagueLink));
+            }
+            List<Future<List<Game>>> futureGameParsers = service.invokeAll(callableGameParsers);
+            List<Game> games = new ArrayList<>();
+            for (Future<List<Game>> gameList : futureGameParsers) {
+                games.addAll(gameList.get());
+            }
+            return games;
+        } finally {
+            service.shutdown();
         }
-//        for (Future<List<Game>> gameList : futureGameParsers) {
-//            games.addAll(gameList.get());
-//        }
-        return games;
     }
 }

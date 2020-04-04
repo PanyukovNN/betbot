@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.NoResultException;
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,15 +27,27 @@ public class GameRepository {
         this.sessionFactory = sessionFactory;
     }
 
+    @Transactional
     public Game save(Game game) {
         Session session = sessionFactory.getCurrentSession();
-        Game retreatedGame = getById(game.getId());
+        Game retreatedGame = get(game);
         if (retreatedGame.getLink() == null) {
             Long id = (Long) session.save(game);
             game.setId(id);
             return game;
         } else {
             return retreatedGame;
+        }
+    }
+
+    public Game get(Game game) {
+        Session session = sessionFactory.getCurrentSession();
+        Query query = session.createQuery("FROM Game WHERE link = :gameLink");
+        query.setParameter("gameLink", game.getLink());
+        try {
+            return (Game) query.getSingleResult();
+        } catch (NoResultException e) {
+            return new Game();
         }
     }
 
@@ -62,14 +75,9 @@ public class GameRepository {
         }
     }
 
-    public synchronized void update(Game game) {
+    public void update(Game game) {
         Session session = sessionFactory.getCurrentSession();
         session.update(game);
-    }
-
-    public void delete(Game game) {
-        Session session = sessionFactory.getCurrentSession();
-        session.delete(game);
     }
 
     @SuppressWarnings("unchecked")

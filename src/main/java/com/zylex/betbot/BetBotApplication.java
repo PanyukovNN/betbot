@@ -2,8 +2,12 @@ package com.zylex.betbot;
 
 import com.zylex.betbot.controller.logger.ConsoleLogger;
 
+import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.bet.BetProcessor;
+import com.zylex.betbot.service.driver.DriverManager;
+import com.zylex.betbot.service.parsing.ParseProcessor;
 import com.zylex.betbot.service.rule.RuleNumber;
+import com.zylex.betbot.service.rule.RuleProcessor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -20,7 +24,9 @@ public class BetBotApplication {
         Runtime.getRuntime().addShutdownHook(new Thread(context::close));
         List<RuleNumber> ruleNumberList = defineRuleNumbers(args);
         if (!ruleNumberList.isEmpty()) {
-            context.getBean(BetProcessor.class).process(ruleNumberList);
+            List<Game> games = context.getBean(ParseProcessor.class).process();
+            Map<RuleNumber, List<Game>> ruleGames = context.getBean(RuleProcessor.class).process(games);
+            context.getBean(BetProcessor.class).process(ruleGames, ruleNumberList);
         }
         ConsoleLogger.writeToLogFile();
     }

@@ -69,6 +69,12 @@ CREATE TABLE IF NOT EXISTS game_rule (
     FOREIGN KEY (rule_id) REFERENCES rule(id)
 );
 
+-- DELETE FROM game_info WHERE id > 704 ;
+-- DELETE FROM game_rule WHERE game_id > 689 ;
+-- DELETE FROM game WHERE id > 689 ;
+-- alter sequence game_id_seq restart with 690;
+-- alter sequence game_info_id_seq restart with 705;
+
 -- DROP TABLE result;
 -- CREATE TABLE IF NOT EXISTS result (
 --     id          SERIAL NOT NULL PRIMARY KEY,
