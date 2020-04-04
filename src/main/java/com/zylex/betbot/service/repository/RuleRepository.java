@@ -1,6 +1,5 @@
 package com.zylex.betbot.service.repository;
 
-import com.zylex.betbot.model.Bank;
 import com.zylex.betbot.model.Rule;
 import com.zylex.betbot.service.rule.RuleNumber;
 import org.hibernate.Session;

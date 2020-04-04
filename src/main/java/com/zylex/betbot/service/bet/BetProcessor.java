@@ -179,7 +179,6 @@ public class BetProcessor {
 //        JavascriptExecutor executor = (JavascriptExecutor) driverManager.getDriver();
 //        executor.executeScript("arguments[0].click();", betButton);
 //        return okButtonClick(executor);
-
         return true;
     }
 

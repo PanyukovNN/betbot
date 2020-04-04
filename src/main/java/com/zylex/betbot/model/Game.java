@@ -22,7 +22,7 @@ public class Game implements Serializable {
     @Column(name = "date_time")
     private LocalDateTime dateTime;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "league_id")
     private League league;
 
@@ -32,7 +32,7 @@ public class Game implements Serializable {
     @Column(name = "second_team")
     private String secondTeam;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "game_rule",
             joinColumns = { @JoinColumn(name = "game_id") },
@@ -49,7 +49,7 @@ public class Game implements Serializable {
     @Column(name = "link")
     private String link;
 
-    @OneToOne(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToOne(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private GameInfo gameInfo;
 
     public Game() {
@@ -150,8 +150,8 @@ public class Game implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Game gameTemp = (Game) o;
-        return id == gameTemp.id;
+        Game game = (Game) o;
+        return id == game.id;
     }
 
     @Override

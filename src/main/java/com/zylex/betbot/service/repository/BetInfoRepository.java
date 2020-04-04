@@ -21,8 +21,8 @@ public class BetInfoRepository {
 
     public BetInfo save(BetInfo betInfo) {
         Session session = sessionFactory.getCurrentSession();
-        Long id = (Long) session.save(betInfo);
-        betInfo.setId(id);
+        betInfo.setId(1);
+        session.save(betInfo);
         return betInfo;
     }
 

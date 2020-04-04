@@ -4,9 +4,6 @@ import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.ParseProcessorException;
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.repository.GameInfoRepository;
-import com.zylex.betbot.service.repository.GameRepository;
-import com.zylex.betbot.service.repository.LeagueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,21 +23,9 @@ public class ParseProcessor {
 
     private LeagueLinksParser leagueLinksParser;
 
-    private LeagueRepository leagueRepository;
-
-    private GameRepository gameRepository;
-
-    private GameInfoRepository gameInfoRepository;
-
     @Autowired
-    public ParseProcessor(LeagueLinksParser leagueLinksParser,
-                          LeagueRepository leagueRepository,
-                          GameRepository gameRepository,
-                          GameInfoRepository gameInfoRepository) {
+    public ParseProcessor(LeagueLinksParser leagueLinksParser) {
         this.leagueLinksParser = leagueLinksParser;
-        this.leagueRepository = leagueRepository;
-        this.gameRepository = gameRepository;
-        this.gameInfoRepository = gameInfoRepository;
     }
 
     /**
@@ -67,7 +52,7 @@ public class ParseProcessor {
         try {
             List<CallableGameParser> callableGameParsers = new ArrayList<>();
             for (String leagueLink : leagueLinks) {
-//                callableGameParsers.add(new CallableGameParser(leagueLink, leagueRepository, gameRepository, gameInfoRepository));
+
                 callableGameParsers.add(new CallableGameParser(leagueLink));
             }
             List<Future<List<Game>>> futureGameParsers = service.invokeAll(callableGameParsers);

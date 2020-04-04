@@ -4,7 +4,6 @@ import com.zylex.betbot.controller.logger.ConsoleLogger;
 
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.service.bet.BetProcessor;
-import com.zylex.betbot.service.driver.DriverManager;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 import com.zylex.betbot.service.rule.RuleNumber;
 import com.zylex.betbot.service.rule.RuleProcessor;

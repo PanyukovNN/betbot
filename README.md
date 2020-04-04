@@ -4,11 +4,12 @@ Bot consists of two modules:
 1. Second module collects matches results and displays statistics. 
 
 #### **Used tecnologies:**
-- Selenium
+- Spring
+- Hibernate
 - PostgreSQL
-- Stream API
+- Selenium
 - Multithreading
-- Java 8 Data/Time API
+- Java 8 Data/Time API, Stream API
 
 ------------
 

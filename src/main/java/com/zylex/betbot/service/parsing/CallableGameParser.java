@@ -6,9 +6,6 @@ import com.zylex.betbot.model.GameInfo;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.model.League;
 import com.zylex.betbot.service.Day;
-import com.zylex.betbot.service.repository.GameInfoRepository;
-import com.zylex.betbot.service.repository.GameRepository;
-import com.zylex.betbot.service.repository.LeagueRepository;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -33,21 +30,8 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private String leagueLink;
 
-//    private LeagueRepository leagueRepository;
-//
-//    private GameRepository gameRepository;
-//
-//    private GameInfoRepository gameInfoRepository;
-
-    public CallableGameParser(String leagueLink
-//                              LeagueRepository leagueRepository,
-//                              GameRepository gameRepository,
-//                              GameInfoRepository gameInfoRepository
-    ) {
+    public CallableGameParser(String leagueLink) {
         this.leagueLink = leagueLink;
-//        this.leagueRepository = leagueRepository;
-//        this.gameRepository = gameRepository;
-//        this.gameInfoRepository = gameInfoRepository;
     }
 
     /**
@@ -104,9 +88,6 @@ public class CallableGameParser implements Callable<List<Game>> {
             String link = gameElement.select("a.c-events__name")
                     .attr("href")
                     .replaceFirst("line", "live");
-//            League league = leagueRepository.save(new League(leagueName, leagueLink));
-//            GameInfo gameInfo = gameInfoRepository.save(new GameInfo(firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie));
-//            Game game = gameRepository.save(new Game(dateTime, league, firstTeam, secondTeam, GameResult.NO_RESULT.toString(), false, link, gameInfo));
             League league = new League(leagueName, leagueLink);
             GameInfo gameInfo = new GameInfo(firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie);
             Game game = new Game(dateTime, league, firstTeam, secondTeam, GameResult.NO_RESULT.toString(), false, link, gameInfo);

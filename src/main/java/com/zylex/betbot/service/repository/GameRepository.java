@@ -1,7 +1,6 @@
 package com.zylex.betbot.service.repository;
 
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.rule.RuleNumber;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -63,7 +62,7 @@ public class GameRepository {
     }
 
     @SuppressWarnings("unchecked")
-    public List<Game> getByDate(RuleNumber ruleNumber, LocalDate date) {
+    public List<Game> getByDate(LocalDate date) {
         Session session = sessionFactory.getCurrentSession();
         Query query = session.createQuery("FROM Game WHERE dateTime >= :dayStart AND dateTime <= :dayEnd");
         query.setParameter("dayStart", LocalDateTime.of(date, LocalTime.MIN));
