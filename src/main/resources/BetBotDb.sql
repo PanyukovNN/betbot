@@ -29,7 +29,10 @@ CREATE TABLE IF NOT EXISTS game_info (
     FOREIGN KEY (game_id) REFERENCES game(id)
 );
 
-
+-- ALTER TABLE game_info
+--     RENAME first_win_or_tie TO one_x;
+-- ALTER TABLE game_info
+--     RENAME second_win_or_tie TO x_two;
 
 CREATE TABLE IF NOT EXISTS selected_league (
     id          SERIAL NOT NULL PRIMARY KEY,
@@ -52,14 +55,6 @@ CREATE TABLE IF NOT EXISTS bank (
     amount      INT NOT NULL,
     bank_date   DATE NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS rule (
-    id          SERIAL NOT NULL PRIMARY KEY,
-    name        VARCHAR(50) NOT NULL
-);
-INSERT INTO rule (id, name)
-VALUES (default, 'RULE_ONE'),
-       (default, 'X_TWO_RULE');
 
 CREATE TABLE IF NOT EXISTS game_rule (
     game_id BIGINT NOT NULL,

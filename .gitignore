@@ -8,5 +8,5 @@ log
 *.csv
 *.zip
 src\main\resources
-**RuleFilter.java
 **.properties
+/src/main/resources/rule.sql

@@ -5,7 +5,7 @@ import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameInfo;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.model.League;
-import com.zylex.betbot.service.Day;
+import com.zylex.betbot.model.Day;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -30,7 +30,7 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private String leagueLink;
 
-    public CallableGameParser(String leagueLink) {
+    CallableGameParser(String leagueLink) {
         this.leagueLink = leagueLink;
     }
 
@@ -83,13 +83,13 @@ public class CallableGameParser implements Callable<List<Game>> {
             double firstWin = stringToDouble(coefficients.get(0).text());
             double tie = stringToDouble(coefficients.get(1).text());
             double secondWin = stringToDouble(coefficients.get(2).text());
-            double firstWinOrTie = stringToDouble(coefficients.get(3).text());
-            double secondWinOrTie = stringToDouble(coefficients.get(5).text());
+            double oneX = stringToDouble(coefficients.get(3).text());
+            double xTwo = stringToDouble(coefficients.get(5).text());
             String link = gameElement.select("a.c-events__name")
                     .attr("href")
                     .replaceFirst("line", "live");
             League league = new League(leagueName, leagueLink);
-            GameInfo gameInfo = new GameInfo(firstWin, tie, secondWin, firstWinOrTie, secondWinOrTie);
+            GameInfo gameInfo = new GameInfo(firstWin, tie, secondWin, oneX, xTwo);
             Game game = new Game(dateTime, league, firstTeam, secondTeam, GameResult.NO_RESULT.toString(), false, link, gameInfo);
             gameInfo.setGame(game);
             games.add(game);

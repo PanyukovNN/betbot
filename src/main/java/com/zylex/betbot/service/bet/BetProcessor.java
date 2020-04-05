@@ -3,15 +3,12 @@ package com.zylex.betbot.service.bet;
 import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
-import com.zylex.betbot.model.Bank;
-import com.zylex.betbot.model.BetCoefficient;
-import com.zylex.betbot.model.BetInfo;
-import com.zylex.betbot.model.Game;
+import com.zylex.betbot.model.*;
 import com.zylex.betbot.service.driver.DriverManager;
 import com.zylex.betbot.service.repository.BankRepository;
 import com.zylex.betbot.service.repository.BetInfoRepository;
 import com.zylex.betbot.service.repository.GameRepository;
-import com.zylex.betbot.service.rule.RuleNumber;
+import com.zylex.betbot.service.repository.RuleRepository;
 import org.openqa.selenium.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +39,8 @@ public class BetProcessor {
 
     private GameRepository gameRepository;
 
+    private RuleRepository ruleRepository;
+
     private int totalBalance = -1;
 
     private int availableBalance = -1;
@@ -50,11 +49,13 @@ public class BetProcessor {
     public BetProcessor(DriverManager driverManager,
                         BankRepository bankRepository,
                         GameRepository gameRepository,
-                        BetInfoRepository betInfoRepository) {
+                        BetInfoRepository betInfoRepository,
+                        RuleRepository ruleRepository) {
         this.driverManager = driverManager;
         this.bankRepository = bankRepository;
         this.gameRepository = gameRepository;
         this.betInfoRepository = betInfoRepository;
+        this.ruleRepository = ruleRepository;
     }
 
     /**
@@ -62,14 +63,16 @@ public class BetProcessor {
      * makes bets, and saves bet made games to database.
      */
     @Transactional
-    public void process(Map<RuleNumber, List<Game>> ruleGames, List<RuleNumber> ruleNumberList) {
+    public void process(Map<Rule, List<Game>> ruleGames, List<String> ruleNames) {
         try {
-            for (RuleNumber ruleNumber : ruleNumberList) {
-                List<Game> games = ruleGames.get(ruleNumber);
+            List<Rule> rules = ruleRepository.getAll();
+            for (Rule rule : rules) {
+                if (!ruleNames.contains(rule.getName())) continue;
+                List<Game> games = ruleGames.get(rule);
                 List<Game> betGames = findBetGames(games);
                 if (!betGames.isEmpty()) {
                     openSite();
-                    processBets(ruleNumber, betGames);
+                    processBets(rule, betGames);
                 }
             }
             if (driverManager.getDriver() == null) {
@@ -84,16 +87,17 @@ public class BetProcessor {
     }
 
     private List<Game> findBetGames(List<Game> betGames) {
-        return filterByBetNotMade(filterByParsingTime(betGames));
+        return filterByBetNotMade(filterByTime(betGames));
     }
 
     private List<Game> filterByBetNotMade(List<Game> filteredBetGames) {
         return filteredBetGames.stream().filter(game -> !game.isBetMade()).collect(Collectors.toList());
     }
 
-    private List<Game> filterByParsingTime(List<Game> betGames) {
+    private List<Game> filterByTime(List<Game> betGames) {
         return betGames.stream()
                 .filter(game -> LocalDateTime.now().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), betStartTime)))
+                .filter(game -> LocalDateTime.now().isBefore(game.getDateTime()))
                 .collect(Collectors.toList());
     }
 
@@ -121,24 +125,25 @@ public class BetProcessor {
 
     private void checkVerify() {
         try {
-            //TODO
-            Thread.sleep(1500);
-            String url = driverManager.getDriver().getCurrentUrl();
-            if (url.contains("accountverify")) {
-                logger.logInLog(LogType.VERIFY);
-            } else {
+            //TODO check correctness
+            driverManager.waitElement(By::className, "top-b-acc__amount");
+//            Thread.sleep(1500);
+//            String url = driverManager.getDriver().getCurrentUrl();
+//            if (url.contains("accountverify")) {
+//                logger.logInLog(LogType.VERIFY);
+//            } else {
                 logger.logInLog(LogType.OK);
-            }
-        } catch (InterruptedException e) {
-            throw new BetProcessorException(e.getMessage(), e);
+//            }
+        } catch (TimeoutException e) {
+            logger.logInLog(LogType.VERIFY);
         }
     }
 
-    private void processBets(RuleNumber ruleNumber, List<Game> betGames) {
-        logger.startLogMessage(LogType.BET, ruleNumber.toString());
-        BetCoefficient betCoefficient = ruleNumber.betCoefficient;
+    private void processBets(Rule rule, List<Game> betGames) {
+        logger.startLogMessage(LogType.BET, rule.getName());
+        BetCoefficient betCoefficient = BetCoefficient.valueOf(rule.getBetCoefficient());
         updateBalance();
-        int singleBetAmount = calculateAmount(ruleNumber);
+        int singleBetAmount = calculateAmount(rule);
         int i = 0;
         for (Game game : betGames) {
             if (availableBalance < singleBetAmount) {
@@ -167,19 +172,18 @@ public class BetProcessor {
         }
     }
 
-    private int calculateAmount(RuleNumber ruleNumber) {
-        double singleBetMoney = totalBalance * ruleNumber.percent;
+    private int calculateAmount(Rule rule) {
+        double singleBetMoney = totalBalance * rule.getPercent();
         return (int) Math.max(singleBetMoney, 20);
     }
 
     private boolean makeBet(int amount) {
-//        driverManager.getDriver().findElement(By.className("bet_sum_input")).sendKeys(String.valueOf(amount));
-//        WebElement betButton = driverManager.waitElement(By::className, "coupon-btn-group__item")
-//                .findElement(By.cssSelector("button"));
-//        JavascriptExecutor executor = (JavascriptExecutor) driverManager.getDriver();
-//        executor.executeScript("arguments[0].click();", betButton);
-//        return okButtonClick(executor);
-        return true;
+        driverManager.getDriver().findElement(By.className("bet_sum_input")).sendKeys(String.valueOf(amount));
+        WebElement betButton = driverManager.waitElement(By::className, "coupon-btn-group__item")
+                .findElement(By.cssSelector("button"));
+        JavascriptExecutor executor = (JavascriptExecutor) driverManager.getDriver();
+        executor.executeScript("arguments[0].click();", betButton);
+        return okButtonClick(executor);
     }
 
     private boolean okButtonClick(JavascriptExecutor executor) {

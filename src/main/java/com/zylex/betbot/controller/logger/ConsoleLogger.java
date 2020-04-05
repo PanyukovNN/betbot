@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Base class for loggers.
  */
+@SuppressWarnings("WeakerAccess")
 public abstract class ConsoleLogger {
 
     private final static Logger LOG = LoggerFactory.getLogger(BetBotApplication.class);
@@ -25,7 +26,7 @@ public abstract class ConsoleLogger {
      * Writes start message
      */
     public static void startMessage() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm a");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a dd.MM.yyyy");
         LocalDateTime startDateTime = LocalDateTime.now();
         String startMessage = String.format("BetBot started at: %s", startDateTime.format(formatter));
         writeInLine(startMessage);
@@ -45,7 +46,6 @@ public abstract class ConsoleLogger {
 
     public synchronized static void writeInLine(String line) {
         System.out.print(line);
-        LOG.info(line);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -55,6 +55,12 @@ public abstract class ConsoleLogger {
         } catch (IOException e) {
             throw new ConsoleLoggerException(e.getMessage(), e);
         }
+    }
+
+    public synchronized static void endMessage() {
+        String output = "Bot work completed in " + computeTime(programStartTime.get());
+        writeInLine("\n" + output);
+        LOG.info(output);
     }
 
     static String computeTime(long startTime) {

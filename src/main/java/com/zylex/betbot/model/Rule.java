@@ -1,6 +1,8 @@
 package com.zylex.betbot.model;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -14,11 +16,27 @@ public class Rule {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "selected_leagues")
+    private boolean selectedLeagues;
+
+    @Column(name = "percent")
+    private double percent;
+
+    @Column(name = "bet_coefficient")
+    private String betCoefficient;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rule_id")
+    private List<RuleCondition> ruleConditions = new ArrayList<>();
+
     public Rule() {
     }
 
-    public Rule(String name) {
+    public Rule(String name, boolean selectedLeagues, double percent, String betCoefficient) {
         this.name = name;
+        this.selectedLeagues = selectedLeagues;
+        this.percent = percent;
+        this.betCoefficient = betCoefficient;
     }
 
     public long getId() {
@@ -35,6 +53,38 @@ public class Rule {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isSelectedLeagues() {
+        return selectedLeagues;
+    }
+
+    public void setSelectedLeagues(boolean selectedLeagues) {
+        this.selectedLeagues = selectedLeagues;
+    }
+
+    public double getPercent() {
+        return percent;
+    }
+
+    public void setPercent(double percent) {
+        this.percent = percent;
+    }
+
+    public String getBetCoefficient() {
+        return betCoefficient;
+    }
+
+    public void setBetCoefficient(String betCoefficient) {
+        this.betCoefficient = betCoefficient;
+    }
+
+    public List<RuleCondition> getRuleConditions() {
+        return ruleConditions;
+    }
+
+    public void setRuleConditions(List<RuleCondition> ruleConditions) {
+        this.ruleConditions = ruleConditions;
     }
 
     @Override

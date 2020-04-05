@@ -25,21 +25,21 @@ public class GameInfo implements Serializable {
     @Column(name = "second_win")
     private double secondWin;
 
-    @Column(name = "first_win_or_tie")
-    private double firstWinOrTie;
+    @Column(name = "one_x")
+    private double oneX;
 
-    @Column(name = "second_win_or_tie")
-    private double secondWinOrTie;
+    @Column(name = "x_two")
+    private double xTwo;
 
     public GameInfo() {
     }
 
-    public GameInfo(double firstWin, double tie, double secondWin, double firstWinOrTie, double secondWinOrTie) {
+    public GameInfo(double firstWin, double tie, double secondWin, double oneX, double xTwo) {
         this.firstWin = firstWin;
         this.tie = tie;
         this.secondWin = secondWin;
-        this.firstWinOrTie = firstWinOrTie;
-        this.secondWinOrTie = secondWinOrTie;
+        this.oneX = oneX;
+        this.xTwo = xTwo;
     }
 
     public long getId() {
@@ -82,20 +82,20 @@ public class GameInfo implements Serializable {
         this.secondWin = secondWin;
     }
 
-    public double getFirstWinOrTie() {
-        return firstWinOrTie;
+    public double getOneX() {
+        return oneX;
     }
 
-    public void setFirstWinOrTie(double firstWinOrTie) {
-        this.firstWinOrTie = firstWinOrTie;
+    public void setOneX(double oneX) {
+        this.oneX = oneX;
     }
 
-    public double getSecondWinOrTie() {
-        return secondWinOrTie;
+    public double getXTwo() {
+        return xTwo;
     }
 
-    public void setSecondWinOrTie(double secondWinOrTie) {
-        this.secondWinOrTie = secondWinOrTie;
+    public void setXTwo(double xTwo) {
+        this.xTwo = xTwo;
     }
 
     @Override
@@ -118,7 +118,7 @@ public class GameInfo implements Serializable {
                 firstWin,
                 tie,
                 secondWin,
-                firstWinOrTie,
-                secondWinOrTie);
+                oneX,
+                xTwo);
     }
 }

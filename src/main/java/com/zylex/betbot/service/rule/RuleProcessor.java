@@ -3,7 +3,6 @@ package com.zylex.betbot.service.rule;
 import com.zylex.betbot.controller.logger.RuleProcessorLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.Rule;
-import com.zylex.betbot.service.Day;
 import com.zylex.betbot.service.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,23 +23,19 @@ public class RuleProcessor {
 
     private RuleProcessorLogger logger = new RuleProcessorLogger();
 
-    private LeagueRepository leagueRepository;
-
     private GameRepository gameRepository;
-
-    private BetInfoRepository betInfoRepository;
 
     private RuleRepository ruleRepository;
 
+    private RuleFilter ruleFilter;
+
     @Autowired
-    public RuleProcessor(LeagueRepository leagueRepository,
-                         GameRepository gameRepository,
-                         BetInfoRepository betInfoRepository,
-                         RuleRepository ruleRepository) {
-        this.leagueRepository = leagueRepository;
+    public RuleProcessor(GameRepository gameRepository,
+                         RuleRepository ruleRepository,
+                         RuleFilter ruleFilter) {
         this.gameRepository = gameRepository;
-        this.betInfoRepository = betInfoRepository;
         this.ruleRepository = ruleRepository;
+        this.ruleFilter = ruleFilter;
     }
 
     /**
@@ -50,41 +45,20 @@ public class RuleProcessor {
      * @return - map of games lists by ruleNumbers.
      */
     @Transactional
-    public Map<RuleNumber, List<Game>> process(List<Game> games) {
-        Map<RuleNumber, List<Game>> ruleGames = findRuleGames(games);
-        return refreshByDay(ruleGames);
-    }
-
-    private Map<RuleNumber, List<Game>> findRuleGames(List<Game> games) {
-        Map<RuleNumber, List<Game>> ruleGames = new HashMap<>();
-        for (RuleNumber ruleNumber : RuleNumber.values()) {
-            Rule rule = ruleRepository.getByRuleNumber(ruleNumber);
-            List<Game> eligibleGames = ruleNumber.ruleFilter.filter(leagueRepository, games, rule);
+    public Map<Rule, List<Game>> process(List<Game> games) {
+        Map<Rule, List<Game>> ruleGames = new LinkedHashMap<>();
+        List<Rule> rules = ruleRepository.getAll();
+        rules.sort(Comparator.comparing(Rule::getId));
+        for (Rule rule : rules) {
+            List<Game> eligibleGames = ruleFilter.filter(games, rule);
             eligibleGames.sort(Comparator.comparing(Game::getDateTime));
-            for (Game game : eligibleGames) {
-                eligibleGames.set(eligibleGames.indexOf(game), gameRepository.save(game));
-            }
-            ruleGames.put(ruleNumber, eligibleGames);
-        }
-        return ruleGames;
-    }
-
-    private Map<RuleNumber, List<Game>> refreshByDay(Map<RuleNumber, List<Game>> ruleGames) {
-        LocalDateTime betTime = betInfoRepository.getLast().getDateTime();
-        Map<RuleNumber, List<Game>> betGames = new HashMap<>();
-        for (RuleNumber ruleNumber : RuleNumber.values()) {
-            betGames.put(ruleNumber, new ArrayList<>());
-            for (Day day : Day.values()) {
-                if (betTime.isAfter(LocalDateTime.of(LocalDate.now().plusDays(day.INDEX).minusDays(1), betStartTime.minusMinutes(1)))) {
-                    List<Game> dayRuleGames = ruleGames.get(ruleNumber).stream()
-                            .filter(game -> game.getDateTime().toLocalDate().equals(LocalDate.now().plusDays(day.INDEX)))
-                            .sorted(Comparator.comparing(Game::getDateTime))
-                            .collect(Collectors.toList());
-                    betGames.get(ruleNumber).addAll(dayRuleGames);
-                }
-            }
+            eligibleGames.forEach(gameRepository::save);
+            ruleGames.put(rule, gameRepository.getSinceDateTime(LocalDateTime.of(LocalDate.now().minusDays(1), betStartTime)).stream()
+                    .filter(game -> game.getRules().contains(rule))
+                    .sorted(Comparator.comparing(Game::getDateTime))
+                    .collect(Collectors.toList()));
         }
         logger.writeEligibleGamesNumber(ruleGames);
-        return betGames;
+        return ruleGames;
     }
 }

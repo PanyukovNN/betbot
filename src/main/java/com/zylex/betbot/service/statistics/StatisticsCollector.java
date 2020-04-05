@@ -3,7 +3,6 @@ package com.zylex.betbot.service.statistics;
 import com.zylex.betbot.controller.logger.StatisticsConsoleLogger;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
-import com.zylex.betbot.service.rule.RuleNumber;
 
 import java.time.LocalDate;
 import java.util.List;

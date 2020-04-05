@@ -1,7 +1,6 @@
 package com.zylex.betbot.service.repository;
 
 import com.zylex.betbot.model.Rule;
-import com.zylex.betbot.service.rule.RuleNumber;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -9,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.NoResultException;
+import java.util.Collections;
+import java.util.List;
 
 @Repository
 public class RuleRepository {
@@ -20,14 +21,14 @@ public class RuleRepository {
         this.sessionFactory = sessionFactory;
     }
 
-    public Rule getByRuleNumber(RuleNumber ruleNumber) {
+    @SuppressWarnings("unchecked")
+    public List<Rule> getAll() {
         Session session = sessionFactory.getCurrentSession();
-        Query query = session.createQuery("FROM Rule WHERE name = :ruleNumber");
-        query.setParameter("ruleNumber", ruleNumber.toString());
+        Query query = session.createQuery("FROM Rule");
         try {
-            return (Rule) query.getSingleResult();
+            return query.getResultList();
         } catch (NoResultException e) {
-            return new Rule();
+            return Collections.emptyList();
         }
     }
 }

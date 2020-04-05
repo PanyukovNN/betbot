@@ -1,7 +1,7 @@
 package com.zylex.betbot.service.repository;
 
 import com.zylex.betbot.model.League;
-import com.zylex.betbot.service.rule.RuleNumber;
+import com.zylex.betbot.model.Rule;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -70,10 +70,10 @@ public class LeagueRepository {
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> getExcludeLeagues(RuleNumber ruleNumber) {
+    public List<String> getExcludeLeagues(Rule rule) {
         Session session = sessionFactory.getCurrentSession();
-        Query query = session.createSQLQuery("SELECT league_link FROM exclude_league WHERE rule_number = :ruleNumber");
-        query.setParameter("ruleNumber", ruleNumber.toString());
+        Query query = session.createSQLQuery("SELECT league_link FROM exclude_league WHERE rule_name = :rule");
+        query.setParameter("rule", rule.getName());
         try {
             return query.getResultList();
         } catch (NoResultException e) {

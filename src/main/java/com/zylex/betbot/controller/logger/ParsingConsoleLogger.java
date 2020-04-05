@@ -1,7 +1,7 @@
 package com.zylex.betbot.controller.logger;
 
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.Day;
+import com.zylex.betbot.model.Day;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -30,10 +30,8 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      */
     public static synchronized void startLogMessage(LogType type, Integer arg) {
         if (type == LogType.PARSING_SITE_START) {
-            String output = "Parsing started.";
-            writeInLine("\n" + output);
-            LOG.info(output);
             writeInLine("\nFinding leagues: ...");
+            LOG.info("Finding leagues started.");
         } else if (type == LogType.LEAGUES) {
             totalLeagues = arg;
             writeInLine(String.format("\nProcessing leagues: 0/%d (0.0%%)", arg));
@@ -44,9 +42,9 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      * Log league finding.
      */
     public static void logLeague() {
-        String output = "Finding leagues: complete";
+        String output = "Finding leagues: complete.";
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
-        LOG.info("Finding leagues complete");
+        LOG.info(output);
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.zylex.betbot.service;
+package com.zylex.betbot.model;
 
 /**
  * Specifies the day for parsing.

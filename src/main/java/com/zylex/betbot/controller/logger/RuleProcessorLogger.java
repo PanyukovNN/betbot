@@ -1,8 +1,8 @@
 package com.zylex.betbot.controller.logger;
 
 import com.zylex.betbot.model.Game;
-import com.zylex.betbot.service.Day;
-import com.zylex.betbot.service.rule.RuleNumber;
+import com.zylex.betbot.model.Day;
+import com.zylex.betbot.model.Rule;
 import com.zylex.betbot.service.rule.RuleProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +22,8 @@ public class RuleProcessorLogger extends ConsoleLogger{
      * Log number of eligible games for every rule.
      * @param eligibleGames - map of eligible games.
      */
-    public void writeEligibleGamesNumber(Map<RuleNumber, List<Game>> eligibleGames) {
-        for (RuleNumber ruleNumber : RuleNumber.values()) {
+    public void writeEligibleGamesNumber(Map<Rule, List<Game>> eligibleGames) {
+        for (Rule ruleNumber : eligibleGames.keySet()) {
             StringBuilder output = new StringBuilder(String.format("%13s ", ruleNumber + " -"));
             for (Day day : Day.values()) {
                 int eligibleGamesCount = (int) eligibleGames.get(ruleNumber).stream()

@@ -1,6 +1,6 @@
 package com.zylex.betbot.controller.logger;
 
-import com.zylex.betbot.service.rule.RuleNumber;
+import com.zylex.betbot.model.Rule;
 
 import java.time.LocalDate;
 
@@ -21,7 +21,7 @@ public class StatisticsConsoleLogger extends ConsoleLogger{
 
     /**
      * Log formatted statistics.
-     * @param ruleNumber - number of rule.
+     * @param rule - specified rule.
      * @param gamesNumber1 - number of total games.
      * @param firstWins1 - number of total first win games.
      * @param ties1 - number of total tie games.
@@ -33,10 +33,10 @@ public class StatisticsConsoleLogger extends ConsoleLogger{
      * @param secondWins2 - number of total second win games for leagues from file.
      * @param noResults2 - number of total no result games for leagues from file.
      */
-    public void logStatistics(RuleNumber ruleNumber,
+    public void logStatistics(Rule rule,
                               int gamesNumber1, int firstWins1, int ties1, int secondWins1, int noResults1,
                               int gamesNumber2, int firstWins2, int ties2, int secondWins2, int noResults2) {
-        writeInLine("\nGames for " + ruleNumber + ":");
+        writeInLine("\nGames for " + rule.getName() + ":");
         writeInLine(String.format("\n%10s%4d | %-4d", "Total - ", gamesNumber1, gamesNumber2));
         writeInLine(String.format("\n%10s%4d | %-4d", "1W - ", firstWins1, firstWins2));
         writeInLine(String.format("\n%10s%4d | %-4d", " X - ", ties1, ties2));

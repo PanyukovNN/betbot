@@ -74,6 +74,18 @@ public class GameRepository {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public List<Game> getSinceDateTime(LocalDateTime startDateTime) {
+        Session session = sessionFactory.getCurrentSession();
+        Query query = session.createQuery("FROM Game WHERE dateTime >= :startDateTime");
+        query.setParameter("startDateTime", startDateTime);
+        try {
+            return query.getResultList();
+        } catch (NoResultException e) {
+            return new ArrayList<>();
+        }
+    }
+
     public void update(Game game) {
         Session session = sessionFactory.getCurrentSession();
         session.update(game);
