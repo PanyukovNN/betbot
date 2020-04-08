@@ -162,17 +162,17 @@ public class Game implements Serializable {
     @Override
     public String toString() {
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
-        String body = "%d %s %s '%s'-vs-'%s' (%s) (%s) (%s) %s";
+        String body = "%d %s %-15.15s %25.25s-vs-%-25.25s %s %s %s %s";
         return String.format(body,
                 id,
                 DATE_TIME_FORMATTER.format(dateTime),
                 league,
-                firstTeam,
-                secondTeam,
-                rules,
-                result,
-                (betMade ? "BET MADE"
-                        : "BET NOT MADE"),
+                "'" + firstTeam + "'",
+                "'" + secondTeam + "'",
+                "(" + rules + ")",
+                "(" + result + ")",
+                (betMade ? "  (BET MADE)  "
+                         : "(BET NOT MADE)"),
                 gameInfo);
     }
 }

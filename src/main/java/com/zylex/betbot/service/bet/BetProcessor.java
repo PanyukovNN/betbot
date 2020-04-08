@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.zylex.betbot.BetBotApplication.betStartTime;
+import static com.zylex.betbot.BetBotApplication.botStartTime;
 
 /**
  * Making bets.
@@ -72,13 +73,14 @@ public class BetProcessor {
                 List<Game> betGames = findBetGames(games);
                 if (!betGames.isEmpty()) {
                     openSite();
+                    logIn();
                     processBets(rule, betGames);
                 }
             }
             if (driverManager.getDriver() == null) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
             } else {
-                betInfoRepository.save(new BetInfo(LocalDateTime.now()));
+                betInfoRepository.save(new BetInfo(botStartTime));
                 logger.betMade(LogType.OK);
             }
         } catch (ElementNotInteractableException | IOException e) {
@@ -96,8 +98,8 @@ public class BetProcessor {
 
     private List<Game> filterByTime(List<Game> betGames) {
         return betGames.stream()
-                .filter(game -> LocalDateTime.now().isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), betStartTime)))
-                .filter(game -> LocalDateTime.now().isBefore(game.getDateTime()))
+                .filter(game -> botStartTime.isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), betStartTime)))
+                .filter(game -> botStartTime.isBefore(game.getDateTime()))
                 .collect(Collectors.toList());
     }
 
@@ -105,13 +107,12 @@ public class BetProcessor {
         if (driverManager.getDriver() == null) {
             driverManager.initiateDriver(false);
             driverManager.getDriver().navigate().to("https://1xstavka.ru/");
-            logger.startLogMessage(LogType.LOG_IN, "");
-            logIn();
         }
     }
 
     private void logIn() throws IOException {
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("BetBotAuth.properties")) {
+            logger.startLogMessage(LogType.LOG_IN, "");
             Properties property = new Properties();
             property.load(inputStream);
             driverManager.waitElement(By::className, "base_auth_form").click();

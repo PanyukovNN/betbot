@@ -57,7 +57,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
                 new DecimalFormat("#0.0").format(((double) processedLeagues.get() / (double) totalLeagues) * 100).replace(",", "."));
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
         if (processedLeagues.get() == totalLeagues) {
-            String parsingCompleteOutput = "Parsing completed in " + computeTime(programStartTime.get());
+            String parsingCompleteOutput = "Parsing completed in " + computeTimeFromStart();
             writeInLine("\n" + parsingCompleteOutput);
             writeLineSeparator();
             LOG.info(parsingCompleteOutput);
