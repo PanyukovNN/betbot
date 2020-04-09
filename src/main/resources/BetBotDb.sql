@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS game (
     first_team        VARCHAR(100) NOT NULL,
     second_team       VARCHAR(100) NOT NULL,
     result            VARCHAR(50),
-    bet_made          BOOLEAN,
     link              VARCHAR(300),
     FOREIGN KEY (league_id) REFERENCES league(id)
 );

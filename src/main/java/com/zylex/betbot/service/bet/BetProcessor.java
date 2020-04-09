@@ -96,8 +96,7 @@ public class BetProcessor {
     private List<Game> filterByBetNotMade(List<Game> filteredBetGames, Rule rule) {
         return filteredBetGames.stream()
                 .filter(game -> game.getGameRuleBets().stream()
-                        .noneMatch(gameRuleBet -> gameRuleBet.getRule().equals(rule)
-                                && gameRuleBet.isBetMade()))
+                        .noneMatch(gameRuleBet -> gameRuleBet.getRule().equals(rule)))
                 .collect(Collectors.toList());
     }
 
@@ -157,9 +156,11 @@ public class BetProcessor {
                 break;
             }
             if (!clickOnCoefficient(betCoefficient, game)) {
-                continue;
-            }
-            if (makeBet(singleBetAmount)) {
+                GameRuleBet gameRuleBet = gameRuleBetRepository.save(new GameRuleBet(game, rule, false));
+                game.getGameRuleBets().add(gameRuleBet);
+                gameRepository.update(game);
+                logger.logBet(++i, 0, null, game, LogType.BET_NOT_FOUND);
+            } else if (makeBet(singleBetAmount)) {
                 availableBalance -= singleBetAmount;
                 GameRuleBet gameRuleBet = gameRuleBetRepository.save(new GameRuleBet(game, rule, true));
                 game.getGameRuleBets().add(gameRuleBet);
@@ -210,7 +211,6 @@ public class BetProcessor {
     private boolean clickOnCoefficient(BetCoefficient betCoefficient, Game game) {
         List<WebElement> gameCoefficients = fetchGameCoefficients(game);
         if (gameCoefficients.isEmpty()) {
-            logger.logBet(0, 0, null, game, LogType.BET_NOT_FOUND);
             return false;
         }
         gameCoefficients.get(betCoefficient.INDEX).click();

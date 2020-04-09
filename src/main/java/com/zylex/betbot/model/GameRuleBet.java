@@ -67,13 +67,14 @@ public class GameRuleBet {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        GameRuleBet betInfo = (GameRuleBet) o;
-        return id == betInfo.id;
+        GameRuleBet that = (GameRuleBet) o;
+        return Objects.equals(game, that.game) &&
+                Objects.equals(rule, that.rule);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(game, rule);
     }
 
     @Override

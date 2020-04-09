@@ -24,7 +24,7 @@ public class GameRuleBetRepository {
     public GameRuleBet save(GameRuleBet gameRuleBet) {
         Session session = sessionFactory.getCurrentSession();
         GameRuleBet retreatedGameRuleBet = get(gameRuleBet);
-        if (retreatedGameRuleBet.getId() == 0) {
+        if (retreatedGameRuleBet.getRule() == null) {
             Long id = (Long) session.save(gameRuleBet);
             gameRuleBet.setId(id);
             return gameRuleBet;

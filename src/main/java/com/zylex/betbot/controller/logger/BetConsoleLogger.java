@@ -47,7 +47,7 @@ public class BetConsoleLogger extends ConsoleLogger{
             writeInLine("\n" + output);
             LOG.info(output);
         } else if (type == LogType.BET_NOT_FOUND) {
-            String output = "Did't find the game: " + game;
+            String output = String.format("%d) Did't find the game: %s", index, game);
             writeErrorMessage("\n" + output, new Throwable());
             LOG.warn(output);
         } else if (type == LogType.BET_ERROR) {
