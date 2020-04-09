@@ -2,6 +2,7 @@ package com.zylex.betbot.service.statistics;
 
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
+import com.zylex.betbot.exception.ResultScannerException;
 import com.zylex.betbot.model.Game;
 import com.zylex.betbot.model.GameResult;
 import com.zylex.betbot.service.driver.DriverManager;
@@ -18,13 +19,15 @@ import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
+import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.zylex.betbot.BetBotApplication.botStartTime;
 
 /**
- * Scans games results for last 3 days.
+ * Scans games results since specified date.
  */
 @Service
 public class ResultScanner {
@@ -35,10 +38,6 @@ public class ResultScanner {
 
     private DriverManager driverManager;
 
-    private LocalDate currentDay;
-
-    private int gamesToScan;
-
     @Autowired
     public ResultScanner(GameRepository gameRepository,
                          DriverManager driverManager) {
@@ -47,89 +46,48 @@ public class ResultScanner {
     }
 
     @Transactional
-    public void scan() {
-        try {
-//            List<Game> todayGames = gameRepository.getByDate(LocalDate.now());
-//            todayGames.forEach(System.out::println);
-            List<Game> noResultGames = findNoResultGames();
-            logger.startLogMessage(LogType.PARSING_SITE_START, 0);
-            if (noResultGames.isEmpty()) {
-                logger.noGamesLog();
-            } else {
-                driverInit(driverManager);
-                logger.startLogMessage(LogType.GAMES, gamesToScan);
+    public void scan(LocalDate startDate) {
+        List<Game> noResultGames = findNoResultGames(startDate);
+        logger.startLogMessage(LogType.PARSING_SITE_START, 0);
+        if (noResultGames.isEmpty()) {
+            logger.noGamesLog();
+        } else {
+            if (driverManager.getDriver() == null) {
+                driverManager.initiateDriver(false);
             }
-            processResults(noResultGames);
-        } finally {
-            driverManager.quitDriver();
+            logger.startLogMessage(LogType.GAMES, noResultGames.size());
+            processResults(noResultGames, startDate);
         }
     }
 
-    private List<Game> findNoResultGames() {
-        List<Game> noResultGames = gameRepository
-                .getSinceDateTime(LocalDateTime.of(botStartTime.toLocalDate().minusDays(2), LocalTime.MIN)).stream()
+    private List<Game> findNoResultGames(LocalDate startDate) {
+        return gameRepository
+                .getSinceDateTime(LocalDateTime.of(startDate, LocalTime.MIN)).stream()
                 .filter(game -> botStartTime.isAfter(game.getDateTime().plusHours(2)))
                 .filter(game -> game.getResult().equals(GameResult.NO_RESULT.toString()))
                 .sorted(Comparator.comparing(Game::getDateTime))
                 .collect(Collectors.toList());
-        gamesToScan = noResultGames.size();
-        return noResultGames;
     }
 
-    private void driverInit(DriverManager driverManager) {
-        if (driverManager.getDriver() == null) {
-            driverManager.initiateDriver(false);
-        }
-    }
-
-    private void processResults(List<Game> noResultGames) {
+    private void processResults(List<Game> noResultGames, LocalDate startDate) {
         driverManager.getDriver().get("https://1xstavka.ru/results/");
-        WebElement footballTab = driverManager.getDriver()
-                .findElement(By.className("ps-container"))
-                .findElement(By.className("c-nav"))
-                .findElements(By.className("c-nav__item")).get(1)
-                .findElement(By.cssSelector("a"));
-        System.out.println(footballTab.getText());
-        if (footballTab.getAttribute("title").equals("Футбол")) {
-            footballTab.click();
-        } else {
-            System.out.println("Problem");
-            return;
-        }
-        driverManager.getDriver().findElements(By.className("u-no-grow_md")).get(1).click();  // Развернуть все
+        clickFootballTab();
+        expandAll();
         for (LocalDate day = LocalDate.now();
-             day.isAfter(LocalDate.now().minusDays(3));
+             day.isAfter(startDate.minusDays(1));
              day = day.minusDays(1)) {
+            List<Game> dayGames = findDayGames(noResultGames, day);
+            if (dayGames.isEmpty()) continue;
+            navigateToDay(day);
             Document document = Jsoup.parse(driverManager.getDriver().getPageSource());
-            currentDay = day;
-            if (!day.isEqual(LocalDate.now())) {
-                navigateToDay(day);
-            }
-            List<Game> dayGames = noResultGames.stream()
-                    .filter(game -> game.getDateTime().toLocalDate().isEqual(currentDay))
-                    .collect(Collectors.toList());
             Elements gameElements = document.select("div.c-table__row");
             for (Element gameElement : gameElements) {
-                Element teamCellElement = gameElement.selectFirst("div.c-games__opponents");
-                if (teamCellElement == null) continue;
-                String teamCellText = teamCellElement.text();
-                if (!teamCellText.contains(" - ")) continue;
-                String[] teams = teamCellText.split(" - ", 2);
-                String firstTeam = teams[0];
-                String secondTeam = teams[1];
+                String[] teams = findTeams(gameElement);
+                if (teams.length == 0) continue;
                 for (Game game : dayGames) {
-                    if (!game.getFirstTeam().equals(firstTeam)) continue;
-                    if (!game.getSecondTeam().equals(secondTeam)) continue;
-                    String scoreCellText = gameElement.selectFirst("div.c-games__results").text();
-                    if (!scoreCellText.contains(" (")) continue;
-                    String[] scores = scoreCellText.split(" \\(", 2)[0].split(":");
-                    int firstBalls = Integer.parseInt(scores[0]);
-                    int secondBalls = Integer.parseInt(scores[1]);
-                    GameResult gameResult = computeGameResult(firstBalls, secondBalls);
-                    game.setResult(gameResult.toString());
-                    gameRepository.update(game);
-                    System.out.println(game);
-                    logger.logGame();
+                    if (!game.getFirstTeam().equals(teams[0])) continue;
+                    if (!game.getSecondTeam().equals(teams[1])) continue;
+                    processGame(gameElement, game);
                     dayGames.remove(game);
                     break;
                 }
@@ -137,17 +95,32 @@ public class ResultScanner {
         }
     }
 
+    private void clickFootballTab() {
+        WebElement footballTab = driverManager.getDriver()
+                .findElement(By.className("ps-container"))
+                .findElements(By.className("c-nav__item")).get(1)
+                .findElement(By.cssSelector("a"));
+        if (footballTab.getAttribute("title").equals("Футбол")) {
+            footballTab.click();
+        } else {
+            throw new ResultScannerException("No football tab.");
+        }
+    }
+
+    private void expandAll() {
+        driverManager.getDriver()
+                .findElements(By.className("u-no-grow_md"))
+                .get(1)
+                .click();
+    }
+
     private void navigateToDay(LocalDate day) {
+        if (day.isEqual(LocalDate.now())) return;
         WebElement datepickerElement = driverManager.getDriver()
                 .findElement(By.className("vdp-datepicker"))
                 .findElement(By.cssSelector("input"));
         datepickerElement.click();
-        if (currentDay.getMonth().equals(LocalDate.now().minusMonths(1).getMonth())) {
-            driverManager.waitElement(By::className, "vdp-datepicker__calendar")
-                    .findElement(By.cssSelector("header"))
-                    .findElement(By.className("prev"))
-                    .click();
-        }
+        navigateToPreviousMonth(day);
         List<WebElement> dayElements = driverManager.waitElement(By::className, "vdp-datepicker__calendar")
                 .findElements(By.cssSelector("span"));
         for (WebElement dayElement : dayElements) {
@@ -155,6 +128,50 @@ public class ResultScanner {
                 dayElement.click();
             }
         }
+        driverManager.waitElement(By::className, "c-table__row");
+    }
+
+    private void navigateToPreviousMonth(LocalDate day) {
+        WebElement datepickerHeaderElement = driverManager.waitElement(By::className, "vdp-datepicker__calendar")
+                .findElement(By.cssSelector("header"));
+        String monthName = datepickerHeaderElement.findElement(By.className("day__month_btn")).getText().split(" ")[0];
+        Month currentMonth = LocalDate.now().getMonth();
+        String currentMonthName = currentMonth.getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("ru"));
+        if (monthName.equalsIgnoreCase(currentMonthName)) {
+            Month previousMonth = currentMonth.minus(1);
+            String previousMonthName = previousMonth.getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("ru"));
+            if (day.getMonth().getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("ru")).equalsIgnoreCase(previousMonthName)) {
+                datepickerHeaderElement
+                        .findElement(By.className("prev"))
+                        .click();
+            }
+        }
+    }
+
+    private List<Game> findDayGames(List<Game> noResultGames, LocalDate day) {
+        return noResultGames.stream()
+                .filter(game -> game.getDateTime().toLocalDate().isEqual(day))
+                .collect(Collectors.toList());
+    }
+
+    private String[] findTeams(Element gameElement) {
+        Element teamCellElement = gameElement.selectFirst("div.c-games__opponents");
+        if (teamCellElement == null) return new String[]{};
+        String teamCellText = teamCellElement.text();
+        if (!teamCellText.contains(" - ")) return new String[]{};
+        return teamCellText.split(" - ", 2);
+    }
+
+    private void processGame(Element gameElement, Game game) {
+        String scoreCellText = gameElement.selectFirst("div.c-games__results").text();
+        if (!scoreCellText.contains(" (")) return;
+        String[] scores = scoreCellText.split(" \\(", 2)[0].split(":");
+        int firstBalls = Integer.parseInt(scores[0]);
+        int secondBalls = Integer.parseInt(scores[1]);
+        GameResult gameResult = computeGameResult(firstBalls, secondBalls);
+        game.setResult(gameResult.toString());
+        gameRepository.update(game);
+        logger.logGame();
     }
 
     private GameResult computeGameResult(int firstBalls, int secondBalls) {

@@ -43,7 +43,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
                 new DecimalFormat("#0.0").format(((double) processedGames.get() / (double) totalGames) * 100).replace(",", "."));
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
         if (processedGames.get() == totalGames) {
-            String scanningCompleteOutput = "Scanning completed in %s" + computeTimeFromStart();
+            String scanningCompleteOutput = "Scanning completed in " + computeTimeFromStart();
             writeInLine("\n" + scanningCompleteOutput);
             writeLineSeparator();
             LOG.info(scanningCompleteOutput);
@@ -54,10 +54,10 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
      * Log "no games to scan" message.
      */
     public void noGamesLog() {
-        String output = "No games to scan";
+        String output = "No games to scan.";
         writeLineSeparator();
         writeInLine("\n" + output);
-        writeLineSeparator();
+        writeLineSeparator('~');
         LOG.info(output);
     }
 }

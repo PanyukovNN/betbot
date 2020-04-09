@@ -5,10 +5,7 @@ import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.*;
 import com.zylex.betbot.service.driver.DriverManager;
-import com.zylex.betbot.service.repository.BankRepository;
-import com.zylex.betbot.service.repository.BetInfoRepository;
-import com.zylex.betbot.service.repository.GameRepository;
-import com.zylex.betbot.service.repository.RuleRepository;
+import com.zylex.betbot.service.repository.*;
 import org.openqa.selenium.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +39,8 @@ public class BetProcessor {
 
     private RuleRepository ruleRepository;
 
+    private GameRuleBetRepository gameRuleBetRepository;
+
     private int totalBalance = -1;
 
     private int availableBalance = -1;
@@ -51,12 +50,14 @@ public class BetProcessor {
                         BankRepository bankRepository,
                         GameRepository gameRepository,
                         BetInfoRepository betInfoRepository,
-                        RuleRepository ruleRepository) {
+                        RuleRepository ruleRepository,
+                        GameRuleBetRepository gameRuleBetRepository) {
         this.driverManager = driverManager;
         this.bankRepository = bankRepository;
         this.gameRepository = gameRepository;
         this.betInfoRepository = betInfoRepository;
         this.ruleRepository = ruleRepository;
+        this.gameRuleBetRepository = gameRuleBetRepository;
     }
 
     /**
@@ -70,7 +71,7 @@ public class BetProcessor {
             for (Rule rule : rules) {
                 if (!ruleNames.contains(rule.getName())) continue;
                 List<Game> games = ruleGames.get(rule);
-                List<Game> betGames = findBetGames(games);
+                List<Game> betGames = findBetGames(games, rule);
                 if (!betGames.isEmpty()) {
                     openSite();
                     logIn();
@@ -88,12 +89,16 @@ public class BetProcessor {
         }
     }
 
-    private List<Game> findBetGames(List<Game> betGames) {
-        return filterByBetNotMade(filterByTime(betGames));
+    private List<Game> findBetGames(List<Game> betGames, Rule rule) {
+        return filterByBetNotMade(filterByTime(betGames), rule);
     }
 
-    private List<Game> filterByBetNotMade(List<Game> filteredBetGames) {
-        return filteredBetGames.stream().filter(game -> !game.isBetMade()).collect(Collectors.toList());
+    private List<Game> filterByBetNotMade(List<Game> filteredBetGames, Rule rule) {
+        return filteredBetGames.stream()
+                .filter(game -> game.getGameRuleBets().stream()
+                        .noneMatch(gameRuleBet -> gameRuleBet.getRule().equals(rule)
+                                && gameRuleBet.isBetMade()))
+                .collect(Collectors.toList());
     }
 
     private List<Game> filterByTime(List<Game> betGames) {
@@ -103,7 +108,7 @@ public class BetProcessor {
                 .collect(Collectors.toList());
     }
 
-    private void openSite() throws IOException {
+    private void openSite() {
         if (driverManager.getDriver() == null) {
             driverManager.initiateDriver(false);
             driverManager.getDriver().navigate().to("https://1xstavka.ru/");
@@ -152,13 +157,12 @@ public class BetProcessor {
                 break;
             }
             if (!clickOnCoefficient(betCoefficient, game)) {
-                game.setBetMade(false);
-                gameRepository.update(game);
                 continue;
             }
             if (makeBet(singleBetAmount)) {
                 availableBalance -= singleBetAmount;
-                game.setBetMade(true);
+                GameRuleBet gameRuleBet = gameRuleBetRepository.save(new GameRuleBet(game, rule, true));
+                game.getGameRuleBets().add(gameRuleBet);
                 gameRepository.update(game);
                 logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
             }

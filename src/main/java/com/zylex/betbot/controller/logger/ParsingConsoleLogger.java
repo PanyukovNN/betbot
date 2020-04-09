@@ -57,10 +57,8 @@ public class ParsingConsoleLogger extends ConsoleLogger {
                 new DecimalFormat("#0.0").format(((double) processedLeagues.get() / (double) totalLeagues) * 100).replace(",", "."));
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
         if (processedLeagues.get() == totalLeagues) {
-            String parsingCompleteOutput = "Parsing completed in " + computeTimeFromStart();
-            writeInLine("\n" + parsingCompleteOutput);
             writeLineSeparator();
-            LOG.info(parsingCompleteOutput);
+            LOG.info("Parsing completed.");
         }
     }
 
@@ -68,12 +66,12 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      * Log summarizing of parsing.
      */
     public static void writeTotalGames(List<Game> games) {
-        StringBuilder output = new StringBuilder("Total games - ");
+        StringBuilder output = new StringBuilder("TOTAL GAMES:");
         for (Day day : Day.values()) {
             int gamesCount = (int) games.stream()
                     .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
                     .count();
-            output.append(String.format("%3d (%s) ", gamesCount, day));
+            output.append(String.format("%4d (%s) ", gamesCount, day));
         }
         writeInLine("\n" + output);
         LOG.info(output.toString());

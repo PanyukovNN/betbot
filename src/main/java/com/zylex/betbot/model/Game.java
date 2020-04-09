@@ -4,9 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Instance of a football game.
@@ -43,8 +41,8 @@ public class Game implements Serializable {
     @Column(name = "result")
     private String result;
 
-    @Column(name = "bet_made")
-    private boolean betMade;
+    @OneToMany(mappedBy="game", fetch = FetchType.EAGER)
+    private Set<GameRuleBet> gameRuleBets = new HashSet<>();
 
     @Column(name = "link")
     private String link;
@@ -55,13 +53,12 @@ public class Game implements Serializable {
     public Game() {
     }
 
-    public Game(LocalDateTime dateTime, League league, String firstTeam, String secondTeam, String result, boolean betMade, String link, GameInfo gameInfo) {
+    public Game(LocalDateTime dateTime, League league, String firstTeam, String secondTeam, String result, String link, GameInfo gameInfo) {
         this.dateTime = dateTime;
         this.league = league;
         this.firstTeam = firstTeam;
         this.secondTeam = secondTeam;
         this.result = result;
-        this.betMade = betMade;
         this.link = link;
         this.gameInfo = gameInfo;
     }
@@ -122,12 +119,12 @@ public class Game implements Serializable {
         this.result = result;
     }
 
-    public boolean isBetMade() {
-        return betMade;
+    public Set<GameRuleBet> getGameRuleBets() {
+        return gameRuleBets;
     }
 
-    public void setBetMade(boolean betMade) {
-        this.betMade = betMade;
+    public void setGameRuleBets(Set<GameRuleBet> gameRuleBets) {
+        this.gameRuleBets = gameRuleBets;
     }
 
     public String getLink() {
@@ -162,17 +159,16 @@ public class Game implements Serializable {
     @Override
     public String toString() {
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
-        String body = "%d %s %-15.15s %25.25s-vs-%-25.25s %s %s %s %s";
+        String body = "%d %s %s %s-vs-%s %s %s %s %s";
         return String.format(body,
                 id,
                 DATE_TIME_FORMATTER.format(dateTime),
-                league,
-                "'" + firstTeam + "'",
-                "'" + secondTeam + "'",
-                "(" + rules + ")",
-                "(" + result + ")",
-                (betMade ? "  (BET MADE)  "
-                         : "(BET NOT MADE)"),
+                String.format("%-15.15s", league),
+                String.format("'%25.25s'", firstTeam),
+                String.format("'%-25.25s'", secondTeam),
+                String.format("(%s)", rules),
+                String.format("(%s)", result),
+                String.format("(%s)", gameRuleBets),
                 gameInfo);
     }
 }

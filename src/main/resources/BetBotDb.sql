@@ -64,20 +64,18 @@ CREATE TABLE IF NOT EXISTS game_rule (
     FOREIGN KEY (rule_id) REFERENCES rule(id)
 );
 
--- DELETE FROM game_info WHERE id > 704 ;
--- DELETE FROM game_rule WHERE game_id > 689 ;
--- DELETE FROM game WHERE id > 689 ;
--- alter sequence game_id_seq restart with 690;
--- alter sequence game_info_id_seq restart with 705;
+-- DROP TABLE IF EXISTS game_rule_bet;
+CREATE TABLE IF NOT EXISTS game_rule_bet (
+    id          BIGSERIAL NOT NULL PRIMARY KEY,
+    game_id     BIGINT NOT NULL,
+    rule_id     BIGINT NOT NULL,
+    bet_made    BOOLEAN NOT NULL,
+    FOREIGN KEY (game_id) REFERENCES game(id),
+    FOREIGN KEY (rule_id) REFERENCES rule(id)
+);
 
--- DROP TABLE result;
--- CREATE TABLE IF NOT EXISTS result (
---     id          SERIAL NOT NULL PRIMARY KEY,
---     value       VARCHAR(50) NOT NULL
--- );
--- INSERT INTO result (id, value)
--- VALUES (DEFAULT, 'FIRST_WIN'),
---        (DEFAULT, 'TIE'),
---        (DEFAULT, 'SECOND_WIN'),
---        (DEFAULT, 'NO_RESULT'),
---        (DEFAULT, 'NOT_PLAYED');
+-- DELETE FROM game_info WHERE id > ;
+-- DELETE FROM game_rule WHERE game_id >  ;
+-- DELETE FROM game WHERE id >  ;
+-- alter sequence game_id_seq restart with 730;
+-- alter sequence game_info_id_seq restart with 730;

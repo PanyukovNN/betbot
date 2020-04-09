@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 import static com.zylex.betbot.BetBotApplication.botStartTime;
@@ -29,7 +30,7 @@ public abstract class ConsoleLogger {
         String startMessage = String.format("BetBot started at: %s", botStartTime.format(formatter));
         writeInLine(startMessage);
         LOG.info(startMessage);
-        writeLineSeparator();
+        writeLineSeparator('~');
     }
 
     static void writeLineSeparator() {
@@ -37,9 +38,19 @@ public abstract class ConsoleLogger {
         writeInLine(line);
     }
 
+    static void writeLineSeparator(char delimiter) {
+        String line = "\n" + StringUtils.repeat(delimiter, 50);
+        writeInLine(line);
+    }
+
     public synchronized static void writeErrorMessage(String message, Throwable cause) {
         System.err.print(message);
         LOG.error(message, cause);
+    }
+
+    public synchronized static void writeErrorMessage(String message) {
+        System.err.print(message);
+        LOG.error(message);
     }
 
     public synchronized static void writeInLine(String line) {
@@ -62,11 +73,11 @@ public abstract class ConsoleLogger {
     }
 
     static String computeTimeFromStart() {
-        long seconds = LocalDateTime.now().getSecond() - botStartTime.getSecond();
+        long seconds = ChronoUnit.SECONDS.between(botStartTime, LocalDateTime.now());
         String time = String.format("%02d min. %02d sec.",
                 TimeUnit.SECONDS.toMinutes(seconds) % TimeUnit.HOURS.toMinutes(1),
                 seconds % TimeUnit.MINUTES.toSeconds(1));
-        long hours = TimeUnit.MILLISECONDS.toHours(seconds);
+        long hours = TimeUnit.SECONDS.toHours(seconds);
         if (hours > 0) {
             return String.format("%02d h. ", hours) + time;
         } else {

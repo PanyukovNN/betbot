@@ -24,12 +24,12 @@ public class RuleProcessorLogger extends ConsoleLogger{
      */
     public void writeEligibleGamesNumber(Map<Rule, List<Game>> eligibleGames) {
         for (Rule ruleNumber : eligibleGames.keySet()) {
-            StringBuilder output = new StringBuilder(String.format("%13s ", ruleNumber + " -"));
+            StringBuilder output = new StringBuilder(String.format("%11s:", ruleNumber));
             for (Day day : Day.values()) {
                 int eligibleGamesCount = (int) eligibleGames.get(ruleNumber).stream()
                         .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
                         .count();
-                output.append(String.format("%3d (%s) ", eligibleGamesCount, day));
+                output.append(String.format("%4d (%s) ", eligibleGamesCount, day));
             }
             writeInLine("\n" + output.toString());
             LOG.info(output.toString());

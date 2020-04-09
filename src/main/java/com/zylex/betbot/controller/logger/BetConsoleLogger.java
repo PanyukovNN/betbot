@@ -101,6 +101,6 @@ public class BetConsoleLogger extends ConsoleLogger{
             writeInLine("\n" + output);
             LOG.info(output);
         }
-        writeLineSeparator();
+        writeLineSeparator('~');
     }
 }

@@ -90,7 +90,7 @@ public class CallableGameParser implements Callable<List<Game>> {
                     .replaceFirst("line", "live");
             League league = new League(leagueName, leagueLink);
             GameInfo gameInfo = new GameInfo(firstWin, tie, secondWin, oneX, xTwo);
-            Game game = new Game(dateTime, league, firstTeam, secondTeam, GameResult.NO_RESULT.toString(), false, link, gameInfo);
+            Game game = new Game(dateTime, league, firstTeam, secondTeam, GameResult.NO_RESULT.toString(), link, gameInfo);
             gameInfo.setGame(game);
             games.add(game);
         }
