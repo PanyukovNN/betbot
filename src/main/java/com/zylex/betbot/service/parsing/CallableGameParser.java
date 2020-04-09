@@ -35,7 +35,7 @@ public class CallableGameParser implements Callable<List<Game>> {
     }
 
     /**
-     * Parsing by jsoup league link on the site and return all matches for today and tomorrow.
+     * Parse league link on the site and returns all matches for today and tomorrow.
      * @return - list of games.
      */
     @Override

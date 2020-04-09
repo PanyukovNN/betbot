@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Filters games by rule conditions.
+ */
 @Service
 public class RuleFilter {
 
@@ -21,6 +24,13 @@ public class RuleFilter {
         this.leagueRepository = leagueRepository;
     }
 
+    /**
+     * Filters games by rule conditions, which are taken from database,
+     * also filters by selected leagues and exclude leagues.
+     * @param games - list of games to filter.
+     * @param rule - specified rule.
+     * @return - list of filtered games.
+     */
     List<Game> filter(List<Game> games, Rule rule) {
         List<Game> eligibleGames = new ArrayList<>();
         List<String> excludeLeagues = leagueRepository.getExcludeLeagues(rule);

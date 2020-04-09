@@ -52,7 +52,6 @@ public class ParseProcessor {
         try {
             List<CallableGameParser> callableGameParsers = new ArrayList<>();
             for (String leagueLink : leagueLinks) {
-
                 callableGameParsers.add(new CallableGameParser(leagueLink));
             }
             List<Future<List<Game>>> futureGameParsers = service.invokeAll(callableGameParsers);

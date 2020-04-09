@@ -45,6 +45,11 @@ public class ResultScanner {
         this.driverManager = driverManager;
     }
 
+    /**
+     * Navigates to results tab, where opens specified day statistics
+     * and parse games results.
+     * @param startDate - start date for scanning.
+     */
     @Transactional
     public void scan(LocalDate startDate) {
         List<Game> noResultGames = findNoResultGames(startDate);
