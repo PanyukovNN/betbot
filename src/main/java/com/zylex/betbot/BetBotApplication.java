@@ -27,13 +27,13 @@ public class BetBotApplication {
 
     public static void main(String[] args) {
         ConsoleLogger.startMessage();
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BetBotApplication.class);
-        Runtime.getRuntime().addShutdownHook(new Thread(context::close));
-        if (args.length > 0) {
-            List<Game> games = context.getBean(ParseProcessor.class).process();
-            Map<Rule, List<Game>> ruleGames = context.getBean(RuleProcessor.class).process(games);
-            context.getBean(BetProcessor.class).process(ruleGames, Arrays.asList(args));
-            context.getBean(ResultScanner.class).scan(LocalDate.now().minusDays(3));
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BetBotApplication.class)) {
+            if (args.length > 0) {
+                List<Game> games = context.getBean(ParseProcessor.class).process();
+                Map<Rule, List<Game>> ruleGames = context.getBean(RuleProcessor.class).process(games);
+                context.getBean(BetProcessor.class).process(ruleGames, Arrays.asList(args));
+                context.getBean(ResultScanner.class).scan(LocalDate.now().minusDays(3));
+            }
         }
         ConsoleLogger.endMessage();
     }

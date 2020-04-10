@@ -101,10 +101,7 @@ public class ResultScanner {
     }
 
     private void clickFootballTab() {
-        WebElement footballTab = driverManager.getDriver()
-                .findElement(By.className("ps-container"))
-                .findElements(By.className("c-nav__item")).get(1)
-                .findElement(By.cssSelector("a"));
+        WebElement footballTab = driverManager.waitElements(By::className, "c-nav__link").get(1);
         if (footballTab.getAttribute("title").equals("Футбол")) {
             footballTab.click();
         } else {

@@ -50,6 +50,7 @@ public class GameRepository {
         }
     }
 
+    @Transactional
     public Game getById(long id) {
         Session session = sessionFactory.getCurrentSession();
         Query query = session.createQuery("FROM Game WHERE id = :gameId");
@@ -61,6 +62,7 @@ public class GameRepository {
         }
     }
 
+    @Transactional
     @SuppressWarnings("unchecked")
     public List<Game> getByDate(LocalDate date) {
         Session session = sessionFactory.getCurrentSession();
@@ -74,6 +76,7 @@ public class GameRepository {
         }
     }
 
+    @Transactional
     @SuppressWarnings("unchecked")
     public List<Game> getSinceDateTime(LocalDateTime startDateTime) {
         Session session = sessionFactory.getCurrentSession();

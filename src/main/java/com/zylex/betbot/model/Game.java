@@ -1,5 +1,7 @@
 package com.zylex.betbot.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -11,6 +13,7 @@ import java.util.*;
  */
 @Entity
 @Table(name = "game")
+@JsonSerialize(using = GameSerializer.class)
 public class Game implements Serializable {
 
     @Id

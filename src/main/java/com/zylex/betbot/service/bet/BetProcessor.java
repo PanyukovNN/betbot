@@ -130,15 +130,8 @@ public class BetProcessor {
 
     private void checkVerify() {
         try {
-            //TODO check correctness
             driverManager.waitElement(By::className, "top-b-acc__amount");
-//            Thread.sleep(1500);
-//            String url = driverManager.getDriver().getCurrentUrl();
-//            if (url.contains("accountverify")) {
-//                logger.logInLog(LogType.VERIFY);
-//            } else {
-                logger.logInLog(LogType.OK);
-//            }
+            logger.logInLog(LogType.OK);
         } catch (TimeoutException e) {
             logger.logInLog(LogType.VERIFY);
         }
