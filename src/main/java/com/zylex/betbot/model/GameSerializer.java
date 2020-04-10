@@ -30,7 +30,7 @@ public class GameSerializer extends StdSerializer<Game> {
         jgen.writeStringField("secondTeam", game.getSecondTeam());
         jgen.writeStringField("rules", game.getRules().toString());
         jgen.writeStringField("result", game.getResult());
-        jgen.writeStringField("gameRuleBets", game.getGameRuleBets().toString());
+        jgen.writeStringField("bets", game.getBets().toString());
         jgen.writeStringField("gameInfo", game.getGameInfo().toString());
         jgen.writeEndObject();
     }

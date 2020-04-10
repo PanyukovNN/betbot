@@ -39,7 +39,7 @@ public class BetProcessor {
 
     private RuleRepository ruleRepository;
 
-    private GameRuleBetRepository gameRuleBetRepository;
+    private BetRepository betRepository;
 
     private int totalBalance = -1;
 
@@ -51,13 +51,13 @@ public class BetProcessor {
                         GameRepository gameRepository,
                         BetInfoRepository betInfoRepository,
                         RuleRepository ruleRepository,
-                        GameRuleBetRepository gameRuleBetRepository) {
+                        BetRepository betRepository) {
         this.driverManager = driverManager;
         this.bankRepository = bankRepository;
         this.gameRepository = gameRepository;
         this.betInfoRepository = betInfoRepository;
         this.ruleRepository = ruleRepository;
-        this.gameRuleBetRepository = gameRuleBetRepository;
+        this.betRepository = betRepository;
     }
 
     /**
@@ -95,8 +95,8 @@ public class BetProcessor {
 
     private List<Game> filterByBetNotMade(List<Game> filteredBetGames, Rule rule) {
         return filteredBetGames.stream()
-                .filter(game -> game.getGameRuleBets().stream()
-                        .noneMatch(gameRuleBet -> gameRuleBet.getRule().equals(rule)))
+                .filter(game -> game.getBets().stream()
+                        .noneMatch(bet -> bet.getRule().equals(rule)))
                 .collect(Collectors.toList());
     }
 
@@ -149,14 +149,14 @@ public class BetProcessor {
                 break;
             }
             if (!clickOnCoefficient(betCoefficient, game)) {
-                GameRuleBet gameRuleBet = gameRuleBetRepository.save(new GameRuleBet(game, rule, false));
-                game.getGameRuleBets().add(gameRuleBet);
+                Bet bet = betRepository.save(new Bet(game, rule, false));
+                game.getBets().add(bet);
                 gameRepository.update(game);
                 logger.logBet(++i, 0, null, game, LogType.BET_NOT_FOUND);
             } else if (makeBet(singleBetAmount)) {
                 availableBalance -= singleBetAmount;
-                GameRuleBet gameRuleBet = gameRuleBetRepository.save(new GameRuleBet(game, rule, true));
-                game.getGameRuleBets().add(gameRuleBet);
+                Bet bet = betRepository.save(new Bet(game, rule, true));
+                game.getBets().add(bet);
                 gameRepository.update(game);
                 logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
             }

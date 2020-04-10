@@ -45,7 +45,7 @@ public class Game implements Serializable {
     private String result;
 
     @OneToMany(mappedBy="game", fetch = FetchType.EAGER)
-    private Set<GameRuleBet> gameRuleBets = new HashSet<>();
+    private Set<Bet> bets = new HashSet<>();
 
     @Column(name = "link")
     private String link;
@@ -122,12 +122,12 @@ public class Game implements Serializable {
         this.result = result;
     }
 
-    public Set<GameRuleBet> getGameRuleBets() {
-        return gameRuleBets;
+    public Set<Bet> getBets() {
+        return bets;
     }
 
-    public void setGameRuleBets(Set<GameRuleBet> gameRuleBets) {
-        this.gameRuleBets = gameRuleBets;
+    public void setBets(Set<Bet> bets) {
+        this.bets = bets;
     }
 
     public String getLink() {
@@ -171,7 +171,7 @@ public class Game implements Serializable {
                 String.format("'%-25.25s'", secondTeam),
                 String.format("(%s)", rules),
                 String.format("(%s)", result),
-                String.format("(%s)", gameRuleBets),
+                String.format("(%s)", bets),
                 gameInfo);
     }
 }

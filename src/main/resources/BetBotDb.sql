@@ -68,10 +68,12 @@ CREATE TABLE IF NOT EXISTS game_rule_bet (
     id          BIGSERIAL NOT NULL PRIMARY KEY,
     game_id     BIGINT NOT NULL,
     rule_id     BIGINT NOT NULL,
-    bet_made    BOOLEAN NOT NULL,
+    bet_status    BOOLEAN NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game(id),
     FOREIGN KEY (rule_id) REFERENCES rule(id)
 );
+
+
 
 -- DELETE FROM game_info WHERE id > ;
 -- DELETE FROM game_rule WHERE game_id >  ;

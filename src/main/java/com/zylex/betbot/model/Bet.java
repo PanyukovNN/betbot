@@ -4,8 +4,8 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "game_rule_bet")
-public class GameRuleBet {
+@Table(name = "bet")
+public class Bet {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,10 +22,10 @@ public class GameRuleBet {
     @Column(name = "bet_made")
     private boolean betMade;
 
-    public GameRuleBet() {
+    public Bet() {
     }
 
-    public GameRuleBet(Game game, Rule rule, boolean betMade) {
+    public Bet(Game game, Rule rule, boolean betMade) {
         this.game = game;
         this.rule = rule;
         this.betMade = betMade;
@@ -67,7 +67,7 @@ public class GameRuleBet {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        GameRuleBet that = (GameRuleBet) o;
+        Bet that = (Bet) o;
         return Objects.equals(game, that.game) &&
                 Objects.equals(rule, that.rule);
     }
