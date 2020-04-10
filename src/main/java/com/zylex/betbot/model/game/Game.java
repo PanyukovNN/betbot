@@ -1,6 +1,8 @@
-package com.zylex.betbot.model;
+package com.zylex.betbot.model.game;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.zylex.betbot.model.bet.Bet;
+import com.zylex.betbot.model.rule.Rule;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -161,17 +163,16 @@ public class Game implements Serializable {
 
     @Override
     public String toString() {
-        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
-        String body = "%d %s %s %s-vs-%s %s %s %s %s";
-        return String.format(body,
+        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
+        return String.format("%d %s %s %s-vs-%s %s %s %s %s",
                 id,
                 DATE_TIME_FORMATTER.format(dateTime),
                 String.format("%-15.15s", league),
                 String.format("'%25.25s'", firstTeam),
                 String.format("'%-25.25s'", secondTeam),
-                String.format("(%s)", rules),
+                gameInfo,
                 String.format("(%s)", result),
-                String.format("(%s)", bets),
-                gameInfo);
+                String.format("(Rules:%s)", rules),
+                String.format("(Bets:%s)", bets));
     }
 }

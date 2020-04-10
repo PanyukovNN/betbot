@@ -1,10 +1,10 @@
-package com.zylex.betbot.model;
+package com.zylex.betbot.model.game;
 
 /**
  * Specifies game result.
  */
 public enum GameResult {
-    NOT_PLAYED,
+    NOT_FOUND,
     NO_RESULT,
     FIRST_WIN,
     TIE,

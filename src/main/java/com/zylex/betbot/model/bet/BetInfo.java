@@ -1,4 +1,4 @@
-package com.zylex.betbot.model;
+package com.zylex.betbot.model.bet;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

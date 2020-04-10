@@ -1,4 +1,4 @@
-package com.zylex.betbot.model;
+package com.zylex.betbot.model.game;
 
 import javax.persistence.*;
 import java.io.Serializable;

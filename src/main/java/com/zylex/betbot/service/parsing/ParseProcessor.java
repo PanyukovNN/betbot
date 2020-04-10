@@ -3,7 +3,7 @@ package com.zylex.betbot.service.parsing;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
 import com.zylex.betbot.exception.ParseProcessorException;
-import com.zylex.betbot.model.Game;
+import com.zylex.betbot.model.game.Game;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

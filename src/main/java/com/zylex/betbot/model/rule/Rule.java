@@ -1,4 +1,4 @@
-package com.zylex.betbot.model;
+package com.zylex.betbot.model.rule;
 
 import javax.persistence.*;
 import java.util.ArrayList;

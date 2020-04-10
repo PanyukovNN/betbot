@@ -1,7 +1,7 @@
 package com.zylex.betbot.controller.logger;
 
-import com.zylex.betbot.model.BetCoefficient;
-import com.zylex.betbot.model.Game;
+import com.zylex.betbot.model.bet.BetCoefficient;
+import com.zylex.betbot.model.game.Game;
 import com.zylex.betbot.service.bet.BetProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

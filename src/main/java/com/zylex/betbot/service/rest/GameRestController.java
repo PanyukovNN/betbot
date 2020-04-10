@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.rest;
 
-import com.zylex.betbot.model.Game;
+import com.zylex.betbot.model.game.Game;
 import com.zylex.betbot.service.repository.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

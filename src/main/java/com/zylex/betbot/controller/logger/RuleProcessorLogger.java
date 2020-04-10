@@ -1,8 +1,8 @@
 package com.zylex.betbot.controller.logger;
 
-import com.zylex.betbot.model.Game;
+import com.zylex.betbot.model.game.Game;
 import com.zylex.betbot.model.Day;
-import com.zylex.betbot.model.Rule;
+import com.zylex.betbot.model.rule.Rule;
 import com.zylex.betbot.service.rule.RuleProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

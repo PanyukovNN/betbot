@@ -31,7 +31,7 @@ public class HibernateConf {
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        try(InputStream inputStream = BetBotApplication.class.getClassLoader().getResourceAsStream("BetBotDb.properties")) {
+        try(InputStream inputStream = BetBotApplication.class.getClassLoader().getResourceAsStream("db/BetBotDb.properties")) {
             Properties property = new Properties();
             property.load(inputStream);
             dataSource.setDriverClassName("org.postgresql.Driver");

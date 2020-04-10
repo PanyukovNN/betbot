@@ -1,9 +1,9 @@
 package com.zylex.betbot.service.rule;
 
-import com.zylex.betbot.model.BetCoefficient;
-import com.zylex.betbot.model.Game;
-import com.zylex.betbot.model.Rule;
-import com.zylex.betbot.model.RuleCondition;
+import com.zylex.betbot.model.bet.BetCoefficient;
+import com.zylex.betbot.model.game.Game;
+import com.zylex.betbot.model.rule.Rule;
+import com.zylex.betbot.model.rule.RuleCondition;
 import com.zylex.betbot.service.repository.LeagueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

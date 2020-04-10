@@ -1,6 +1,6 @@
 package com.zylex.betbot.service.repository;
 
-import com.zylex.betbot.model.BetInfo;
+import com.zylex.betbot.model.bet.BetInfo;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;

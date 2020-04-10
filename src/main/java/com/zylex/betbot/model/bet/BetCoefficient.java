@@ -1,10 +1,10 @@
-package com.zylex.betbot.model;
+package com.zylex.betbot.model.bet;
 
 /**
  * Specifies the coefficient for betting.
  */
-@SuppressWarnings("unused")
 public enum BetCoefficient {
+    NONE(-1),
     FIRST_WIN(0),
     TIE(1),
     SECOND_WIN(2),

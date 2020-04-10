@@ -3,8 +3,8 @@ package com.zylex.betbot.service.statistics;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.controller.logger.ResultScannerConsoleLogger;
 import com.zylex.betbot.exception.ResultScannerException;
-import com.zylex.betbot.model.Game;
-import com.zylex.betbot.model.GameResult;
+import com.zylex.betbot.model.game.Game;
+import com.zylex.betbot.model.game.GameResult;
 import com.zylex.betbot.service.driver.DriverManager;
 import com.zylex.betbot.service.repository.GameRepository;
 import org.jsoup.Jsoup;
@@ -69,7 +69,8 @@ public class ResultScanner {
         return gameRepository
                 .getSinceDateTime(LocalDateTime.of(startDate, LocalTime.MIN)).stream()
                 .filter(game -> botStartTime.isAfter(game.getDateTime().plusHours(2)))
-                .filter(game -> game.getResult().equals(GameResult.NO_RESULT.toString()))
+                .filter(game -> game.getResult().equals(GameResult.NO_RESULT.toString())
+                        || game.getResult().equals(GameResult.NOT_FOUND.toString()))
                 .sorted(Comparator.comparing(Game::getDateTime))
                 .collect(Collectors.toList());
     }
@@ -96,6 +97,10 @@ public class ResultScanner {
                     dayGames.remove(game);
                     break;
                 }
+            }
+            for (Game game : dayGames) {
+                game.setResult(GameResult.NOT_FOUND.toString());
+                gameRepository.update(game);
             }
         }
     }

@@ -1,7 +1,7 @@
 package com.zylex.betbot.service.repository;
 
-import com.zylex.betbot.model.League;
-import com.zylex.betbot.model.Rule;
+import com.zylex.betbot.model.game.League;
+import com.zylex.betbot.model.rule.Rule;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;

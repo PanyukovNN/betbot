@@ -9,4 +9,4 @@ log
 *.zip
 src\main\resources
 **.properties
-/src/main/resources/rule.sql
+/src/main/resources/rule_insert.sql

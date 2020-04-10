@@ -4,6 +4,12 @@ import com.zylex.betbot.controller.logger.BetConsoleLogger;
 import com.zylex.betbot.controller.logger.LogType;
 import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.*;
+import com.zylex.betbot.model.bet.Bet;
+import com.zylex.betbot.model.bet.BetCoefficient;
+import com.zylex.betbot.model.bet.BetInfo;
+import com.zylex.betbot.model.bet.BetStatus;
+import com.zylex.betbot.model.game.Game;
+import com.zylex.betbot.model.rule.Rule;
 import com.zylex.betbot.service.driver.DriverManager;
 import com.zylex.betbot.service.repository.*;
 import org.openqa.selenium.*;
@@ -149,13 +155,15 @@ public class BetProcessor {
                 break;
             }
             if (!clickOnCoefficient(betCoefficient, game)) {
-                Bet bet = betRepository.save(new Bet(game, rule, false));
+                Bet bet = betRepository.save(
+                        new Bet(LocalDateTime.now(), game, rule, BetStatus.FAIL.toString(), 0, BetCoefficient.NONE.toString()));
                 game.getBets().add(bet);
                 gameRepository.update(game);
                 logger.logBet(++i, 0, null, game, LogType.BET_NOT_FOUND);
             } else if (makeBet(singleBetAmount)) {
                 availableBalance -= singleBetAmount;
-                Bet bet = betRepository.save(new Bet(game, rule, true));
+                Bet bet = betRepository.save(
+                        new Bet(LocalDateTime.now(), game, rule, BetStatus.SUCCESS.toString(), singleBetAmount, rule.getBetCoefficient()));
                 game.getBets().add(bet);
                 gameRepository.update(game);
                 logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);

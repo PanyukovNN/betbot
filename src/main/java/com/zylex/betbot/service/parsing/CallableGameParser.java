@@ -1,10 +1,10 @@
 package com.zylex.betbot.service.parsing;
 
 import com.zylex.betbot.controller.logger.ParsingConsoleLogger;
-import com.zylex.betbot.model.Game;
-import com.zylex.betbot.model.GameInfo;
-import com.zylex.betbot.model.GameResult;
-import com.zylex.betbot.model.League;
+import com.zylex.betbot.model.game.Game;
+import com.zylex.betbot.model.game.GameInfo;
+import com.zylex.betbot.model.game.GameResult;
+import com.zylex.betbot.model.game.League;
 import com.zylex.betbot.model.Day;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

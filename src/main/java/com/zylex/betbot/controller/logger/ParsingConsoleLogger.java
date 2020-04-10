@@ -1,6 +1,6 @@
 package com.zylex.betbot.controller.logger;
 
-import com.zylex.betbot.model.Game;
+import com.zylex.betbot.model.game.Game;
 import com.zylex.betbot.model.Day;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 import org.apache.commons.lang3.StringUtils;
