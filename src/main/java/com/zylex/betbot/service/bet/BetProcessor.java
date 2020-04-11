@@ -6,7 +6,6 @@ import com.zylex.betbot.exception.BetProcessorException;
 import com.zylex.betbot.model.*;
 import com.zylex.betbot.model.bet.Bet;
 import com.zylex.betbot.model.bet.BetCoefficient;
-import com.zylex.betbot.model.bet.BetInfo;
 import com.zylex.betbot.model.bet.BetStatus;
 import com.zylex.betbot.model.game.Game;
 import com.zylex.betbot.model.rule.Rule;
@@ -39,8 +38,6 @@ public class BetProcessor {
 
     private BankRepository bankRepository;
 
-    private BetInfoRepository betInfoRepository;
-
     private GameRepository gameRepository;
 
     private BetRepository betRepository;
@@ -53,12 +50,10 @@ public class BetProcessor {
     public BetProcessor(DriverManager driverManager,
                         BankRepository bankRepository,
                         GameRepository gameRepository,
-                        BetInfoRepository betInfoRepository,
                         BetRepository betRepository) {
         this.driverManager = driverManager;
         this.bankRepository = bankRepository;
         this.gameRepository = gameRepository;
-        this.betInfoRepository = betInfoRepository;
         this.betRepository = betRepository;
     }
 
@@ -83,7 +78,6 @@ public class BetProcessor {
                 }
                 processGameBet(rules, game);
             }
-            betInfoRepository.save(new BetInfo(botStartTime));
             logger.betMade(LogType.OK);
         } catch (ElementNotInteractableException | IOException e) {
             throw new BetProcessorException(e.getMessage(), e);

@@ -1,8 +1,3 @@
-CREATE TABLE IF NOT EXISTS bet_info (
-    id          SERIAL NOT NULL PRIMARY KEY,
-    bet_time    TIMESTAMP NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS bet (
     id          BIGSERIAL NOT NULL PRIMARY KEY,
     date_time   TIMESTAMP NOT NULL,
