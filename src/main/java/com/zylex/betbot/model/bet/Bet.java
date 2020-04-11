@@ -108,14 +108,15 @@ public class Bet {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Bet that = (Bet) o;
-        return Objects.equals(game, that.game) &&
-                Objects.equals(rule, that.rule);
+        Bet bet = (Bet) o;
+        return Objects.equals(game, bet.game) &&
+                Objects.equals(rule, bet.rule) &&
+                Objects.equals(coefficient, bet.coefficient);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(game, rule);
+        return Objects.hash(game, rule, coefficient);
     }
 
     @Override

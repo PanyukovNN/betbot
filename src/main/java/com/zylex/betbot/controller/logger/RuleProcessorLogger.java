@@ -26,7 +26,7 @@ public class RuleProcessorLogger extends ConsoleLogger{
         Set<Rule> ruleSet = new LinkedHashSet<>();
         eligibleGames.forEach(game -> ruleSet.addAll(game.getRules()));
         List<Rule> ruleList = ruleSet.stream()
-                .sorted(Comparator.comparing(Rule::getName))
+                .sorted(Comparator.comparing(Rule::getId))
                 .collect(Collectors.toList());
         for (Rule rule : ruleList) {
             StringBuilder output = new StringBuilder(String.format("%11s:", rule));
