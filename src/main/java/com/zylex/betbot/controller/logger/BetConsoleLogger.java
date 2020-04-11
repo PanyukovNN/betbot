@@ -1,11 +1,14 @@
 package com.zylex.betbot.controller.logger;
 
-import com.zylex.betbot.model.bet.BetCoefficient;
+import com.zylex.betbot.model.bet.Bet;
+import com.zylex.betbot.model.bet.BetStatus;
 import com.zylex.betbot.model.game.Game;
 import com.zylex.betbot.service.bet.BetProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Log BetProcessor.
@@ -13,6 +16,8 @@ import org.slf4j.LoggerFactory;
 public class BetConsoleLogger extends ConsoleLogger{
 
     private final static Logger LOG = LoggerFactory.getLogger(BetProcessor.class);
+
+    private AtomicInteger gameIndex = new AtomicInteger(0);
 
     /**
      * Log start message.
@@ -31,26 +36,23 @@ public class BetConsoleLogger extends ConsoleLogger{
 
     /**
      * Log single bet.
-     * @param index - number of bet.
-     * @param betAmount - amount of bet.
-     * @param betCoefficient - coefficient of bet.
      * @param game - game for bet.
-     * @param type - type of log.
+     * @param bet - instance of bet.
      */
-    public void logBet(int index, int betAmount, BetCoefficient betCoefficient, Game game, LogType type) {
-        if (type == LogType.OK) {
-            String output = String.format("%d) %s rub. bet has been placed on %s for: %s",
-                    index,
-                    betAmount,
-                    betCoefficient,
+    public void logBet(Game game, Bet bet) {
+        if (bet.getStatus().equals(BetStatus.SUCCESS.toString())) {
+            String output = String.format("%2d) %s rub. bet has been placed on %-10s for: %s",
+                    gameIndex.incrementAndGet(),
+                    bet.getAmount(),
+                    bet.getCoefficient(),
                     game);
             writeInLine("\n" + output);
             LOG.info(output);
-        } else if (type == LogType.BET_NOT_FOUND) {
-            String output = String.format("%d) Did't find the game: %s", index, game);
+        } else if (bet.getStatus().equals(BetStatus.FAIL.toString())) {
+            String output = String.format("%d) Did't find the game: %s", gameIndex.incrementAndGet(), game);
             writeErrorMessage("\n" + output, new Throwable());
             LOG.warn(output);
-        } else if (type == LogType.BET_ERROR) {
+        } else if (bet.getStatus().equals(BetStatus.ERROR.toString())) {
             String output = "Error during bet making for game: " + game;
             writeErrorMessage("\n" + output, new Throwable());
             LOG.warn(output);

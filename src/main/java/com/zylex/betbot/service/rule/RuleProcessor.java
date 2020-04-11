@@ -44,15 +44,15 @@ public class RuleProcessor {
      * @return - games mapped by rules.
      */
     @Transactional
-    public Map<Rule, List<Game>> process(List<Game> games) {
-        Map<Rule, List<Game>> ruleGames = new LinkedHashMap<>();
+    public List<Game> process(List<Game> games) {
+        List<Game> ruleGames = new ArrayList<>();
         List<Rule> rules = ruleRepository.getAll();
         rules.sort(Comparator.comparing(Rule::getId));
         for (Rule rule : rules) {
             List<Game> eligibleGames = ruleFilter.filter(games, rule);
             eligibleGames.sort(Comparator.comparing(Game::getDateTime));
             eligibleGames.forEach(gameRepository::save);
-            ruleGames.put(rule, gameRepository.getSinceDateTime(LocalDateTime.of(LocalDate.now().minusDays(1), betStartTime)).stream()
+            ruleGames.addAll(gameRepository.getSinceDateTime(LocalDateTime.of(LocalDate.now().minusDays(1), betStartTime)).stream()
                     .filter(game -> game.getRules().contains(rule))
                     .sorted(Comparator.comparing(Game::getDateTime))
                     .collect(Collectors.toList()));

@@ -43,81 +43,59 @@ public class BetProcessor {
 
     private GameRepository gameRepository;
 
-    private RuleRepository ruleRepository;
-
     private BetRepository betRepository;
 
     private int totalBalance = -1;
 
     private int availableBalance = -1;
 
+    private boolean betMade = false;
+
     @Autowired
     public BetProcessor(DriverManager driverManager,
                         BankRepository bankRepository,
                         GameRepository gameRepository,
                         BetInfoRepository betInfoRepository,
-                        RuleRepository ruleRepository,
                         BetRepository betRepository) {
         this.driverManager = driverManager;
         this.bankRepository = bankRepository;
         this.gameRepository = gameRepository;
         this.betInfoRepository = betInfoRepository;
-        this.ruleRepository = ruleRepository;
         this.betRepository = betRepository;
     }
 
     /**
-     * Initiates non-headless chrome driver, opens the site, logs in,
-     * makes bets, and saves bet made games to database.
+     * Initiates web driver, opens the site, logs in,
+     * makes bets, and saves bets to database.
      */
     @Transactional
-    public void process(Map<Rule, List<Game>> ruleGames, List<String> ruleNames) {
+    public void process(List<Game> games, List<Rule> rules) {
         try {
-            List<Rule> rules = ruleRepository.getAll();
-            for (Rule rule : rules) {
-                if (!ruleNames.contains(rule.getName())) continue;
-                List<Game> games = ruleGames.get(rule);
-                List<Game> betGames = findBetGames(games, rule);
-                if (!betGames.isEmpty()) {
-                    openSite();
-                    logIn();
-                    processBets(rule, betGames);
+            openSite(); //TODO check for betting games
+            for (Game game : games) {
+                if (notAppropriateTime(game)) continue;
+                if (!enoughMoney(rules, game)) {
+                    logger.noMoney();
+                    break;
                 }
+                processGameBet(rules, game);
             }
-            if (driverManager.getDriver() == null) {
-                logger.betMade(LogType.NO_GAMES_TO_BET);
-            } else {
-                betInfoRepository.save(new BetInfo(botStartTime));
-                logger.betMade(LogType.OK);
-            }
+            saveBetInfo();
         } catch (ElementNotInteractableException | IOException e) {
             throw new BetProcessorException(e.getMessage(), e);
         }
     }
 
-    private List<Game> findBetGames(List<Game> betGames, Rule rule) {
-        return filterByBetNotMade(filterByTime(betGames), rule);
+    private boolean notAppropriateTime(Game game) {
+        return botStartTime.isBefore(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), betStartTime))
+                || botStartTime.isAfter(game.getDateTime());
     }
 
-    private List<Game> filterByBetNotMade(List<Game> filteredBetGames, Rule rule) {
-        return filteredBetGames.stream()
-                .filter(game -> game.getBets().stream()
-                        .noneMatch(bet -> bet.getRule().equals(rule)))
-                .collect(Collectors.toList());
-    }
-
-    private List<Game> filterByTime(List<Game> betGames) {
-        return betGames.stream()
-                .filter(game -> botStartTime.isAfter(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), betStartTime)))
-                .filter(game -> botStartTime.isBefore(game.getDateTime()))
-                .collect(Collectors.toList());
-    }
-
-    private void openSite() {
-        if (driverManager.getDriver() == null) {
-            driverManager.initiateDriver(false);
-            driverManager.getDriver().navigate().to("https://1xstavka.ru/");
-        }
+    private void openSite() throws IOException {
+        if (driverManager.getDriver() != null) return;
+        driverManager.initiateDriver(false);
+        driverManager.getDriver().navigate().to("https://1xstavka.ru/");
+        logIn();
     }
 
     private void logIn() throws IOException {
@@ -131,6 +109,7 @@ public class BetProcessor {
             authenticationForm.get(1).sendKeys(property.getProperty("BetBot.password"));
             driverManager.waitElement(By::className, "auth-button").click();
             checkVerify();
+            updateBalance();
         }
     }
 
@@ -143,34 +122,6 @@ public class BetProcessor {
         }
     }
 
-    private void processBets(Rule rule, List<Game> betGames) {
-        logger.startLogMessage(LogType.BET, rule.getName());
-        BetCoefficient betCoefficient = BetCoefficient.valueOf(rule.getBetCoefficient());
-        updateBalance();
-        int singleBetAmount = calculateAmount(rule);
-        int i = 0;
-        for (Game game : betGames) {
-            if (availableBalance < singleBetAmount) {
-                logger.noMoney();
-                break;
-            }
-            if (!clickOnCoefficient(betCoefficient, game)) {
-                Bet bet = betRepository.save(
-                        new Bet(LocalDateTime.now(), game, rule, BetStatus.FAIL.toString(), 0, BetCoefficient.NONE.toString()));
-                game.getBets().add(bet);
-                gameRepository.update(game);
-                logger.logBet(++i, 0, null, game, LogType.BET_NOT_FOUND);
-            } else if (makeBet(singleBetAmount)) {
-                availableBalance -= singleBetAmount;
-                Bet bet = betRepository.save(
-                        new Bet(LocalDateTime.now(), game, rule, BetStatus.SUCCESS.toString(), singleBetAmount, rule.getBetCoefficient()));
-                game.getBets().add(bet);
-                gameRepository.update(game);
-                logger.logBet(++i, singleBetAmount, betCoefficient, game, LogType.OK);
-            }
-        }
-    }
-
     private void updateBalance() {
         if (totalBalance == -1) {
             availableBalance = (int) Double.parseDouble(driverManager.waitElement(By::className, "top-b-acc__amount").getText());
@@ -179,9 +130,49 @@ public class BetProcessor {
         }
     }
 
+    private boolean enoughMoney(List<Rule> rules, Game game) {
+        List<Rule> gameRules = rules.stream()
+                .filter(rule -> game.getRules().contains(rule))
+                .collect(Collectors.toList());
+        return availableBalance >= calculateAmount(gameRules);
+    }
+
+    private void processGameBet(List<Rule> rules, Game game) {
+        for (Rule rule : rules) {
+            if (!game.getRules().contains(rule)) continue;
+            if (game.getBets().stream().anyMatch(bet -> bet.getRule().equals(rule))) continue;
+            int ruleBetAmount = calculateAmount(rule);
+            BetCoefficient betCoefficient = BetCoefficient.valueOf(rule.getBetCoefficient());
+            if (!clickOnCoefficient(betCoefficient, game)) {
+                saveBet(game, new Bet(LocalDateTime.now(), game, rule, BetStatus.FAIL.toString(), 0, BetCoefficient.NONE.toString()));
+            } else if (makeBet(ruleBetAmount)) {
+                availableBalance -= ruleBetAmount;
+                saveBet(game, new Bet(LocalDateTime.now(), game, rule, BetStatus.SUCCESS.toString(), ruleBetAmount, rule.getBetCoefficient()));
+            } else {
+                saveBet(game, new Bet(LocalDateTime.now(), game, rule, BetStatus.ERROR.toString(), 0, BetCoefficient.NONE.toString()));
+            }
+            betMade = true;
+        }
+    }
+
+    private void saveBet(Game game, Bet bet) {
+        bet = betRepository.save(bet);
+        game.getBets().add(bet);
+        gameRepository.update(game);
+        logger.logBet(game, bet);
+    }
+
     private int calculateAmount(Rule rule) {
         double singleBetMoney = totalBalance * rule.getPercent();
         return (int) Math.max(singleBetMoney, 20);
+    }
+
+    private int calculateAmount(List<Rule> rules) {
+        int sum = 0;
+        for (Rule rule : rules) {
+            sum += calculateAmount(rule);
+        }
+        return sum;
     }
 
     private boolean makeBet(int amount) {
@@ -203,7 +194,6 @@ public class BetProcessor {
             executor.executeScript("arguments[0].click();", okButton);
             WebElement delButton = driverManager.waitElement(By::className, "c-bet-box__del");
             executor.executeScript("arguments[0].click();", delButton);
-            logger.logBet(0, 0, null, null, LogType.BET_ERROR);
             return false;
         }
         return true;
@@ -219,7 +209,10 @@ public class BetProcessor {
     }
 
     private List<WebElement> fetchGameCoefficients(Game game) {
-        driverManager.getDriver().navigate().to("https://1xstavka.ru/line/Football/" + game.getLeague().getLink());
+        String gameUrl = "https://1xstavka.ru/line/Football/" + game.getLeague().getLink();
+        if (!gameUrl.equals(driverManager.getDriver().getCurrentUrl())) {
+            driverManager.getDriver().navigate().to(gameUrl);
+        }
         List<WebElement> gameWebElements = driverManager.waitElements(By::className, "c-events__item_game");
         for (WebElement gameWebElement : gameWebElements) {
             LocalDateTime dateTime = processDateTime(gameWebElement);
@@ -234,16 +227,25 @@ public class BetProcessor {
                 return gameWebElement.findElements(By.className("c-bets__bet"));
             }
         }
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     private LocalDateTime processDateTime(WebElement gameElement) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+        String year = String.valueOf(LocalDate.now().getYear());
         String dateTime = gameElement.findElement(By.className("c-events__time"))
                 .findElement(By.cssSelector("span"))
-                .getText();
-        String year = String.valueOf(LocalDate.now().getYear());
-        dateTime = dateTime.replace(" ", String.format(".%s ", year)).substring(0, 16);
+                .getText()
+                .replace(" ", String.format(".%s ", year)).substring(0, 16);
         return LocalDateTime.parse(dateTime, dateTimeFormatter);
+    }
+
+    private void saveBetInfo() {
+        if (betMade) {
+            betInfoRepository.save(new BetInfo(botStartTime));
+            logger.betMade(LogType.OK);
+        } else {
+            logger.betMade(LogType.NO_GAMES_TO_BET);
+        }
     }
 }

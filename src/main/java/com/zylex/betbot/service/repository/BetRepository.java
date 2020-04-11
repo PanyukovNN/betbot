@@ -23,24 +23,8 @@ public class BetRepository {
     @Transactional
     public Bet save(Bet bet) {
         Session session = sessionFactory.getCurrentSession();
-        Bet retreatedBet = get(bet);
-        if (retreatedBet.getRule() == null) {
-            Long id = (Long) session.save(bet);
-            bet.setId(id);
-            return bet;
-        } else {
-            return retreatedBet;
-        }
-    }
-
-    public Bet get(Bet bet) {
-        Session session = sessionFactory.getCurrentSession();
-        Query query = session.createQuery("FROM Bet WHERE id = :betId");
-        query.setParameter("betId", bet.getId());
-        try {
-            return (Bet) query.getSingleResult();
-        } catch (NoResultException e) {
-            return new Bet();
-        }
+        Long id = (Long) session.save(bet);
+        bet.setId(id);
+        return bet;
     }
 }

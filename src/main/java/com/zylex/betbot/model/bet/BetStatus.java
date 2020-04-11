@@ -5,5 +5,6 @@ package com.zylex.betbot.model.bet;
  */
 public enum BetStatus {
     FAIL,
-    SUCCESS
+    SUCCESS,
+    ERROR
 }

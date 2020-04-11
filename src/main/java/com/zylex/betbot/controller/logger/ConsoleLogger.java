@@ -67,6 +67,7 @@ public abstract class ConsoleLogger {
     }
 
     public synchronized static void endMessage() {
+        writeLineSeparator('~');
         String output = "Bot work completed in " + computeTimeFromStart();
         writeInLine("\n" + output);
         LOG.info(output);

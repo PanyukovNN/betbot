@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS game_info (
     FOREIGN KEY (game_id) REFERENCES game(id)
 );
 
--- DELETE FROM game_info WHERE id > ;
--- DELETE FROM game_rule WHERE game_id >  ;
--- DELETE FROM game WHERE id >  ;
--- alter sequence game_id_seq restart with 730;
--- alter sequence game_info_id_seq restart with 730;
+DELETE FROM game_info WHERE id >= 777;
+DELETE FROM game_rule WHERE game_id >= 777;
+DELETE FROM game WHERE id >= 777;
+alter sequence game_id_seq restart with 777;
+alter sequence game_info_id_seq restart with 777;
