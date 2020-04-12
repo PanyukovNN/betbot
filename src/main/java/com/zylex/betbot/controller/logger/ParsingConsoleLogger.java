@@ -1,15 +1,11 @@
 package com.zylex.betbot.controller.logger;
 
-import com.zylex.betbot.model.game.Game;
-import com.zylex.betbot.model.Day;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
-import java.time.LocalDate;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -60,20 +56,5 @@ public class ParsingConsoleLogger extends ConsoleLogger {
             writeLineSeparator();
             LOG.info("Parsing completed.");
         }
-    }
-
-    /**
-     * Log summarizing of parsing.
-     */
-    public static void writeTotalGames(List<Game> games) {
-        StringBuilder output = new StringBuilder("TOTAL GAMES:");
-        for (Day day : Day.values()) {
-            int gamesCount = (int) games.stream()
-                    .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
-                    .count();
-            output.append(String.format("%4d (%s) ", gamesCount, day));
-        }
-        writeInLine("\n" + output);
-        LOG.info(output.toString());
     }
 }

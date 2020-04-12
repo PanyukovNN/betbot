@@ -62,22 +62,26 @@ public class BetProcessor {
      * makes bets, and saves bets to database.
      */
     @Transactional
-    public void process(List<Game> games, List<Rule> rules) {
+    public List<Game> process(List<Game> games, List<Rule> rules) {
         try {
             Set<Game> betGames = findBetGames(games, rules);
             if (betGames.isEmpty()) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
-                return;
+                return Collections.emptyList();
             }
             openSite();
+            logger.startLogMessage(LogType.BET);
+            List<Game> processedGames = new ArrayList<>();
             for (Game game : betGames) {
                 if (!enoughMoney(rules, game)) {
                     logger.noMoney();
                     break;
                 }
                 processGameBet(rules, game);
+                processedGames.add(game);
             }
             logger.betMade(LogType.OK);
+            return processedGames;
         } catch (ElementNotInteractableException | IOException e) {
             throw new BetProcessorException(e.getMessage(), e);
         }
@@ -112,7 +116,7 @@ public class BetProcessor {
 
     private void logIn() throws IOException {
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("BetBotAuth.properties")) {
-            logger.startLogMessage(LogType.LOG_IN, "");
+            logger.startLogMessage(LogType.LOG_IN);
             Properties property = new Properties();
             property.load(inputStream);
             driverManager.waitElement(By::className, "base_auth_form").click();
@@ -138,7 +142,7 @@ public class BetProcessor {
         if (totalBalance == -1) {
             availableBalance = (int) Double.parseDouble(driverManager.waitElement(By::className, "top-b-acc__amount").getText());
             totalBalance = availableBalance;
-            bankRepository.save(new Bank(LocalDate.now(), totalBalance));
+            bankRepository.save(new Bank(LocalDateTime.now(), totalBalance));
         }
     }
 

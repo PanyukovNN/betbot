@@ -26,8 +26,8 @@ public abstract class ConsoleLogger {
      * Writes start message
      */
     public static void startMessage() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a dd.MM.yyyy");
-        String startMessage = String.format("BetBot started at: %s", botStartTime.format(formatter));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
+        String startMessage = String.format("BetBot started at %s", botStartTime.format(formatter));
         writeInLine(startMessage);
         LOG.info(startMessage);
         writeLineSeparator('~');

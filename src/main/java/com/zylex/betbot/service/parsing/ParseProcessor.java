@@ -39,9 +39,7 @@ public class ParseProcessor {
             ParsingConsoleLogger.startLogMessage(LogType.PARSING_SITE_START, 0);
             List<String> leagueLinks = leagueLinksParser.processLeagueParsing();
             ParsingConsoleLogger.startLogMessage(LogType.LEAGUES, leagueLinks.size());
-            List<Game> games = processGameParsing(leagueLinks);
-            ParsingConsoleLogger.writeTotalGames(games);
-            return games;
+            return processGameParsing(leagueLinks);
         } catch (InterruptedException | ExecutionException e) {
             throw new ParseProcessorException(e.getMessage(), e);
         }

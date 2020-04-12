@@ -41,23 +41,27 @@ public class RuleProcessor {
     /**
      * Filters games by all rules, and set rule to filtered game.
      * @param games - list of games to filter.
-     * @return - games mapped by rules.
      */
     @Transactional
-    public List<Game> process(List<Game> games) {
-        List<Game> ruleGames = new ArrayList<>();
+    public void process(List<Game> games) {
         List<Rule> rules = ruleRepository.getAll();
-        rules.sort(Comparator.comparing(Rule::getId));
         for (Rule rule : rules) {
             List<Game> eligibleGames = ruleFilter.filter(games, rule);
             eligibleGames.sort(Comparator.comparing(Game::getDateTime));
             eligibleGames.forEach(gameRepository::save);
+        }
+        logger.writeEligibleGamesNumber(findAppropriateGames());
+    }
+
+    public List<Game> findAppropriateGames() {
+        List<Rule> rules = ruleRepository.getAll();
+        List<Game> ruleGames = new ArrayList<>();
+        for (Rule rule : rules) {
             ruleGames.addAll(gameRepository.getSinceDateTime(LocalDateTime.of(LocalDate.now().minusDays(1), betStartTime)).stream()
                     .filter(game -> game.getRules().contains(rule))
                     .sorted(Comparator.comparing(Game::getDateTime))
                     .collect(Collectors.toList()));
         }
-        logger.writeEligibleGamesNumber(ruleGames);
         return ruleGames;
     }
 }

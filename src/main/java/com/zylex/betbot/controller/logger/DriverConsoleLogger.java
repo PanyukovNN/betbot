@@ -25,7 +25,7 @@ public class DriverConsoleLogger extends ConsoleLogger {
      * Log driver start.
      */
     public void logDriver() {
-        String output = "Starting web driver: complete";
+        String output = "Starting web driver: complete.";
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
         writeLineSeparator();
         LOG.info(output);

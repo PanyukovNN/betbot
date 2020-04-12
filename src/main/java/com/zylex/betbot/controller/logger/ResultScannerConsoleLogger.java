@@ -26,6 +26,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
         if (type == LogType.PARSING_SITE_START) {
             String output = "Scanning game results started.";
             writeInLine("\n" + output);
+            writeLineSeparator();
             LOG.info(output);
         } else if (type == LogType.GAMES) {
             totalGames = arg;

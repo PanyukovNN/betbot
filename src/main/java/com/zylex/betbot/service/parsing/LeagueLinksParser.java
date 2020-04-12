@@ -27,6 +27,7 @@ class LeagueLinksParser {
         try {
             return parseLeagueLinks();
         } catch (IOException e) {
+            //TODO read time out
             throw new LeagueParserException(e.getMessage(), e);
         }
     }

@@ -23,12 +23,11 @@ public class BetConsoleLogger extends ConsoleLogger{
     /**
      * Log start message.
      * @param type - type of log.
-     * @param message - string message.
      */
-    public synchronized void startLogMessage(LogType type, String message) {
+    public synchronized void startLogMessage(LogType type) {
         if (type == LogType.BET) {
-            writeInLine(String.format("\nProcessing bets for %s:", message));
-            LOG.info("Processing bets started");
+            writeInLine("\nMaking bets:");
+            LOG.info("Making bets:");
         } else if (type == LogType.LOG_IN) {
             writeInLine("\nLogging in: ...");
             LOG.info("Logging in started");
@@ -55,6 +54,7 @@ public class BetConsoleLogger extends ConsoleLogger{
                 String output = "   - Did't find the game";
                 writeErrorMessage("\n" + output);
                 LOG.warn(output);
+                break;
             } else if (bet.getStatus().equals(BetStatus.ERROR.toString())) {
                 String output = "   - Error during making bet: " + bet;
                 writeErrorMessage("\n" + output);
