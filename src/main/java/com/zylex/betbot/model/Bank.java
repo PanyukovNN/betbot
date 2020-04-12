@@ -2,6 +2,7 @@ package com.zylex.betbot.model;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
@@ -13,8 +14,8 @@ public class Bank {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "bank_date")
-    private LocalDate date;
+    @Column(name = "date_time")
+    private LocalDateTime dateTime;
 
     @Column(name = "amount")
     private int amount;
@@ -22,8 +23,8 @@ public class Bank {
     public Bank() {
     }
 
-    public Bank(LocalDate date, int amount) {
-        this.date = date;
+    public Bank(LocalDateTime dateTime, int amount) {
+        this.dateTime = dateTime;
         this.amount = amount;
     }
 
@@ -35,12 +36,12 @@ public class Bank {
         this.id = id;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public LocalDateTime getDate() {
+        return dateTime;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public void setDate(LocalDateTime date) {
+        this.dateTime = dateTime;
     }
 
     public int getAmount() {
@@ -66,10 +67,10 @@ public class Bank {
 
     @Override
     public String toString() {
-        DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("HH.mm dd.MM.yyyy");
         String body = "Bank on %s is %d";
         return String.format(body,
-                DATE_FORMATTER.format(date),
+                DATE_FORMATTER.format(dateTime),
                 amount);
     }
 }
