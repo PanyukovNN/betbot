@@ -65,7 +65,6 @@ public class BetProcessor {
     public void process(List<Game> games, List<Rule> rules) {
         try {
             Set<Game> betGames = findBetGames(games, rules);
-            betGames.forEach(System.out::println);
             if (betGames.isEmpty()) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
                 return;
@@ -158,28 +157,30 @@ public class BetProcessor {
             List<BetCoefficient> betCoefficients = Arrays.stream(rule.getBetCoefficient().split("__"))
                     .map(BetCoefficient::valueOf)
                     .collect(Collectors.toList());
+            List<Bet> gameBet = new ArrayList<>();
             for (BetCoefficient betCoefficient : betCoefficients) {
-                betOnCoefficient(game, rule, ruleBetAmount, betCoefficient);
+                gameBet.add(betOnCoefficient(game, rule, ruleBetAmount, betCoefficient));
             }
+            logger.logBet(game, gameBet);
         }
     }
 
-    private void betOnCoefficient(Game game, Rule rule, int ruleBetAmount, BetCoefficient betCoefficient) {
+    private Bet betOnCoefficient(Game game, Rule rule, int ruleBetAmount, BetCoefficient betCoefficient) {
         if (!clickOnCoefficient(betCoefficient, game)) {
-            saveBet(game, new Bet(LocalDateTime.now(), game, rule, BetStatus.FAIL.toString(), 0, BetCoefficient.NONE.toString()));
+            return saveBet(game, new Bet(LocalDateTime.now(), game, rule, BetStatus.FAIL.toString(), 0, BetCoefficient.NONE.toString()));
         } else if (makeBet(ruleBetAmount)) {
             availableBalance -= ruleBetAmount;
-            saveBet(game, new Bet(LocalDateTime.now(), game, rule, BetStatus.SUCCESS.toString(), ruleBetAmount, betCoefficient.toString()));
+            return saveBet(game, new Bet(LocalDateTime.now(), game, rule, BetStatus.SUCCESS.toString(), ruleBetAmount, betCoefficient.toString()));
         } else {
-            saveBet(game, new Bet(LocalDateTime.now(), game, rule, BetStatus.ERROR.toString(), 0, BetCoefficient.NONE.toString()));
+            return saveBet(game, new Bet(LocalDateTime.now(), game, rule, BetStatus.ERROR.toString(), 0, BetCoefficient.NONE.toString()));
         }
     }
 
-    private void saveBet(Game game, Bet bet) {
+    private Bet saveBet(Game game, Bet bet) {
         bet = betRepository.save(bet);
         game.getBets().add(bet);
         gameRepository.update(game);
-        logger.logBet(game, bet);
+        return bet;
     }
 
     private int calculateAmount(Rule rule) {

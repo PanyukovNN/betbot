@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -37,25 +38,28 @@ public class BetConsoleLogger extends ConsoleLogger{
     /**
      * Log single bet.
      * @param game - game for bet.
-     * @param bet - instance of bet.
+     * @param gameBet - list of game bets.
      */
-    public void logBet(Game game, Bet bet) {
-        if (bet.getStatus().equals(BetStatus.SUCCESS.toString())) {
-            String output = String.format("%2d) %s rub. bet has been placed on %-10s for: %s",
-                    gameIndex.incrementAndGet(),
-                    bet.getAmount(),
-                    bet.getCoefficient(),
-                    game);
-            writeInLine("\n" + output);
-            LOG.info(output);
-        } else if (bet.getStatus().equals(BetStatus.FAIL.toString())) {
-            String output = String.format("%d) Did't find the game: %s", gameIndex.incrementAndGet(), game);
-            writeErrorMessage("\n" + output, new Throwable());
-            LOG.warn(output);
-        } else if (bet.getStatus().equals(BetStatus.ERROR.toString())) {
-            String output = "Error during bet making for game: " + game;
-            writeErrorMessage("\n" + output, new Throwable());
-            LOG.warn(output);
+    public void logBet(Game game, List<Bet> gameBet) {
+        String gameMessage = String.format("\n%3s %s", gameIndex.incrementAndGet() + ")", game);
+        writeInLine(gameMessage);
+        LOG.info(gameMessage);
+        for (Bet bet : gameBet) {
+            if (bet.getStatus().equals(BetStatus.SUCCESS.toString())) {
+                String output = String.format("  - %s rub. placed on %-10s",
+                        bet.getAmount(),
+                        bet.getCoefficient());
+                writeInLine("\n" + output);
+                LOG.info(output);
+            } else if (bet.getStatus().equals(BetStatus.FAIL.toString())) {
+                String output = "   - Did't find the game";
+                writeErrorMessage("\n" + output);
+                LOG.warn(output);
+            } else if (bet.getStatus().equals(BetStatus.ERROR.toString())) {
+                String output = "   - Error during making bet: " + bet;
+                writeErrorMessage("\n" + output);
+                LOG.warn(output);
+            }
         }
     }
 
