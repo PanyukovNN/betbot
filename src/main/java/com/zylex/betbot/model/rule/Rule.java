@@ -29,14 +29,10 @@ public class Rule {
     @JoinColumn(name = "rule_id")
     private List<RuleCondition> ruleConditions = new ArrayList<>();
 
-    public Rule() {
-    }
+    @Column(name = "activate")
+    private boolean activate;
 
-    public Rule(String name, boolean selectedLeagues, double percent, String betCoefficient) {
-        this.name = name;
-        this.selectedLeagues = selectedLeagues;
-        this.percent = percent;
-        this.betCoefficient = betCoefficient;
+    public Rule() {
     }
 
     public long getId() {
@@ -85,6 +81,14 @@ public class Rule {
 
     public void setRuleConditions(List<RuleCondition> ruleConditions) {
         this.ruleConditions = ruleConditions;
+    }
+
+    public boolean isActivate() {
+        return activate;
+    }
+
+    public void setActivate(boolean activate) {
+        this.activate = activate;
     }
 
     @Override

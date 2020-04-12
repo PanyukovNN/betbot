@@ -1,11 +1,9 @@
 package com.zylex.betbot.service.rest;
 
 import com.zylex.betbot.model.game.Game;
-import com.zylex.betbot.model.rule.Rule;
 import com.zylex.betbot.service.bet.BetProcessor;
 import com.zylex.betbot.service.parsing.ParseProcessor;
 import com.zylex.betbot.service.repository.GameRepository;
-import com.zylex.betbot.service.repository.RuleRepository;
 import com.zylex.betbot.service.rule.RuleProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,19 +28,15 @@ public class GameRestController {
 
     private BetProcessor betProcessor;
 
-    private RuleRepository ruleRepository;
-
     @Autowired
     public GameRestController(GameRepository gameRepository,
                               ParseProcessor parseProcessor,
                               RuleProcessor ruleProcessor,
-                              BetProcessor betProcessor,
-                              RuleRepository ruleRepository) {
+                              BetProcessor betProcessor) {
         this.gameRepository = gameRepository;
         this.parseProcessor = parseProcessor;
         this.ruleProcessor = ruleProcessor;
         this.betProcessor = betProcessor;
-        this.ruleRepository = ruleRepository;;
     }
 
     @GetMapping("/date/{dateText}")
@@ -74,8 +68,7 @@ public class GameRestController {
     @GetMapping("/parse")
     public ResponseEntity<List<Game>> getParsedGames() {
         try {
-            List<Game> games = parseProcessor.process();
-            ruleProcessor.process(games);
+            ruleProcessor.process();
             return new ResponseEntity<>(ruleProcessor.findAppropriateGames(), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -85,9 +78,7 @@ public class GameRestController {
     @GetMapping("/make_bets")
     public ResponseEntity<List<Game>> processBets() {
         try {
-            List<Game> ruleGames = ruleProcessor.findAppropriateGames();
-            List<Rule> ruleList = ruleRepository.getByNames(Collections.singletonList("FW_SW"));
-            List<Game> betMadeGames = betProcessor.process(ruleGames, ruleList);
+            List<Game> betMadeGames = betProcessor.process();
             return new ResponseEntity<>(betMadeGames, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

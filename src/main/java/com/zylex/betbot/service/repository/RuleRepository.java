@@ -40,10 +40,9 @@ public class RuleRepository {
 
     @Transactional
     @SuppressWarnings("unchecked")
-    public List<Rule> getByNames(List<String> ruleNames) {
+    public List<Rule> getActivated() {
         Session session = sessionFactory.getCurrentSession();
-        Query query = session.createQuery("FROM Rule WHERE name in :name");
-        query.setParameter("name", ruleNames);
+        Query query = session.createQuery("FROM Rule WHERE activate = TRUE");
         try {
             return ((List<Rule>) query.getResultList()).stream()
                     .sorted(Comparator.comparing(Rule::getId))

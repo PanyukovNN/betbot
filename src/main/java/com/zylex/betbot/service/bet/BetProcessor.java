@@ -11,6 +11,7 @@ import com.zylex.betbot.model.game.Game;
 import com.zylex.betbot.model.rule.Rule;
 import com.zylex.betbot.service.driver.DriverManager;
 import com.zylex.betbot.service.repository.*;
+import com.zylex.betbot.service.rule.RuleProcessor;
 import org.openqa.selenium.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,10 @@ public class BetProcessor {
 
     private BetRepository betRepository;
 
+    private RuleRepository ruleRepository;
+
+    private RuleProcessor ruleProcessor;
+
     private int totalBalance = -1;
 
     private int availableBalance = -1;
@@ -50,11 +55,15 @@ public class BetProcessor {
     public BetProcessor(DriverManager driverManager,
                         BankRepository bankRepository,
                         GameRepository gameRepository,
-                        BetRepository betRepository) {
+                        BetRepository betRepository,
+                        RuleRepository ruleRepository,
+                        RuleProcessor ruleProcessor) {
         this.driverManager = driverManager;
         this.bankRepository = bankRepository;
         this.gameRepository = gameRepository;
         this.betRepository = betRepository;
+        this.ruleRepository = ruleRepository;
+        this.ruleProcessor = ruleProcessor;
     }
 
     /**
@@ -62,9 +71,10 @@ public class BetProcessor {
      * makes bets, and saves bets to database.
      */
     @Transactional
-    public List<Game> process(List<Game> games, List<Rule> rules) {
+    public List<Game> process() {
         try {
-            Set<Game> betGames = findBetGames(games, rules);
+            List<Rule> rules = ruleRepository.getActivated();
+            Set<Game> betGames = findBetGames(rules);
             if (betGames.isEmpty()) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
                 return Collections.emptyList();
@@ -87,10 +97,10 @@ public class BetProcessor {
         }
     }
 
-    private Set<Game> findBetGames(List<Game> games, List<Rule> rules) {
-        games.sort(Comparator.comparing(Game::getDateTime));
+    private Set<Game> findBetGames(List<Rule> rules) {
+        List<Game> ruleGames = ruleProcessor.findAppropriateGames();
         Set<Game> betGames = new LinkedHashSet<>();
-        for (Game game : games) {
+        for (Game game : ruleGames) {
             if (notAppropriateTime(game)) continue;
             if (game.getBets().stream().anyMatch(bet -> rules.contains(bet.getRule()))) continue;
             for (Rule rule : rules) {

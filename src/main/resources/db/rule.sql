@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS rule (
     name             VARCHAR(50) NOT NULL,
     selected_leagues BOOLEAN NOT NULL default false,
     percent          FLOAT NOT NULL DEFAULT 0,
-    bet_coefficient  VARCHAR(50) NOT NULL default ''
+    bet_coefficient  VARCHAR(50) NOT NULL default '',
+    activate         BOOLEAN
 );
 
 CREATE TABLE IF NOT EXISTS rule_condition (

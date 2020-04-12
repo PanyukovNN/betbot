@@ -3,6 +3,7 @@ package com.zylex.betbot.service.rule;
 import com.zylex.betbot.controller.logger.RuleProcessorLogger;
 import com.zylex.betbot.model.game.Game;
 import com.zylex.betbot.model.rule.Rule;
+import com.zylex.betbot.service.parsing.ParseProcessor;
 import com.zylex.betbot.service.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,21 +30,25 @@ public class RuleProcessor {
 
     private RuleFilter ruleFilter;
 
+    private ParseProcessor parseProcessor;
+
     @Autowired
     public RuleProcessor(GameRepository gameRepository,
                          RuleRepository ruleRepository,
-                         RuleFilter ruleFilter) {
+                         RuleFilter ruleFilter,
+                         ParseProcessor parseProcessor) {
         this.gameRepository = gameRepository;
         this.ruleRepository = ruleRepository;
         this.ruleFilter = ruleFilter;
+        this.parseProcessor = parseProcessor;
     }
 
     /**
      * Filters games by all rules, and set rule to filtered game.
-     * @param games - list of games to filter.
      */
     @Transactional
-    public void process(List<Game> games) {
+    public void process() {
+        List<Game> games = parseProcessor.process();
         List<Rule> rules = ruleRepository.getAll();
         for (Rule rule : rules) {
             List<Game> eligibleGames = ruleFilter.filter(games, rule);

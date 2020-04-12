@@ -25,13 +25,16 @@ public class RuleProcessorLogger extends ConsoleLogger{
      * @param eligibleGames - list of eligible games.
      */
     public void writeEligibleGamesNumber(List<Game> eligibleGames) {
+        if (eligibleGames.isEmpty()) {
+            return;
+        }
         Set<Rule> ruleSet = new LinkedHashSet<>();
         eligibleGames.forEach(game -> ruleSet.addAll(game.getRules()));
         List<Rule> ruleList = ruleSet.stream()
                 .sorted(Comparator.comparing(Rule::getId))
                 .collect(Collectors.toList());
         for (Rule rule : ruleList) {
-            StringBuilder output = new StringBuilder(String.format("%11s:", rule));
+            StringBuilder output = new StringBuilder(String.format("%9s:", rule));
             List<Game> ruleGames = eligibleGames.stream()
                     .filter(game -> game.getRules().contains(rule))
                     .filter(game -> game.getBets().isEmpty() ||
@@ -46,7 +49,7 @@ public class RuleProcessorLogger extends ConsoleLogger{
                         .filter(game -> game.getDateTime().isAfter(LocalDateTime.now()))
                         .filter(game -> game.getBets().isEmpty())
                         .count();
-                output.append(String.format("%8s", dayRuleGames.size() + "(+" + noBetGamesCount + ")"));
+                output.append(String.format("%7s", dayRuleGames.size() + "(+" + noBetGamesCount + ")"));
             }
             writeInLine("\n" + output.toString());
             LOG.info(output.toString());
