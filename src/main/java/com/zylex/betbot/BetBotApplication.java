@@ -5,6 +5,7 @@ import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.service.bet.BetProcessor;
 import com.zylex.betbot.service.rule.RuleProcessor;
 import com.zylex.betbot.service.statistics.ResultScanner;
+import com.zylex.betbot.service.statistics.StatisticsCollector;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 

@@ -49,7 +49,7 @@ public class RuleProcessor {
     @Transactional
     public void process() {
         List<Game> games = parseProcessor.process();
-        List<Rule> rules = ruleRepository.getAll();
+        List<Rule> rules = ruleRepository.getActivated();
         for (Rule rule : rules) {
             List<Game> eligibleGames = ruleFilter.filter(games, rule);
             eligibleGames.sort(Comparator.comparing(Game::getDateTime));
