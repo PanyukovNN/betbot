@@ -60,13 +60,15 @@ public class RuleProcessor {
 
     public List<Game> findAppropriateGames() {
         List<Rule> rules = ruleRepository.getActivated();
-        List<Game> ruleGames = new ArrayList<>();
+        List<Game> games = new ArrayList<>();
         for (Rule rule : rules) {
-            ruleGames.addAll(gameRepository.getSinceDateTime(LocalDateTime.of(botStartTime.toLocalDate().minusDays(1), betStartTime)).stream()
+            List<Game> ruleGames = gameRepository.getSinceDateTime(LocalDateTime.of(botStartTime.toLocalDate().minusDays(1), betStartTime)).stream()
                     .filter(game -> game.getRules().contains(rule))
+                    .collect(Collectors.toList());
+            games.addAll(ruleFilter.filter(ruleGames, rule).stream()
                     .sorted(Comparator.comparing(Game::getDateTime))
                     .collect(Collectors.toList()));
         }
-        return ruleGames;
+        return games;
     }
 }

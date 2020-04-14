@@ -26,6 +26,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
         if (type == LogType.PARSING_SITE_START) {
             String output = "Scanning game results started.";
             writeInLine("\n" + output);
+            writeLineSeparator();
             LOG.info(output);
         } else if (type == LogType.GAMES) {
             totalGames = arg;
@@ -34,7 +35,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
     }
 
     /**
-     * Log single game. If all games logged - print end message.
+     * Log single game.
      */
     public void logGame() {
         String output = String.format("Scanning games: %d/%d (%s%%)",
@@ -42,10 +43,14 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
                 totalGames,
                 new DecimalFormat("#0.0").format(((double) processedGames.get() / (double) totalGames) * 100).replace(",", "."));
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
-        if (processedGames.get() == totalGames) {
-            writeLineSeparator('~');
-            LOG.info("Scanning complete.");
-        }
+    }
+
+    /**
+     * Log end message.
+     */
+    public void endLogMessage() {
+        writeLineSeparator('~');
+        LOG.info("Scanning complete.");
     }
 
     /**

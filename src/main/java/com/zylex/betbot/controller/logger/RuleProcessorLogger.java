@@ -34,7 +34,7 @@ public class RuleProcessorLogger extends ConsoleLogger{
                 .sorted(Comparator.comparing(Rule::getId))
                 .collect(Collectors.toList());
         for (Rule rule : ruleList) {
-            StringBuilder output = new StringBuilder(String.format("%9s:", rule));
+            StringBuilder output = new StringBuilder(String.format("%5s:", rule));
             List<Game> ruleGames = eligibleGames.stream()
                     .filter(game -> game.getRules().contains(rule))
                     .filter(game -> game.getBets().isEmpty() ||

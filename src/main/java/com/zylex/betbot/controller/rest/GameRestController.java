@@ -1,8 +1,7 @@
-package com.zylex.betbot.service.rest;
+package com.zylex.betbot.controller.rest;
 
 import com.zylex.betbot.model.game.Game;
 import com.zylex.betbot.service.bet.BetProcessor;
-import com.zylex.betbot.service.parsing.ParseProcessor;
 import com.zylex.betbot.service.repository.GameRepository;
 import com.zylex.betbot.service.rule.RuleProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,19 +21,15 @@ public class GameRestController {
 
     private GameRepository gameRepository;
 
-    private ParseProcessor parseProcessor;
-
     private RuleProcessor ruleProcessor;
 
     private BetProcessor betProcessor;
 
     @Autowired
     public GameRestController(GameRepository gameRepository,
-                              ParseProcessor parseProcessor,
                               RuleProcessor ruleProcessor,
                               BetProcessor betProcessor) {
         this.gameRepository = gameRepository;
-        this.parseProcessor = parseProcessor;
         this.ruleProcessor = ruleProcessor;
         this.betProcessor = betProcessor;
     }

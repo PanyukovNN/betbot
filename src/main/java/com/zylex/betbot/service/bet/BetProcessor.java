@@ -235,8 +235,12 @@ public class BetProcessor {
         if (gameCoefficients.isEmpty()) {
             return false;
         }
-        gameCoefficients.get(betCoefficient.INDEX).click();
-        return true;
+        try {
+            gameCoefficients.get(betCoefficient.INDEX).click();
+            return true;
+        } catch (ElementClickInterceptedException e) {
+            return false;
+        }
     }
 
     private List<WebElement> fetchGameCoefficients(Game game) {

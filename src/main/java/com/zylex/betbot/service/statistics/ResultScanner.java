@@ -63,6 +63,7 @@ public class ResultScanner {
             logger.startLogMessage(LogType.GAMES, noResultGames.size());
             processResults(noResultGames, startDate);
         }
+        logger.endLogMessage();
     }
 
     private List<Game> findNoResultGames(LocalDate startDate) {

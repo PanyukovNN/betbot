@@ -41,7 +41,7 @@ public class Game implements Serializable {
             joinColumns = { @JoinColumn(name = "game_id") },
             inverseJoinColumns = { @JoinColumn(name = "rule_id") }
     )
-    private List<Rule> rules = new ArrayList<>();
+    private Set<Rule> rules = new LinkedHashSet<>();
 
     @Column(name = "result")
     private String result;
@@ -108,11 +108,11 @@ public class Game implements Serializable {
         this.secondTeam = secondTeam;
     }
 
-    public List<Rule> getRules() {
+    public Set<Rule> getRules() {
         return rules;
     }
 
-    public void setRules(List<Rule> rules) {
+    public void setRules(Set<Rule> rules) {
         this.rules = rules;
     }
 

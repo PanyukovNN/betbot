@@ -23,9 +23,9 @@ public class BetBotApplication {
     public static void main(String[] args) {
         ConsoleLogger.startMessage();
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BetBotApplication.class)) {
-//            context.getBean(RuleProcessor.class).process();
-//            context.getBean(BetProcessor.class).process();
-//            context.getBean(ResultScanner.class).scan(LocalDate.now().minusDays(3));
+            context.getBean(RuleProcessor.class).process();
+            context.getBean(BetProcessor.class).process();
+            context.getBean(ResultScanner.class).scan(LocalDate.now().minusDays(3));
             context.getBean(StatisticsCollector.class).analyse(null, null);
         } finally {
             ConsoleLogger.endMessage();
