@@ -30,7 +30,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
             LOG.info("Finding leagues started.");
         } else if (type == LogType.LEAGUES) {
             totalLeagues = arg;
-            writeInLine(String.format("\nProcessing leagues: 0/%d (0.0%%)", arg));
+            writeInLine(String.format("\nParsing leagues: 0/%d (0.0%%)", arg));
         }
     }
 
@@ -47,7 +47,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
      * Log count of processed games.
      */
     public static synchronized void logLeagueGame() {
-        String output = String.format("Processing leagues: %d/%d (%s%%)",
+        String output = String.format("Parsing leagues: %d/%d (%s%%)",
                 processedLeagues.incrementAndGet(),
                 totalLeagues,
                 new DecimalFormat("#0.0").format(((double) processedLeagues.get() / (double) totalLeagues) * 100).replace(",", "."));

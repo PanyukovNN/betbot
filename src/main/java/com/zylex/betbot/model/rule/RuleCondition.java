@@ -20,6 +20,9 @@ public class RuleCondition {
     @Column(name = "value")
     private double value;
 
+    @Column(name = "enabled")
+    private boolean enabled;
+
     public RuleCondition() {
     }
 
@@ -59,6 +62,14 @@ public class RuleCondition {
 
     public void setValue(double value) {
         this.value = value;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override

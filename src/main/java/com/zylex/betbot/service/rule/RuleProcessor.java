@@ -9,12 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.zylex.betbot.BetBotApplication.betStartTime;
+import static com.zylex.betbot.BetBotApplication.botStartTime;
 
 /**
  * Filter games by rules.
@@ -49,7 +49,7 @@ public class RuleProcessor {
     @Transactional
     public void process() {
         List<Game> games = parseProcessor.process();
-        List<Rule> rules = ruleRepository.getActivated();
+        List<Rule> rules = ruleRepository.getAll();
         for (Rule rule : rules) {
             List<Game> eligibleGames = ruleFilter.filter(games, rule);
             eligibleGames.sort(Comparator.comparing(Game::getDateTime));
@@ -59,10 +59,10 @@ public class RuleProcessor {
     }
 
     public List<Game> findAppropriateGames() {
-        List<Rule> rules = ruleRepository.getAll();
+        List<Rule> rules = ruleRepository.getActivated();
         List<Game> ruleGames = new ArrayList<>();
         for (Rule rule : rules) {
-            ruleGames.addAll(gameRepository.getSinceDateTime(LocalDateTime.of(LocalDate.now().minusDays(1), betStartTime)).stream()
+            ruleGames.addAll(gameRepository.getSinceDateTime(LocalDateTime.of(botStartTime.toLocalDate().minusDays(1), betStartTime)).stream()
                     .filter(game -> game.getRules().contains(rule))
                     .sorted(Comparator.comparing(Game::getDateTime))
                     .collect(Collectors.toList()));

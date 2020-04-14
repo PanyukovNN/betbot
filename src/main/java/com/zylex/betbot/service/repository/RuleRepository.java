@@ -51,4 +51,16 @@ public class RuleRepository {
             return Collections.emptyList();
         }
     }
+
+    @Transactional
+    public Rule getByName(String ruleName) {
+        Session session = sessionFactory.getCurrentSession();
+        Query query = session.createQuery("FROM Rule WHERE name = :ruleName");
+        query.setParameter("ruleName", ruleName);
+        try {
+            return (Rule) query.getSingleResult();
+        } catch (NoResultException e) {
+            return new Rule();
+        }
+    }
 }

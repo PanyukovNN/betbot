@@ -21,5 +21,6 @@ CREATE TABLE IF NOT EXISTS rule_condition (
     coefficient VARCHAR(50),
     operator    VARCHAR(10),
     value       FLOAT,
+    enabled     boolean,
     FOREIGN KEY (rule_id) REFERENCES rule(id)
 );

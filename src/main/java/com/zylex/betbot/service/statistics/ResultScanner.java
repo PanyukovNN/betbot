@@ -69,8 +69,7 @@ public class ResultScanner {
         return gameRepository
                 .getSinceDateTime(LocalDateTime.of(startDate, LocalTime.MIN)).stream()
                 .filter(game -> botStartTime.isAfter(game.getDateTime().plusHours(2)))
-                .filter(game -> game.getResult().equals(GameResult.NO_RESULT.toString())
-                        || game.getResult().equals(GameResult.NOT_FOUND.toString()))
+                .filter(game -> game.getResult().equals(GameResult.NO_RESULT.toString()))
                 .sorted(Comparator.comparing(Game::getDateTime))
                 .collect(Collectors.toList());
     }
@@ -99,8 +98,10 @@ public class ResultScanner {
                 }
             }
             for (Game game : dayGames) {
-                game.setResult(GameResult.NOT_FOUND.toString());
-                gameRepository.update(game);
+                if (game.getDateTime().isBefore(botStartTime.minusDays(1))) {
+                    game.setResult(GameResult.NOT_FOUND.toString());
+                    gameRepository.update(game);
+                }
             }
         }
     }

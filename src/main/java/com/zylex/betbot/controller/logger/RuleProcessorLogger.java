@@ -49,7 +49,7 @@ public class RuleProcessorLogger extends ConsoleLogger{
                         .filter(game -> game.getDateTime().isAfter(LocalDateTime.now()))
                         .filter(game -> game.getBets().isEmpty())
                         .count();
-                output.append(String.format("%7s", dayRuleGames.size() + "(+" + noBetGamesCount + ")"));
+                output.append(String.format("%8s", dayRuleGames.size() + "(+" + noBetGamesCount + ")"));
             }
             writeInLine("\n" + output.toString());
             LOG.info(output.toString());

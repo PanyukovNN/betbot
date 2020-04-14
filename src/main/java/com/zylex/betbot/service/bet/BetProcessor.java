@@ -103,11 +103,7 @@ public class BetProcessor {
         for (Game game : ruleGames) {
             if (notAppropriateTime(game)) continue;
             if (game.getBets().stream().anyMatch(bet -> rules.contains(bet.getRule()))) continue;
-            for (Rule rule : rules) {
-                if (game.getRules().contains(rule)) {
-                    betGames.add(game);
-                }
-            }
+            betGames.add(game);
         }
         return betGames;
     }

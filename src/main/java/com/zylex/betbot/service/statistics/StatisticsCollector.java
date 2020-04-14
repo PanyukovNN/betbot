@@ -1,8 +1,10 @@
 package com.zylex.betbot.service.statistics;
 
 import com.zylex.betbot.controller.logger.StatisticsConsoleLogger;
+import com.zylex.betbot.model.bet.BetCoefficient;
 import com.zylex.betbot.model.game.Game;
 import com.zylex.betbot.model.game.GameResult;
+import com.zylex.betbot.model.rule.Rule;
 import com.zylex.betbot.service.repository.GameRepository;
 import com.zylex.betbot.service.repository.RuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -41,109 +42,48 @@ public class StatisticsCollector {
      */
     @Transactional
     public void analyse(LocalDate startDate, LocalDate endDate) {
-//        logger.startLogMessage(startDate, endDate);
-//        List<Rule> rules = ruleRepository.getAll();
-//        for (Rule rule : rules) {
-//            List<Game> games = gameDao.getByRuleNumber(ruleNumber);
-//            List<Game> gamesByDatePeriod = filterByDatePeriod(startDate, endDate, games);
-//            List<Game> betMadeGamesByLeagues = splitBetMadeGamesByLeagues(gamesByDatePeriod);
-//            computeStatistics(ruleNumber, gamesByDatePeriod, betMadeGamesByLeagues);
-//        }
-//
-//     Game printer
-        System.out.println();
-        List<Game> games = gameRepository.getAll()
-                .stream()
-                .filter(game -> !game.getResult().equals(GameResult.NO_RESULT.toString()))
-                .filter(game -> game.getRules().stream().anyMatch(rule -> rule.getName().equals("FW_SW")))
-                .sorted(Comparator.comparing(Game::getResult,
-                        Comparator.comparing(GameResult::valueOf))
-                        .thenComparing(game -> game.getGameInfo().getFirstWin())
-                )
-                .collect(Collectors.toList());
-//        games.forEach(System.out::println);
-
-        for (GameResult gameResult : GameResult.values()) {
-            if (gameResult == GameResult.NO_RESULT || gameResult == GameResult.NOT_FOUND) continue;
-            System.out.println(gameResult + ": " +
-                    games.stream()
-                    .filter(game -> game.getResult().equals(gameResult.toString()))
-                    .count());
+        logger.startLogMessage(startDate, endDate);
+        List<Rule> rules = new ArrayList<>();
+        rules.add(ruleRepository.getByName("X_TWO"));
+        rules.add(ruleRepository.getByName("FW_SW"));
+        for (Rule rule : rules) {
+            List<Game> ruleGames = findRuleGames(rule);
+            Map<GameResult, List<Game>> resultGames = findResultGames(ruleGames);
+            Map<BetCoefficient, Double> betProfit = findBetProfit(ruleGames.size(), resultGames);
+            logger.writeRuleStatistics(rule, resultGames, betProfit);
         }
-
-//        for (GameResult gameResult : GameResult.values()) {
-//            if (gameResult.equals(GameResult.NO_RESULT)
-//                || gameResult.equals(GameResult.SECOND_WIN)) continue;
-//
-//            List<Game> resultGames =  games.stream()
-//                    .filter(game -> game.getResult().equals(gameResult.toString()))
-//                    .collect(Collectors.toList());
-//            if (gameResult.equals(GameResult.TIE)) {
-//                resultGames.addAll(
-//                        games.stream()
-//                                .filter(game -> game.getResult().equals(GameResult.SECOND_WIN.toString()))
-//                                .collect(Collectors.toList())
-//                );
-//            }
-//
-//            double avgFw = resultGames.stream()
-//                    .mapToDouble(game -> game.getGameInfo().getFirstWin())
-//                    .average()
-//                    .orElse(Double.NaN);
-//            double avgTie = resultGames.stream()
-//                    .mapToDouble(game -> game.getGameInfo().getTie())
-//                    .average()
-//                    .orElse(Double.NaN);
-//            double avgSw = resultGames.stream()
-//                    .mapToDouble(game -> game.getGameInfo().getSecondWin())
-//                    .average()
-//                    .orElse(Double.NaN);
-//            double avgOneX = resultGames.stream()
-//                    .mapToDouble(game -> game.getGameInfo().getOneX())
-//                    .average()
-//                    .orElse(Double.NaN);
-//            double avgXTwo = resultGames.stream()
-//                    .mapToDouble(game -> game.getGameInfo().getXTwo())
-//                    .average()
-//                    .orElse(Double.NaN);
-//
-//            System.out.println(
-//                    String.format("%s: %.2f|%.2f|%.2f %.2f|%.2f", gameResult, avgFw, avgTie, avgSw, avgOneX, avgXTwo)
-//            );
-//        }
     }
 
-//    private List<Game> splitBetMadeGamesByLeagues(List<Game> betMadeGames) {
-//        List<String> selectedLeagues = leagueDao.getAllSelectedLeagues();
-//        return betMadeGames.stream()
-//                .filter(game -> selectedLeagues.contains(game.getLeagueLink()))
-//                .collect(Collectors.toList());
-//    }
-//
-//    private List<Game> filterByDatePeriod(LocalDate startDate, LocalDate endDate, List<Game> betMadeGames) {
-//        betMadeGames = betMadeGames.stream()
-//                .filter(game -> {
-//                    LocalDate gameDate = game.getDateTime().toLocalDate();
-//                    return (!gameDate.isBefore(startDate) && !gameDate.isAfter(endDate));
-//                }).collect(Collectors.toList());
-//        return betMadeGames;
-//    }
-//
-//    private void computeStatistics(RuleNumber ruleNumber, List<Game> games1, List<Game> games2) {
-//        int firstWins1 = countResult(games1, GameResult.FIRST_WIN);
-//        int ties1 = countResult(games1, GameResult.TIE);
-//        int secondWins1 = countResult(games1, GameResult.SECOND_WIN);
-//        int noResults1 = countResult(games1, GameResult.NO_RESULT);
-//        int firstWins2 = countResult(games2, GameResult.FIRST_WIN);
-//        int ties2 = countResult(games2, GameResult.TIE);
-//        int secondWins2 = countResult(games2, GameResult.SECOND_WIN);
-//        int noResults2 = countResult(games2, GameResult.NO_RESULT);
-//        logger.logStatistics(ruleNumber,
-//                games1.size(), firstWins1, ties1, secondWins1, noResults1,
-//                games2.size(), firstWins2, ties2, secondWins2, noResults2);
-//    }
-//
-//    private int countResult(List<Game> games1, GameResult firstWin) {
-//        return (int) games1.stream().filter(game -> game.getGameResult().equals(firstWin)).count();
-//    }
+    private Map<GameResult, List<Game>> findResultGames(List<Game> ruleGames) {
+        Map<GameResult, List<Game>> resultGames = new HashMap<>();
+        for (GameResult gameResult : GameResult.values()) {
+            resultGames.put(gameResult, ruleGames.stream()
+                    .filter(game -> game.getResult().equals(gameResult.toString()))
+                    .collect(Collectors.toList()));
+        }
+        return resultGames;
+    }
+
+    private List<Game> findRuleGames(Rule rule) {
+        return gameRepository.getAll()
+                        .stream()
+                        .filter(game -> !game.getResult().equals(GameResult.NO_RESULT.toString())
+                                && !game.getResult().equals(GameResult.NOT_FOUND.toString()))
+                        .filter(game -> game.getRules().contains(rule))
+                        .collect(Collectors.toList());
+    }
+
+    private Map<BetCoefficient, Double> findBetProfit(int totalGamesNumber, Map<GameResult, List<Game>> resultGames) {
+        Map<BetCoefficient, Double> betProfit = new LinkedHashMap<>();
+        betProfit.put(BetCoefficient.FIRST_WIN, resultGames.get(GameResult.FIRST_WIN).stream().mapToDouble(game -> game.getGameInfo().getFirstWin()).sum() - totalGamesNumber);
+        betProfit.put(BetCoefficient.TIE, resultGames.get(GameResult.TIE).stream().mapToDouble(game -> game.getGameInfo().getTie()).sum() - totalGamesNumber);
+        betProfit.put(BetCoefficient.SECOND_WIN, resultGames.get(GameResult.SECOND_WIN).stream().mapToDouble(game -> game.getGameInfo().getSecondWin()).sum() - totalGamesNumber);
+        betProfit.put(BetCoefficient.ONE_X, resultGames.get(GameResult.FIRST_WIN).stream().mapToDouble(game -> game.getGameInfo().getOneX()).sum()
+                + resultGames.get(GameResult.TIE).stream().mapToDouble(game -> game.getGameInfo().getOneX()).sum()
+                - totalGamesNumber);
+        betProfit.put(BetCoefficient.X_TWO, resultGames.get(GameResult.TIE).stream().mapToDouble(game -> game.getGameInfo().getXTwo()).sum()
+                + resultGames.get(GameResult.SECOND_WIN).stream().mapToDouble(game -> game.getGameInfo().getXTwo()).sum()
+                - totalGamesNumber);
+        return betProfit;
+    }
 }

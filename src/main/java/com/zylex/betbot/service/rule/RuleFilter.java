@@ -46,6 +46,7 @@ public class RuleFilter {
             }
             boolean appropriate = true;
             for (RuleCondition ruleCondition : rule.getRuleConditions()) {
+                if (!ruleCondition.isEnabled()) continue;
                 if (!isAppropriate(game, ruleCondition)) {
                     appropriate = false;
                     break;
