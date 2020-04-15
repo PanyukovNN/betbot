@@ -87,6 +87,7 @@ public class BetConsoleLogger extends ConsoleLogger{
      * Log no money situation.
      */
     public void noMoney() {
+        writeLineSeparator();
         String output = "Money is over.";
         writeInLine("\n" + output);
         LOG.info(output);

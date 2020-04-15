@@ -24,6 +24,7 @@ public class BetRepository {
         Long id = (Long) session.save(bet);
         bet.setId(id);
         session.getTransaction().commit();
+        session.beginTransaction();
         return bet;
     }
 }

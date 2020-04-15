@@ -55,20 +55,24 @@ public class RuleProcessor {
             eligibleGames.sort(Comparator.comparing(Game::getDateTime));
             eligibleGames.forEach(gameRepository::save);
         }
-        logger.writeEligibleGamesNumber(findAppropriateGames());
+        List<Game> gamesSinceToday = gameRepository.getSinceDateTime(LocalDateTime.of(botStartTime.toLocalDate().minusDays(1), betStartTime));
+        logger.writeEligibleGamesNumber(filterGamesByRules(gamesSinceToday, ruleRepository.getActivated()));
     }
 
-    public List<Game> findAppropriateGames() {
-        List<Rule> rules = ruleRepository.getActivated();
-        List<Game> games = new ArrayList<>();
+    public List<Game> filterGamesByRules(List<Game> games, List<Rule> rules) {
+        List<Game> filteredGames = new ArrayList<>();
         for (Rule rule : rules) {
-            List<Game> ruleGames = gameRepository.getSinceDateTime(LocalDateTime.of(botStartTime.toLocalDate().minusDays(1), betStartTime)).stream()
-                    .filter(game -> game.getRules().contains(rule))
-                    .collect(Collectors.toList());
-            games.addAll(ruleFilter.filter(ruleGames, rule).stream()
-                    .sorted(Comparator.comparing(Game::getDateTime))
-                    .collect(Collectors.toList()));
+            filteredGames.addAll(filterGamesByRule(games, rule));
         }
-        return games;
+        return filteredGames;
+    }
+
+    public List<Game> filterGamesByRule(List<Game> games, Rule rule) {
+        List<Game> ruleGames = games.stream()
+                .filter(game -> game.getRules().contains(rule))
+                .collect(Collectors.toList());
+        return ruleFilter.filter(ruleGames, rule).stream()
+                .sorted(Comparator.comparing(Game::getDateTime))
+                .collect(Collectors.toList());
     }
 }

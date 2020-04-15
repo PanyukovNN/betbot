@@ -98,7 +98,8 @@ public class BetProcessor {
     }
 
     private Set<Game> findBetGames(List<Rule> rules) {
-        List<Game> ruleGames = ruleProcessor.findAppropriateGames();
+        List<Game> gamesByTime = gameRepository.getSinceDateTime(LocalDateTime.of(botStartTime.toLocalDate().minusDays(1), betStartTime));
+        List<Game> ruleGames = ruleProcessor.filterGamesByRules(gamesByTime, rules);
         Set<Game> betGames = new LinkedHashSet<>();
         for (Game game : ruleGames) {
             if (notAppropriateTime(game)) continue;

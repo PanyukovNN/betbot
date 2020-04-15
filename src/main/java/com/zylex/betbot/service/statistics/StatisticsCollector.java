@@ -7,6 +7,7 @@ import com.zylex.betbot.model.game.GameResult;
 import com.zylex.betbot.model.rule.Rule;
 import com.zylex.betbot.service.repository.GameRepository;
 import com.zylex.betbot.service.repository.RuleRepository;
+import com.zylex.betbot.service.rule.RuleProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +28,15 @@ public class StatisticsCollector {
 
     private RuleRepository ruleRepository;
 
+    private RuleProcessor ruleProcessor;
+
     @Autowired
     public StatisticsCollector(GameRepository gameRepository,
-                               RuleRepository ruleRepository) {
+                               RuleRepository ruleRepository,
+                               RuleProcessor ruleProcessor) {
         this.gameRepository = gameRepository;
         this.ruleRepository = ruleRepository;
+        this.ruleProcessor = ruleProcessor;
     }
 
     /**
@@ -54,6 +59,16 @@ public class StatisticsCollector {
         }
     }
 
+    private List<Game> findRuleGames(Rule rule) {
+        List<Game> games = gameRepository.getAll()
+                .stream()
+                .filter(game -> !game.getResult().equals(GameResult.NO_RESULT.toString())
+                        && !game.getResult().equals(GameResult.NOT_FOUND.toString()))
+                .filter(game -> game.getRules().contains(rule))
+                .collect(Collectors.toList());
+        return ruleProcessor.filterGamesByRule(games, rule);
+    }
+
     private Map<GameResult, List<Game>> findResultGames(List<Game> ruleGames) {
         Map<GameResult, List<Game>> resultGames = new HashMap<>();
         for (GameResult gameResult : GameResult.values()) {
@@ -62,15 +77,6 @@ public class StatisticsCollector {
                     .collect(Collectors.toList()));
         }
         return resultGames;
-    }
-
-    private List<Game> findRuleGames(Rule rule) {
-        return gameRepository.getAll()
-                        .stream()
-                        .filter(game -> !game.getResult().equals(GameResult.NO_RESULT.toString())
-                                && !game.getResult().equals(GameResult.NOT_FOUND.toString()))
-                        .filter(game -> game.getRules().contains(rule))
-                        .collect(Collectors.toList());
     }
 
     private Map<BetCoefficient, Double> findBetProfit(int totalGamesNumber, Map<GameResult, List<Game>> resultGames) {

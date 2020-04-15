@@ -25,7 +25,7 @@ public class Rule {
     @Column(name = "bet_coefficient")
     private String betCoefficient;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "rule_id")
     private List<RuleCondition> ruleConditions = new ArrayList<>();
 

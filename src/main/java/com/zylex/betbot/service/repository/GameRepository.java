@@ -93,6 +93,7 @@ public class GameRepository {
         Session session = sessionFactory.getCurrentSession();
         session.update(game);
         session.getTransaction().commit();
+        session.beginTransaction();
     }
 
     @SuppressWarnings("unchecked")
