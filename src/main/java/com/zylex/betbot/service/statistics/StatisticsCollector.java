@@ -79,17 +79,17 @@ public class StatisticsCollector {
         return resultGames;
     }
 
-    private Map<BetCoefficient, Double> findBetProfit(int totalGamesNumber, Map<GameResult, List<Game>> resultGames) {
+    private Map<BetCoefficient, Double> findBetProfit(int ruleGamesNumber, Map<GameResult, List<Game>> resultGames) {
         Map<BetCoefficient, Double> betProfit = new LinkedHashMap<>();
-        betProfit.put(BetCoefficient.FIRST_WIN, resultGames.get(GameResult.FIRST_WIN).stream().mapToDouble(game -> game.getGameInfo().getFirstWin()).sum() - totalGamesNumber);
-        betProfit.put(BetCoefficient.TIE, resultGames.get(GameResult.TIE).stream().mapToDouble(game -> game.getGameInfo().getTie()).sum() - totalGamesNumber);
-        betProfit.put(BetCoefficient.SECOND_WIN, resultGames.get(GameResult.SECOND_WIN).stream().mapToDouble(game -> game.getGameInfo().getSecondWin()).sum() - totalGamesNumber);
+        betProfit.put(BetCoefficient.FIRST_WIN, resultGames.get(GameResult.FIRST_WIN).stream().mapToDouble(game -> game.getGameInfo().getFirstWin()).sum() - ruleGamesNumber);
+        betProfit.put(BetCoefficient.TIE, resultGames.get(GameResult.TIE).stream().mapToDouble(game -> game.getGameInfo().getTie()).sum() - ruleGamesNumber);
+        betProfit.put(BetCoefficient.SECOND_WIN, resultGames.get(GameResult.SECOND_WIN).stream().mapToDouble(game -> game.getGameInfo().getSecondWin()).sum() - ruleGamesNumber);
         betProfit.put(BetCoefficient.ONE_X, resultGames.get(GameResult.FIRST_WIN).stream().mapToDouble(game -> game.getGameInfo().getOneX()).sum()
                 + resultGames.get(GameResult.TIE).stream().mapToDouble(game -> game.getGameInfo().getOneX()).sum()
-                - totalGamesNumber);
+                - ruleGamesNumber);
         betProfit.put(BetCoefficient.X_TWO, resultGames.get(GameResult.TIE).stream().mapToDouble(game -> game.getGameInfo().getXTwo()).sum()
                 + resultGames.get(GameResult.SECOND_WIN).stream().mapToDouble(game -> game.getGameInfo().getXTwo()).sum()
-                - totalGamesNumber);
+                - ruleGamesNumber);
         return betProfit;
     }
 }

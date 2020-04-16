@@ -11,7 +11,5 @@ public enum LogType {
     BET,
     LOG_IN,
     VERIFY,
-    BET_NOT_FOUND,
-    BET_ERROR,
     OK
 }

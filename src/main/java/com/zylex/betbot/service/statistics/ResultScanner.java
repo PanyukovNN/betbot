@@ -24,7 +24,7 @@ import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.zylex.betbot.BetBotApplication.botStartTime;
+import static com.zylex.betbot.BetBotApplication.BOT_START_TIME;
 
 /**
  * Scans games results since specified date.
@@ -69,7 +69,7 @@ public class ResultScanner {
     private List<Game> findNoResultGames(LocalDate startDate) {
         return gameRepository
                 .getSinceDateTime(LocalDateTime.of(startDate, LocalTime.MIN)).stream()
-                .filter(game -> botStartTime.isAfter(game.getDateTime().plusHours(2)))
+                .filter(game -> BOT_START_TIME.isAfter(game.getDateTime().plusHours(2)))
                 .filter(game -> game.getResult().equals(GameResult.NO_RESULT.toString()))
                 .sorted(Comparator.comparing(Game::getDateTime))
                 .collect(Collectors.toList());
@@ -99,7 +99,7 @@ public class ResultScanner {
                 }
             }
             for (Game game : dayGames) {
-                if (game.getDateTime().isBefore(botStartTime.minusDays(1))) {
+                if (game.getDateTime().isBefore(BOT_START_TIME.minusDays(1))) {
                     game.setResult(GameResult.NOT_FOUND.toString());
                     gameRepository.update(game);
                 }

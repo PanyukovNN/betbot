@@ -16,9 +16,9 @@ import java.time.LocalTime;
 @ComponentScan
 public class BetBotApplication {
 
-    public static final LocalDateTime botStartTime = LocalDateTime.now();
+    public static final LocalDateTime BOT_START_TIME = LocalDateTime.now();
 
-    public static final LocalTime betStartTime = LocalTime.of(22, 0);
+    public static final LocalTime BET_START_TIME = LocalTime.of(22, 0);
 
     public static final boolean HEADLESS_DRIVER = false;
 
@@ -26,7 +26,7 @@ public class BetBotApplication {
         ConsoleLogger.startMessage();
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BetBotApplication.class)) {
             context.getBean(RuleProcessor.class).process();
-            context.getBean(BetProcessor.class).process();
+//            context.getBean(BetProcessor.class).process();
             context.getBean(ResultScanner.class).scan(LocalDate.now().minusDays(3));
             context.getBean(StatisticsCollector.class).analyse(null, null);
         } finally {

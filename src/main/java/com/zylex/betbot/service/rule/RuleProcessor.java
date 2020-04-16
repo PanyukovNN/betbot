@@ -9,12 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.zylex.betbot.BetBotApplication.betStartTime;
-import static com.zylex.betbot.BetBotApplication.botStartTime;
 
 /**
  * Filter games by rules.
@@ -55,8 +51,9 @@ public class RuleProcessor {
             eligibleGames.sort(Comparator.comparing(Game::getDateTime));
             eligibleGames.forEach(gameRepository::save);
         }
-        List<Game> gamesSinceToday = gameRepository.getSinceDateTime(LocalDateTime.of(botStartTime.toLocalDate().minusDays(1), betStartTime));
-        logger.writeEligibleGamesNumber(filterGamesByRules(gamesSinceToday, ruleRepository.getActivated()));
+        List<Rule> activatedRules = ruleRepository.getActivated();
+        logger.writeEligibleGamesNumber(
+                filterGamesByRules(gameRepository.getByBetStartTime(), activatedRules), activatedRules);
     }
 
     public List<Game> filterGamesByRules(List<Game> games, List<Rule> rules) {

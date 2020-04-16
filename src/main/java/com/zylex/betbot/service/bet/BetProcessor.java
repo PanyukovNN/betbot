@@ -24,8 +24,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.zylex.betbot.BetBotApplication.betStartTime;
-import static com.zylex.betbot.BetBotApplication.botStartTime;
+import static com.zylex.betbot.BetBotApplication.BET_START_TIME;
+import static com.zylex.betbot.BetBotApplication.BOT_START_TIME;
 
 /**
  * Making bets.
@@ -98,8 +98,7 @@ public class BetProcessor {
     }
 
     private Set<Game> findBetGames(List<Rule> rules) {
-        List<Game> gamesByTime = gameRepository.getSinceDateTime(LocalDateTime.of(botStartTime.toLocalDate().minusDays(1), betStartTime));
-        List<Game> ruleGames = ruleProcessor.filterGamesByRules(gamesByTime, rules);
+        List<Game> ruleGames = ruleProcessor.filterGamesByRules(gameRepository.getByBetStartTime(), rules);
         Set<Game> betGames = new LinkedHashSet<>();
         for (Game game : ruleGames) {
             if (notAppropriateTime(game)) continue;
@@ -110,8 +109,8 @@ public class BetProcessor {
     }
 
     private boolean notAppropriateTime(Game game) {
-        return botStartTime.isBefore(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), betStartTime))
-                || botStartTime.isAfter(game.getDateTime());
+        return BOT_START_TIME.isBefore(LocalDateTime.of(game.getDateTime().toLocalDate().minusDays(1), BET_START_TIME))
+                || BOT_START_TIME.isAfter(game.getDateTime());
     }
 
     private void openSite() throws IOException {

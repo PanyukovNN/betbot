@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.zylex.betbot.BetBotApplication.BET_START_TIME;
+import static com.zylex.betbot.BetBotApplication.BOT_START_TIME;
+
 @Repository
 public class GameRepository {
 
@@ -87,6 +90,11 @@ public class GameRepository {
         } catch (NoResultException e) {
             return new ArrayList<>();
         }
+    }
+
+    @Transactional
+    public List<Game> getByBetStartTime() {
+        return getSinceDateTime(LocalDateTime.of(BOT_START_TIME.toLocalDate().minusDays(1), BET_START_TIME));
     }
 
     public void update(Game game) {

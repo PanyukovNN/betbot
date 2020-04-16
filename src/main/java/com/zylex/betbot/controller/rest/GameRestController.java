@@ -16,8 +16,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.zylex.betbot.BetBotApplication.betStartTime;
-import static com.zylex.betbot.BetBotApplication.botStartTime;
+import static com.zylex.betbot.BetBotApplication.BET_START_TIME;
+import static com.zylex.betbot.BetBotApplication.BOT_START_TIME;
 
 @RestController
 @RequestMapping("game")
@@ -72,7 +72,7 @@ public class GameRestController {
     public ResponseEntity<List<Game>> getParsedGames() {
         try {
             ruleProcessor.process();
-            List<Game> games = gameRepository.getSinceDateTime(LocalDateTime.of(botStartTime.toLocalDate().minusDays(1), betStartTime));
+            List<Game> games = gameRepository.getSinceDateTime(LocalDateTime.of(BOT_START_TIME.toLocalDate().minusDays(1), BET_START_TIME));
             return new ResponseEntity<>(ruleProcessor.filterGamesByRules(games, ruleRepository.getActivated()), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

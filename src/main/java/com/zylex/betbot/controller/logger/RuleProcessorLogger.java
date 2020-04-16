@@ -23,24 +23,18 @@ public class RuleProcessorLogger extends ConsoleLogger{
     /**
      * Log number of eligible games for every rule.
      * @param eligibleGames - list of eligible games.
+     * @param activatedRules - list of activated rules.
      */
-    public void writeEligibleGamesNumber(List<Game> eligibleGames) {
+    public void writeEligibleGamesNumber(List<Game> eligibleGames, List<Rule> activatedRules) {
         if (eligibleGames.isEmpty()) {
+            writeInLine("\n" + "No eligible games for activated ruled.");
+            LOG.info("No eligible games for activated ruled.");
+            writeLineSeparator('~');
             return;
         }
-        Set<Rule> ruleSet = new LinkedHashSet<>();
-        eligibleGames.forEach(game -> ruleSet.addAll(game.getRules()));
-        List<Rule> ruleList = ruleSet.stream()
-                .sorted(Comparator.comparing(Rule::getId))
-                .collect(Collectors.toList());
-        for (Rule rule : ruleList) {
+        for (Rule rule : activatedRules) {
             StringBuilder output = new StringBuilder(String.format("%5s:", rule));
-            List<Game> ruleGames = eligibleGames.stream()
-                    .filter(game -> game.getRules().contains(rule))
-                    .filter(game -> game.getBets().isEmpty() ||
-                            game.getBets().stream().anyMatch(bet -> bet.getRule().equals(rule)
-                            && bet.getStatus().equals(BetStatus.SUCCESS.toString())))
-                    .collect(Collectors.toList());
+            List<Game> ruleGames = findRuleGames(eligibleGames, rule);
             for (Day day : Day.values()) {
                 List<Game> dayRuleGames = ruleGames.stream()
                         .filter(game -> game.getDateTime().toLocalDate().isEqual(LocalDate.now().plusDays(day.INDEX)))
@@ -54,6 +48,15 @@ public class RuleProcessorLogger extends ConsoleLogger{
             writeInLine("\n" + output.toString());
             LOG.info(output.toString());
         }
-        writeLineSeparator();
+        writeLineSeparator('~');
+    }
+
+    private List<Game> findRuleGames(List<Game> eligibleGames, Rule rule) {
+        return eligibleGames.stream()
+                .filter(game -> game.getRules().contains(rule))
+                .filter(game -> game.getBets().isEmpty() ||
+                        game.getBets().stream().anyMatch(bet -> bet.getRule().equals(rule)
+                                && bet.getStatus().equals(BetStatus.SUCCESS.toString())))
+                .collect(Collectors.toList());
     }
 }
