@@ -1,7 +1,6 @@
 package com.zylex.betbot.controller.rest;
 
 import com.zylex.betbot.model.game.Game;
-import com.zylex.betbot.service.bet.BetProcessor;
 import com.zylex.betbot.service.repository.GameRepository;
 import com.zylex.betbot.service.repository.RuleRepository;
 import com.zylex.betbot.service.rule.RuleProcessor;
@@ -16,12 +15,11 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.zylex.betbot.BetBotApplication.BET_START_TIME;
-import static com.zylex.betbot.BetBotApplication.BOT_START_TIME;
-
 @RestController
 @RequestMapping("game")
 public class GameRestController {
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd,MM,yyyy");
 
     private GameRepository gameRepository;
 
@@ -29,24 +27,19 @@ public class GameRestController {
 
     private RuleRepository ruleRepository;
 
-    private BetProcessor betProcessor;
-
     @Autowired
     public GameRestController(GameRepository gameRepository,
                               RuleProcessor ruleProcessor,
-                              RuleRepository ruleRepository,
-                              BetProcessor betProcessor) {
+                              RuleRepository ruleRepository) {
         this.gameRepository = gameRepository;
         this.ruleProcessor = ruleProcessor;
         this.ruleRepository = ruleRepository;
-        this.betProcessor = betProcessor;
     }
 
     @GetMapping
     public ResponseEntity<List<Game>> getGamesByDate(@RequestParam(name = "date") String dateText) {
-            try {
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd,MM,yyyy");
-            LocalDate date = LocalDate.parse(dateText, dateFormatter);
+        try {
+            LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
             List<Game> games = gameRepository.getByDate(date);
             games.sort(Comparator.comparing(Game::getDateTime));
             return new ResponseEntity<>(games, HttpStatus.OK);
@@ -55,11 +48,10 @@ public class GameRestController {
         }
     }
 
-    @GetMapping
-    public ResponseEntity<List<Game>> getGamesSinceDate(@RequestParam(name = "since_date") String dateText) {
+    @GetMapping("/since")
+    public ResponseEntity<List<Game>> getGamesSinceDate(@RequestParam(name = "date") String dateText) {
         try {
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd,MM,yyyy");
-            LocalDate date = LocalDate.parse(dateText, dateFormatter);
+            LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
             List<Game> games = gameRepository.getSinceDateTime(LocalDateTime.of(date, LocalTime.MIN));
             games.sort(Comparator.comparing(Game::getDateTime));
             return new ResponseEntity<>(games, HttpStatus.OK);
@@ -72,20 +64,10 @@ public class GameRestController {
     public ResponseEntity<List<Game>> getParsedGames() {
         try {
             ruleProcessor.process();
-            List<Game> games = gameRepository.getSinceDateTime(LocalDateTime.of(BOT_START_TIME.toLocalDate().minusDays(1), BET_START_TIME));
+            List<Game> games = gameRepository.getByBetStartTime();
             return new ResponseEntity<>(ruleProcessor.filterGamesByRules(games, ruleRepository.getActivated()), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
-//    @GetMapping("/make_bets")
-//    public ResponseEntity<List<Game>> processBets() {
-//        try {
-//            List<Game> betMadeGames = betProcessor.process();
-//            return new ResponseEntity<>(betMadeGames, HttpStatus.OK);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//        }
-//    }
 }

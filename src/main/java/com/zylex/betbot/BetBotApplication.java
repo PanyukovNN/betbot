@@ -5,7 +5,7 @@ import com.zylex.betbot.controller.logger.ConsoleLogger;
 import com.zylex.betbot.service.bet.BetProcessor;
 import com.zylex.betbot.service.rule.RuleProcessor;
 import com.zylex.betbot.service.statistics.ResultScanner;
-import com.zylex.betbot.service.statistics.StatisticsCollector;
+import com.zylex.betbot.service.statistics.StatisticsAnalyser;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -26,9 +26,9 @@ public class BetBotApplication {
         ConsoleLogger.startMessage();
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BetBotApplication.class)) {
             context.getBean(RuleProcessor.class).process();
-//            context.getBean(BetProcessor.class).process();
+            context.getBean(BetProcessor.class).process();
             context.getBean(ResultScanner.class).scan(LocalDate.now().minusDays(3));
-            context.getBean(StatisticsCollector.class).analyse(null, null);
+            context.getBean(StatisticsAnalyser.class).analyse(null, null);
         } finally {
             ConsoleLogger.endMessage();
         }

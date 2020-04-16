@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * Analyses game results statistics.
  */
 @Service
-public class StatisticsCollector {
+public class StatisticsAnalyser {
 
     private StatisticsConsoleLogger logger = new StatisticsConsoleLogger();
 
@@ -31,9 +31,9 @@ public class StatisticsCollector {
     private RuleProcessor ruleProcessor;
 
     @Autowired
-    public StatisticsCollector(GameRepository gameRepository,
-                               RuleRepository ruleRepository,
-                               RuleProcessor ruleProcessor) {
+    public StatisticsAnalyser(GameRepository gameRepository,
+                              RuleRepository ruleRepository,
+                              RuleProcessor ruleProcessor) {
         this.gameRepository = gameRepository;
         this.ruleRepository = ruleRepository;
         this.ruleProcessor = ruleProcessor;
@@ -46,17 +46,21 @@ public class StatisticsCollector {
      * @param endDate - end date of period.
      */
     @Transactional
-    public void analyse(LocalDate startDate, LocalDate endDate) {
+    public Map<Rule, Map<BetCoefficient, Double>> analyse(LocalDate startDate, LocalDate endDate) {
         logger.startLogMessage(startDate, endDate);
         List<Rule> rules = new ArrayList<>();
         rules.add(ruleRepository.getByName("X_TWO"));
         rules.add(ruleRepository.getByName("FW_SW"));
+        //TODO think how to remove
+        Map<Rule, Map<BetCoefficient, Double>> ruleBetProfit = new LinkedHashMap<>();
         for (Rule rule : rules) {
             List<Game> ruleGames = findRuleGames(rule);
             Map<GameResult, List<Game>> resultGames = findResultGames(ruleGames);
             Map<BetCoefficient, Double> betProfit = findBetProfit(ruleGames.size(), resultGames);
+            ruleBetProfit.put(rule, betProfit);
             logger.writeRuleStatistics(rule, resultGames, betProfit);
         }
+        return ruleBetProfit;
     }
 
     private List<Game> findRuleGames(Rule rule) {
