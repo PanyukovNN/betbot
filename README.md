@@ -4,9 +4,11 @@ Bot consists of two modules:
 1. Second module collects matches results and displays statistics. 
 
 #### **Used tecnologies:**
-- Spring
+- Spring framework
+- Spring boot
 - Hibernate
 - PostgreSQL
+- REST API
 - Selenium
 - Multithreading
 - Java 8 Data/Time API, Stream API
@@ -14,38 +16,25 @@ Bot consists of two modules:
 ------------
 
 ###### Output example:
-    Parsing started.
-    Finding leagues: complete
-    Processing leagues: 245/245 (100.0%)
-    Parsing completed in 00 min. 37 sec.
+	BetBot started at 20:59 15.04.2020
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Finding leagues: complete.
+    Parsing leagues: 30/30 (100.0%)
     --------------------------------------------------
-    Total games - 715 (TODAY) 372 (TOMORROW) 
-       RULE_ONE -   3 (TODAY)   4 (TOMORROW) 
-      RULE_TEST -  10 (TODAY)  11 (TOMORROW) 
+    X_TWO:   1(+0)   0(+0)
+    FW_SW:  15(+0)   3(+3)
     --------------------------------------------------
     No appropriate betting games.
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Scanning game results started.
     --------------------------------------------------
-    Bot work completed in 00 min. 39 sec.
-###### 
-	Analyse statistics for period from 2019-12-02 to 2019-12-07
+    Starting web driver: complete.
     --------------------------------------------------
-    No games to scan
+    Scanning games: 1/3 (33.3%)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Analyse statistics for period from null to null
     --------------------------------------------------
-    Games for RULE_ONE:
-      Total -    6 | 6   
-         1W -    0 | 0   
-          X -    1 | 1   
-         W2 -    2 | 2   
-        N/R -    3 | 3   
-    --------------------------------------------------
-    Starting chrome driver: complete
-    --------------------------------------------------
-    Process scanning: complete
-    --------------------------------------------------
-    Games for RULE_TEST:
-      Total -   33 | 19  
-         1W -    8 | 3   
-          X -    8 | 4   
-         W2 -    6 | 5   
-        N/R -   11 | 7   
-    --------------------------------------------------
+    X_TWO:  53| 50| 62   8,75|-26,13|-20,88  -3,99|-19,40
+    FW_SW:  33| 42| 26  -4,27|  5,10|-24,96   1,89| -7,58
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Bot work completed in 00 min. 59 sec.
