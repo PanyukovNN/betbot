@@ -16,9 +16,11 @@ import java.time.LocalTime;
 @ComponentScan
 public class BetBotApplication {
 
-    public static LocalDateTime botStartTime = LocalDateTime.now();
+    public static final LocalDateTime botStartTime = LocalDateTime.now();
 
-    public static LocalTime betStartTime = LocalTime.of(22, 0);
+    public static final LocalTime betStartTime = LocalTime.of(22, 0);
+
+    public static final boolean HEADLESS_DRIVER = false;
 
     public static void main(String[] args) {
         ConsoleLogger.startMessage();

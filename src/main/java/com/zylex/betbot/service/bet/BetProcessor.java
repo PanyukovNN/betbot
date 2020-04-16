@@ -116,7 +116,7 @@ public class BetProcessor {
 
     private void openSite() throws IOException {
         if (driverManager.getDriver() != null) return;
-        driverManager.initiateDriver(false);
+        driverManager.initiateDriver();
         driverManager.getDriver().navigate().to("https://1xstavka.ru/");
         logIn();
     }

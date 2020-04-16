@@ -9,15 +9,17 @@ import org.springframework.stereotype.Service;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.zylex.betbot.BetBotApplication.HEADLESS_DRIVER;
+
 @Service
 public class FirefoxManager extends DriverManager {
 
-    public void initiateDriver(boolean headless) {
+    public void initiateDriver() {
         quitDriver();
         WebDriverManager.firefoxdriver().setup();
         setupLogging();
         FirefoxOptions options = new FirefoxOptions();
-        driver = headless
+        driver = HEADLESS_DRIVER
                 ? new FirefoxDriver(options.addArguments("--headless"))
                 : new FirefoxDriver();
         manageDriver();

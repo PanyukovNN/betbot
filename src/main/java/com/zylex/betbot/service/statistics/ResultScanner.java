@@ -58,7 +58,7 @@ public class ResultScanner {
             logger.noGamesLog();
         } else {
             if (driverManager.getDriver() == null) {
-                driverManager.initiateDriver(false);
+                driverManager.initiateDriver();
             }
             logger.startLogMessage(LogType.GAMES, noResultGames.size());
             processResults(noResultGames, startDate);

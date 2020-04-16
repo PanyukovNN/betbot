@@ -10,16 +10,18 @@ import org.springframework.stereotype.Service;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.zylex.betbot.BetBotApplication.HEADLESS_DRIVER;
+
 @Service
 @Primary
 public class ChromeManager extends DriverManager {
 
-    public void initiateDriver(boolean headless) {
+    public void initiateDriver() {
         quitDriver();
         WebDriverManager.chromedriver().setup();
         setupLogging();
         ChromeOptions options = new ChromeOptions();
-        driver = headless
+        driver = HEADLESS_DRIVER
                 ? new ChromeDriver(options.addArguments("--headless"))
                 : new ChromeDriver();
         manageDriver();

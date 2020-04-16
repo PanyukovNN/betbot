@@ -37,9 +37,8 @@ public abstract class DriverManager {
 
     /**
      * Initiate web driver and return it.
-     * @param headless - flag for headless driver.
      */
-    public abstract void initiateDriver(boolean headless);
+    public abstract void initiateDriver();
 
     protected void manageDriver() {
         driver.manage().window().setSize(new Dimension(1920, 1080));
