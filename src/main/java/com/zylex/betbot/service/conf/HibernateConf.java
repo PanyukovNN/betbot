@@ -11,6 +11,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 @Configuration
@@ -18,14 +20,14 @@ import java.util.Properties;
 @PropertySource(value = "classpath:application.properties")
 public class HibernateConf {
 
-    @Value("${db.url}")
-    private String dbUrl;
-
-    @Value("${db.login}")
-    private String dbLogin;
-
-    @Value("${db.password}")
-    private String dbPassword;
+//    @Value("${heroku.db.url}")
+//    private String dbUrl;
+//
+//    @Value("${heroku.db.login}")
+//    private String dbLogin;
+//
+//    @Value("${heroku.db.password}")
+//    private String dbPassword;
 
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
@@ -40,9 +42,20 @@ public class HibernateConf {
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
+
+        URI dbUri = null;
+        try {
+            dbUri = new URI(System.getenv("DATABASE_URL"));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        String username = dbUri.getUserInfo().split(":")[0];
+        String password = dbUri.getUserInfo().split(":")[1];
+        String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+
         dataSource.setUrl(dbUrl);
-        dataSource.setUsername(dbLogin);
-        dataSource.setPassword(dbPassword);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
         return dataSource;
     }
 

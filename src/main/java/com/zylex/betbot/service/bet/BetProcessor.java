@@ -53,11 +53,11 @@ public class BetProcessor {
 
     private int availableBalance = -1;
 
-    @Value("${site.login}")
-    private String login;
-
-    @Value("${site.password}")
-    private String password;
+//    @Value("${site.login}")
+//    private String login;
+//
+//    @Value("${site.password}")
+//    private String password;
 
     @Autowired
     public BetProcessor(DriverManager driverManager,
@@ -132,8 +132,9 @@ public class BetProcessor {
         logger.startLogMessage(LogType.LOG_IN);
         driverManager.waitElement(By::className, "base_auth_form").click();
         List<WebElement> authenticationForm = driverManager.waitElements(By::className, "c-input-material__input");
-        authenticationForm.get(0).sendKeys(login);
-        authenticationForm.get(1).sendKeys(password);
+
+        authenticationForm.get(0).sendKeys(System.getenv("SITE_LOGIN"));
+        authenticationForm.get(1).sendKeys(System.getenv("SITE_PASSWORD"));
         driverManager.waitElement(By::className, "auth-button").click();
         checkVerify();
         updateBalance();
