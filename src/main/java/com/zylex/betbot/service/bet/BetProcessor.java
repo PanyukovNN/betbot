@@ -14,10 +14,11 @@ import com.zylex.betbot.service.repository.*;
 import com.zylex.betbot.service.rule.RuleProcessor;
 import org.openqa.selenium.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,25 +32,32 @@ import static com.zylex.betbot.BetBotApplication.BOT_START_TIME;
  * Making bets.
  */
 @Service
+@PropertySource(value = "classpath:application.properties")
 public class BetProcessor {
 
-    private BetConsoleLogger logger = new BetConsoleLogger();
+    private final BetConsoleLogger logger = new BetConsoleLogger();
 
-    private DriverManager driverManager;
+    private final DriverManager driverManager;
 
-    private BankRepository bankRepository;
+    private final BankRepository bankRepository;
 
-    private GameRepository gameRepository;
+    private final GameRepository gameRepository;
 
-    private BetRepository betRepository;
+    private final BetRepository betRepository;
 
-    private RuleRepository ruleRepository;
+    private final RuleRepository ruleRepository;
 
-    private RuleProcessor ruleProcessor;
+    private final RuleProcessor ruleProcessor;
 
     private int totalBalance = -1;
 
     private int availableBalance = -1;
+
+    @Value("${site.login}")
+    private String login;
+
+    @Value("${site.password}")
+    private String password;
 
     @Autowired
     public BetProcessor(DriverManager driverManager,
@@ -92,7 +100,7 @@ public class BetProcessor {
             }
             logger.betMade(LogType.OK);
             return processedGames;
-        } catch (ElementNotInteractableException | IOException e) {
+        } catch (ElementNotInteractableException e) {
             throw new BetProcessorException(e.getMessage(), e);
         }
     }
@@ -113,26 +121,22 @@ public class BetProcessor {
                 || BOT_START_TIME.isAfter(game.getDateTime());
     }
 
-    private void openSite() throws IOException {
+    private void openSite() {
         if (driverManager.getDriver() != null) return;
         driverManager.initiateDriver();
         driverManager.getDriver().navigate().to("https://1xstavka.ru/");
         logIn();
     }
 
-    private void logIn() throws IOException {
-        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("BetBotAuth.properties")) {
-            logger.startLogMessage(LogType.LOG_IN);
-            Properties property = new Properties();
-            property.load(inputStream);
-            driverManager.waitElement(By::className, "base_auth_form").click();
-            List<WebElement> authenticationForm = driverManager.waitElements(By::className, "c-input-material__input");
-            authenticationForm.get(0).sendKeys(property.getProperty("BetBot.login"));
-            authenticationForm.get(1).sendKeys(property.getProperty("BetBot.password"));
-            driverManager.waitElement(By::className, "auth-button").click();
-            checkVerify();
-            updateBalance();
-        }
+    private void logIn() {
+        logger.startLogMessage(LogType.LOG_IN);
+        driverManager.waitElement(By::className, "base_auth_form").click();
+        List<WebElement> authenticationForm = driverManager.waitElements(By::className, "c-input-material__input");
+        authenticationForm.get(0).sendKeys(login);
+        authenticationForm.get(1).sendKeys(password);
+        driverManager.waitElement(By::className, "auth-button").click();
+        checkVerify();
+        updateBalance();
     }
 
     private void checkVerify() {

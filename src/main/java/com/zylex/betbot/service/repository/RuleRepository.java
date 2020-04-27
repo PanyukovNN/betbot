@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Repository
 public class RuleRepository {
 
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     @Autowired
     public RuleRepository(SessionFactory sessionFactory) {

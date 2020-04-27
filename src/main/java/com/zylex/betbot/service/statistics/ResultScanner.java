@@ -32,11 +32,11 @@ import static com.zylex.betbot.BetBotApplication.BOT_START_TIME;
 @Service
 public class ResultScanner {
 
-    private ResultScannerConsoleLogger logger = new ResultScannerConsoleLogger();
+    private final ResultScannerConsoleLogger logger = new ResultScannerConsoleLogger();
 
-    private GameRepository gameRepository;
+    private final GameRepository gameRepository;
 
-    private DriverManager driverManager;
+    private final DriverManager driverManager;
 
     @Autowired
     public ResultScanner(GameRepository gameRepository,

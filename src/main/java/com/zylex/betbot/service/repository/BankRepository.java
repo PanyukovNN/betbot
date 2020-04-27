@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class BankRepository {
 
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     @Autowired
     public BankRepository(SessionFactory sessionFactory) {

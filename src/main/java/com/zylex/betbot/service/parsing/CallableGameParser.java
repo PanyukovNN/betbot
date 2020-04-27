@@ -28,7 +28,7 @@ public class CallableGameParser implements Callable<List<Game>> {
 
     private final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-    private String leagueLink;
+    private final String leagueLink;
 
     CallableGameParser(String leagueLink) {
         this.leagueLink = leagueLink;

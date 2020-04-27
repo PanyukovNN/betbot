@@ -11,7 +11,7 @@ import javax.transaction.Transactional;
 @Repository
 public class BetRepository {
 
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     @Autowired
     public BetRepository(SessionFactory sessionFactory) {

@@ -21,11 +21,11 @@ public class GameRestController {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd,MM,yyyy");
 
-    private GameRepository gameRepository;
+    private final GameRepository gameRepository;
 
-    private RuleProcessor ruleProcessor;
+    private final RuleProcessor ruleProcessor;
 
-    private RuleRepository ruleRepository;
+    private final RuleRepository ruleRepository;
 
     @Autowired
     public GameRestController(GameRepository gameRepository,

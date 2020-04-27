@@ -18,7 +18,7 @@ public class BetConsoleLogger extends ConsoleLogger{
 
     private final static Logger LOG = LoggerFactory.getLogger(BetProcessor.class);
 
-    private AtomicInteger gameIndex = new AtomicInteger(0);
+    private final AtomicInteger gameIndex = new AtomicInteger(0);
 
     /**
      * Log start message.
@@ -69,9 +69,9 @@ public class BetConsoleLogger extends ConsoleLogger{
      */
     public void logInLog(LogType type) {
         if (type == LogType.OK) {
-            String output = "Logging in: complete";
+            String output = "Logging in: complete.";
             writeInLine(StringUtils.repeat("\b", output.length()) + output);
-            LOG.info("Logging in complete");
+            LOG.info("Logging in complete.");
         } else if (type == LogType.VERIFY) {
             String output = "Logging in: need to verify";
             writeInLine(StringUtils.repeat("\b", output.length()) + output);

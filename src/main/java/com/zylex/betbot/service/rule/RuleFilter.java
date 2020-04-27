@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 public class RuleFilter {
 
-    private LeagueRepository leagueRepository;
+    private final LeagueRepository leagueRepository;
 
     @Autowired
     public RuleFilter(LeagueRepository leagueRepository) {

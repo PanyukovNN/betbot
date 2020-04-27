@@ -16,7 +16,7 @@ import java.util.List;
 @Repository
 public class LeagueRepository {
 
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     @Autowired
     public LeagueRepository(SessionFactory sessionFactory) {

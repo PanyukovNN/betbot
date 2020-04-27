@@ -21,7 +21,7 @@ import java.util.concurrent.Future;
 @Service
 public class ParseProcessor {
 
-    private LeagueLinksParser leagueLinksParser;
+    private final LeagueLinksParser leagueLinksParser;
 
     @Autowired
     public ParseProcessor(LeagueLinksParser leagueLinksParser) {

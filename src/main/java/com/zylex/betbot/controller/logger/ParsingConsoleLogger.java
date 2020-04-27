@@ -17,7 +17,7 @@ public class ParsingConsoleLogger extends ConsoleLogger {
 
     private static int totalLeagues;
 
-    private static AtomicInteger processedLeagues = new AtomicInteger();
+    private final static AtomicInteger processedLeagues = new AtomicInteger();
 
     /**
      * Log start messages.

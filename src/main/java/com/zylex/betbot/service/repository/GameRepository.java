@@ -22,7 +22,7 @@ import static com.zylex.betbot.BetBotApplication.BOT_START_TIME;
 @Repository
 public class GameRepository {
 
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     @Autowired
     public GameRepository(SessionFactory sessionFactory) {

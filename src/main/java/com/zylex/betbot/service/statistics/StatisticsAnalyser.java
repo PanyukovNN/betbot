@@ -22,13 +22,13 @@ import java.util.stream.Collectors;
 @Service
 public class StatisticsAnalyser {
 
-    private StatisticsConsoleLogger logger = new StatisticsConsoleLogger();
+    private final StatisticsConsoleLogger logger = new StatisticsConsoleLogger();
 
-    private GameRepository gameRepository;
+    private final GameRepository gameRepository;
 
-    private RuleRepository ruleRepository;
+    private final RuleRepository ruleRepository;
 
-    private RuleProcessor ruleProcessor;
+    private final RuleProcessor ruleProcessor;
 
     @Autowired
     public StatisticsAnalyser(GameRepository gameRepository,

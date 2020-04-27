@@ -33,9 +33,9 @@ public class StatisticsConsoleLogger extends ConsoleLogger{
     public void writeRuleStatistics(Rule rule, Map<GameResult, List<Game>> resultGames, Map<BetCoefficient, Double> betProfit) {
         writeInLine(String.format("\n%5s: %3s|%3s|%3s %6s|%6s|%6s %6s|%6s",
                 rule,
-                String.valueOf(resultGames.get(GameResult.FIRST_WIN).size()),
-                String.valueOf(resultGames.get(GameResult.TIE).size()),
-                String.valueOf(resultGames.get(GameResult.SECOND_WIN).size()),
+                resultGames.get(GameResult.FIRST_WIN).size(),
+                resultGames.get(GameResult.TIE).size(),
+                resultGames.get(GameResult.SECOND_WIN).size(),
                 String.format("%.2f", betProfit.get(BetCoefficient.FIRST_WIN)),
                 String.format("%.2f", betProfit.get(BetCoefficient.TIE)),
                 String.format("%.2f", betProfit.get(BetCoefficient.SECOND_WIN)),

@@ -18,9 +18,9 @@ import java.util.Map;
 @RequestMapping("statistics")
 public class StatisticsRestController {
 
-    private ResultScanner resultScanner;
+    private final ResultScanner resultScanner;
 
-    private StatisticsAnalyser statisticsAnalyser;
+    private final StatisticsAnalyser statisticsAnalyser;
 
     @Autowired
     public StatisticsRestController(ResultScanner resultScanner,

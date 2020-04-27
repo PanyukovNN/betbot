@@ -18,15 +18,15 @@ import java.util.stream.Collectors;
 @Service
 public class RuleProcessor {
 
-    private RuleProcessorLogger logger = new RuleProcessorLogger();
+    private final RuleProcessorLogger logger = new RuleProcessorLogger();
 
-    private GameRepository gameRepository;
+    private final GameRepository gameRepository;
 
-    private RuleRepository ruleRepository;
+    private final RuleRepository ruleRepository;
 
-    private RuleFilter ruleFilter;
+    private final RuleFilter ruleFilter;
 
-    private ParseProcessor parseProcessor;
+    private final ParseProcessor parseProcessor;
 
     @Autowired
     public RuleProcessor(GameRepository gameRepository,

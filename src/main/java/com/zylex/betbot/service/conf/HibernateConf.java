@@ -1,9 +1,9 @@
 package com.zylex.betbot.service.conf;
 
-import com.zylex.betbot.BetBotApplication;
-import com.zylex.betbot.exception.HibernateConfException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -11,13 +11,21 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
+@PropertySource(value = "classpath:application.properties")
 public class HibernateConf {
+
+    @Value("${db.url}")
+    private String dbUrl;
+
+    @Value("${db.login}")
+    private String dbLogin;
+
+    @Value("${db.password}")
+    private String dbPassword;
 
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
@@ -31,17 +39,11 @@ public class HibernateConf {
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        try(InputStream inputStream = BetBotApplication.class.getClassLoader().getResourceAsStream("db/BetBotDb.properties")) {
-            Properties property = new Properties();
-            property.load(inputStream);
-            dataSource.setDriverClassName("org.postgresql.Driver");
-            dataSource.setUrl(property.getProperty("db.url"));
-            dataSource.setUsername(property.getProperty("db.login"));
-            dataSource.setPassword(property.getProperty("db.password"));
-            return dataSource;
-        } catch(IOException e) {
-            throw new HibernateConfException(e.getMessage(), e);
-        }
+        dataSource.setDriverClassName("org.postgresql.Driver");
+        dataSource.setUrl(dbUrl);
+        dataSource.setUsername(dbLogin);
+        dataSource.setPassword(dbPassword);
+        return dataSource;
     }
 
     @Bean

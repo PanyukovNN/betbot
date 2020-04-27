@@ -19,7 +19,7 @@ public class RuleRestController {
     //Get rules
     //Create rule
 
-    private RuleRepository ruleRepository;
+    private final RuleRepository ruleRepository;
 
     @Autowired
     public RuleRestController(RuleRepository ruleRepository) {

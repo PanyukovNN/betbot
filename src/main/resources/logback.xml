@@ -21,7 +21,7 @@
     </appender>
 
     <logger name="org.postgresql" level="error"/>
-<!--    <logger name="org.springframework" level="error"/>-->
+    <logger name="org.springframework" level="error"/>
     <logger name="org.hibernate" level="error"/>
 
     <logger name="com.zylex.betbot" level="info"/>

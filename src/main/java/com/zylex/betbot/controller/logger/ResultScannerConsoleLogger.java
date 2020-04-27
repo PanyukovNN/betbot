@@ -17,7 +17,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
 
     private int totalGames;
 
-    private AtomicInteger processedGames = new AtomicInteger();
+    private final AtomicInteger processedGames = new AtomicInteger();
 
     /**
      * Log start messages.
