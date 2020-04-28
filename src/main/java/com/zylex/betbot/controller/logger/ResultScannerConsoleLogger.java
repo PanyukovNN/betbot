@@ -27,6 +27,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
             String output = "Scanning game results started.";
             writeInLine("\n" + output);
             writeLineSeparator();
+            writeInLine("\nScanning games: ...");
             LOG.info(output);
         } else if (type == LogType.GAMES) {
             totalGames = arg;
@@ -58,8 +59,7 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
      */
     public void noGamesLog() {
         String output = "No games to scan.";
-        writeLineSeparator();
-        writeInLine("\n" + output);
+        writeInLine(StringUtils.repeat("\b", "Scanning games: ...".length()) + output);
         LOG.info(output);
     }
 }
