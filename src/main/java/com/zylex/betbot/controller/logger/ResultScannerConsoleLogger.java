@@ -60,7 +60,6 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
         String output = "No games to scan.";
         writeLineSeparator();
         writeInLine("\n" + output);
-        writeLineSeparator('~');
         LOG.info(output);
     }
 }
