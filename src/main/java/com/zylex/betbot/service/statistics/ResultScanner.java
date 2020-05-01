@@ -53,13 +53,15 @@ public class ResultScanner {
     @Transactional
     public void scan(LocalDate startDate) {
         List<Game> noResultGames = findNoResultGames(startDate);
-        logger.startLogMessage(LogType.PARSING_SITE_START, 0);
         if (noResultGames.isEmpty()) {
+            //TODO remove repeated code
+            logger.startLogMessage(LogType.PARSING_SITE_START, 0);
             logger.noGamesLog();
         } else {
             if (driverManager.getDriver() == null) {
                 driverManager.initiateDriver();
             }
+            logger.startLogMessage(LogType.PARSING_SITE_START, 0);
             logger.startLogMessage(LogType.GAMES, noResultGames.size());
             processResults(noResultGames, startDate);
         }
