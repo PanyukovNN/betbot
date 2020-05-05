@@ -40,9 +40,7 @@ public class GameRestController {
     public ResponseEntity<List<Game>> getGamesByDate(@RequestParam(name = "date") String dateText) {
         try {
             LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
-            List<Game> games = gameRepository.findBetweenDateTimes(
-                    LocalDateTime.of(date, LocalTime.MIN),
-                    LocalDateTime.of(date, LocalTime.MAX));
+            List<Game> games = gameRepository.findByDate(date);
             games.sort(Comparator.comparing(Game::getDateTime));
             return new ResponseEntity<>(games, HttpStatus.OK);
         } catch (Exception e) {

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,9 +18,9 @@ public interface GameRepository extends JpaRepository<Game, Long> {
 
     Game findByLink(String link);
 
-    @Query("SELECT g FROM Game g WHERE g.dateTime >= :startDateTime AND g.dateTime <= :endDateTime")
-    List<Game> findBetweenDateTimes(@Param("startDateTime") LocalDateTime startDateTime,
-                                    @Param("endDateTime") LocalDateTime endDateTime);
+    @Query(value = "SELECT * FROM game WHERE DATE(date_time) = :date",
+            nativeQuery = true)
+    List<Game> findByDate(@Param("date") LocalDate date);
 
     @Query("SELECT g FROM Game g WHERE g.dateTime >= :startDateTime")
     List<Game> findSinceDateTime(@Param("startDateTime") LocalDateTime startDateTime);
