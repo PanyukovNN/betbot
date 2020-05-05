@@ -31,7 +31,8 @@ public class ResultScannerConsoleLogger extends ConsoleLogger{
             LOG.info(output);
         } else if (type == LogType.GAMES) {
             totalGames = arg;
-            writeInLine(String.format("\nScanning games: 0/%d (0.0%%)", arg));
+            String output = "Scanning games: 0/%d (0.0%%)";
+            writeInLine(String.format(StringUtils.repeat("\b", output.length()) + output, arg));
         }
     }
 

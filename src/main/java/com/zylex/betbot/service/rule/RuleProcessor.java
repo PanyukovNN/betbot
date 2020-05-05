@@ -45,15 +45,19 @@ public class RuleProcessor {
     @Transactional
     public void process() {
         List<Game> games = parseProcessor.process();
-        List<Rule> rules = ruleRepository.getAll();
+        List<Rule> rules = ruleRepository.findAll();
         for (Rule rule : rules) {
             List<Game> eligibleGames = ruleFilter.filter(games, rule);
             eligibleGames.sort(Comparator.comparing(Game::getDateTime));
-            eligibleGames.forEach(gameRepository::save);
+            for (Game game : eligibleGames) {
+                if (gameRepository.findByLink(game.getLink()) == null) {
+                    gameRepository.save(game);
+                }
+            }
         }
-        List<Rule> activatedRules = ruleRepository.getActivated();
+        List<Rule> activatedRules = ruleRepository.findByActivateTrue();
         logger.writeEligibleGamesNumber(
-                filterGamesByRules(gameRepository.getByBetStartTime(), activatedRules), activatedRules);
+                filterGamesByRules(gameRepository.findByBetStartTime(), activatedRules), activatedRules);
     }
 
     public List<Game> filterGamesByRules(List<Game> games, List<Rule> rules) {

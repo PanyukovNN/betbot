@@ -49,8 +49,8 @@ public class StatisticsAnalyser {
     public Map<Rule, Map<BetCoefficient, Double>> analyse(LocalDate startDate, LocalDate endDate) {
         logger.startLogMessage(startDate, endDate);
         List<Rule> rules = new ArrayList<>();
-        rules.add(ruleRepository.getByName("X_TWO"));
-        rules.add(ruleRepository.getByName("FW_SW"));
+        rules.add(ruleRepository.findByName("X_TWO"));
+        rules.add(ruleRepository.findByName("FW_SW"));
         //TODO think how to remove
         Map<Rule, Map<BetCoefficient, Double>> ruleBetProfit = new LinkedHashMap<>();
         for (Rule rule : rules) {
@@ -64,7 +64,7 @@ public class StatisticsAnalyser {
     }
 
     private List<Game> findRuleGames(Rule rule) {
-        List<Game> games = gameRepository.getAll()
+        List<Game> games = gameRepository.findAll()
                 .stream()
                 .filter(game -> !game.getResult().equals(GameResult.NO_RESULT.toString())
                         && !game.getResult().equals(GameResult.NOT_FOUND.toString()))

@@ -81,7 +81,7 @@ public class BetProcessor {
     @Transactional
     public List<Game> process() {
         try {
-            List<Rule> rules = ruleRepository.getActivated();
+            List<Rule> rules = ruleRepository.findByActivateTrue();
             Set<Game> betGames = findBetGames(rules);
             if (betGames.isEmpty()) {
                 logger.betMade(LogType.NO_GAMES_TO_BET);
@@ -106,7 +106,7 @@ public class BetProcessor {
     }
 
     private Set<Game> findBetGames(List<Rule> rules) {
-        List<Game> ruleGames = ruleProcessor.filterGamesByRules(gameRepository.getByBetStartTime(), rules);
+        List<Game> ruleGames = ruleProcessor.filterGamesByRules(gameRepository.findByBetStartTime(), rules);
         Set<Game> betGames = new LinkedHashSet<>();
         for (Game game : ruleGames) {
             if (notAppropriateTime(game)) continue;
@@ -193,7 +193,8 @@ public class BetProcessor {
     private Bet saveBet(Game game, Bet bet) {
         bet = betRepository.save(bet);
         game.getBets().add(bet);
-        gameRepository.update(game);
+        //TODO check !!!
+//        gameRepository.update(game);
         return bet;
     }
 
@@ -211,12 +212,13 @@ public class BetProcessor {
     }
 
     private boolean makeBet(int amount) {
-        driverManager.getDriver().findElement(By.className("bet_sum_input")).sendKeys(String.valueOf(amount));
-        WebElement betButton = driverManager.waitElement(By::className, "coupon-btn-group__item")
-                .findElement(By.cssSelector("button"));
-        JavascriptExecutor executor = (JavascriptExecutor) driverManager.getDriver();
-        executor.executeScript("arguments[0].click();", betButton);
-        return okButtonClick(executor);
+//        driverManager.getDriver().findElement(By.className("bet_sum_input")).sendKeys(String.valueOf(amount));
+//        WebElement betButton = driverManager.waitElement(By::className, "coupon-btn-group__item")
+//                .findElement(By.cssSelector("button"));
+//        JavascriptExecutor executor = (JavascriptExecutor) driverManager.getDriver();
+//        executor.executeScript("arguments[0].click();", betButton);
+//        return okButtonClick(executor);
+        return true;
     }
 
     private boolean okButtonClick(JavascriptExecutor executor) {

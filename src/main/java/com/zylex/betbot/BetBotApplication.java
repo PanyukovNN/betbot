@@ -8,12 +8,14 @@ import com.zylex.betbot.service.statistics.ResultScanner;
 import com.zylex.betbot.service.statistics.StatisticsAnalyser;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @ComponentScan
+@EnableJpaRepositories
 public class BetBotApplication {
 
     public static final LocalDateTime BOT_START_TIME = LocalDateTime.now();

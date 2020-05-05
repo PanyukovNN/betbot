@@ -1,25 +1,9 @@
 package com.zylex.betbot.service.repository;
 
 import com.zylex.betbot.model.Bank;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class BankRepository {
-
-    private final SessionFactory sessionFactory;
-
-    @Autowired
-    public BankRepository(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
-
-    public Bank save(Bank bank) {
-        Session session = sessionFactory.getCurrentSession();
-        Long id = (Long) session.save(bank);
-        bank.setId(id);
-        return bank;
-    }
+public interface BankRepository extends JpaRepository<Bank, Long> {
 }

@@ -31,7 +31,7 @@ public class StatisticsConsoleLogger extends ConsoleLogger{
      * @param betProfit - map of bet profit by coefficients.
      */
     public void writeRuleStatistics(Rule rule, Map<GameResult, List<Game>> resultGames, Map<BetCoefficient, Double> betProfit) {
-        writeInLine(String.format("\n%5s: %3s|%3s|%3s %6s|%6s|%6s %6s|%6s",
+        writeInLine(String.format("\n%5s:  %3s|%3s|%3s  %6s|%6s|%6s  %6s|%6s",
                 rule,
                 resultGames.get(GameResult.FIRST_WIN).size(),
                 resultGames.get(GameResult.TIE).size(),

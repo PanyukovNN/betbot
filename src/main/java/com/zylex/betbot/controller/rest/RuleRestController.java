@@ -29,7 +29,7 @@ public class RuleRestController {
     @GetMapping("/all")
     public ResponseEntity<List<Rule>> getAll() {
         try {
-            return new ResponseEntity<>(ruleRepository.getAll(), HttpStatus.OK);
+            return new ResponseEntity<>(ruleRepository.findAll(), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

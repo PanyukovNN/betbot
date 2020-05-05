@@ -6,6 +6,7 @@ Bot consists of two modules:
 #### **Used tecnologies:**
 - Spring framework
 - Spring boot
+- Spring data jpa
 - Hibernate
 - PostgreSQL
 - REST API

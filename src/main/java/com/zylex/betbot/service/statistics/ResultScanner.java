@@ -70,7 +70,7 @@ public class ResultScanner {
 
     private List<Game> findNoResultGames(LocalDate startDate) {
         return gameRepository
-                .getSinceDateTime(LocalDateTime.of(startDate, LocalTime.MIN)).stream()
+                .findSinceDateTime(LocalDateTime.of(startDate, LocalTime.MIN)).stream()
                 .filter(game -> BOT_START_TIME.isAfter(game.getDateTime().plusHours(2)))
                 .filter(game -> game.getResult().equals(GameResult.NO_RESULT.toString()))
                 .sorted(Comparator.comparing(Game::getDateTime))
@@ -103,7 +103,8 @@ public class ResultScanner {
             for (Game game : dayGames) {
                 if (game.getDateTime().isBefore(BOT_START_TIME.minusDays(1))) {
                     game.setResult(GameResult.NOT_FOUND.toString());
-                    gameRepository.update(game);
+                    //TODO check !!!
+                    //gameRepository.update(game);
                 }
             }
         }
@@ -181,7 +182,8 @@ public class ResultScanner {
         int secondBalls = Integer.parseInt(scores[1]);
         GameResult gameResult = computeGameResult(firstBalls, secondBalls);
         game.setResult(gameResult.toString());
-        gameRepository.update(game);
+        //TODO check !!!
+//        gameRepository.update(game);
         logger.logGame();
     }
 

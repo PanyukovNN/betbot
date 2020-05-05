@@ -40,7 +40,9 @@ public class GameRestController {
     public ResponseEntity<List<Game>> getGamesByDate(@RequestParam(name = "date") String dateText) {
         try {
             LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
-            List<Game> games = gameRepository.getByDate(date);
+            List<Game> games = gameRepository.findBetweenDateTimes(
+                    LocalDateTime.of(date, LocalTime.MIN),
+                    LocalDateTime.of(date, LocalTime.MAX));
             games.sort(Comparator.comparing(Game::getDateTime));
             return new ResponseEntity<>(games, HttpStatus.OK);
         } catch (Exception e) {
@@ -52,7 +54,7 @@ public class GameRestController {
     public ResponseEntity<List<Game>> getGamesSinceDate(@RequestParam(name = "date") String dateText) {
         try {
             LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
-            List<Game> games = gameRepository.getSinceDateTime(LocalDateTime.of(date, LocalTime.MIN));
+            List<Game> games = gameRepository.findSinceDateTime(LocalDateTime.of(date, LocalTime.MIN));
             games.sort(Comparator.comparing(Game::getDateTime));
             return new ResponseEntity<>(games, HttpStatus.OK);
         } catch (Exception e) {
@@ -64,8 +66,8 @@ public class GameRestController {
     public ResponseEntity<List<Game>> getParsedGames() {
         try {
             ruleProcessor.process();
-            List<Game> games = gameRepository.getByBetStartTime();
-            return new ResponseEntity<>(ruleProcessor.filterGamesByRules(games, ruleRepository.getActivated()), HttpStatus.OK);
+            List<Game> games = gameRepository.findByBetStartTime();
+            return new ResponseEntity<>(ruleProcessor.filterGamesByRules(games, ruleRepository.findByActivateTrue()), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

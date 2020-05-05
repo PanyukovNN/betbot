@@ -33,8 +33,8 @@ public class RuleFilter {
      */
     List<Game> filter(List<Game> games, Rule rule) {
         List<Game> eligibleGames = new ArrayList<>();
-        List<String> excludeLeagues = leagueRepository.getExcludeLeagues(rule);
-        List<String> selectedLeagues = leagueRepository.getAllSelectedLeagues();
+        List<String> excludeLeagues = leagueRepository.findExcludeLeagues(rule.getName());
+        List<String> selectedLeagues = leagueRepository.findAllSelectedLeagues();
         for (Game game : games) {
             if (rule.isSelectedLeagues()) {
                 if (!selectedLeagues.contains(game.getLeague().getLink())) {
